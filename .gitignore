@@ -11,4 +11,8 @@ local.properties
 keystore.properties
 *.jks
 *.keystore
+# Eccezione: keystore di debug fissa, committata di proposito per firmare
+# sempre l'APK di debug con la stessa chiave (permette di installare
+# l'aggiornamento sopra la versione precedente senza perdere i dati locali).
+!debug.keystore
 /app/build/
