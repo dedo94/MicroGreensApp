@@ -24,6 +24,9 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE trayId = :trayId ORDER BY eventDate, eventTime")
     fun getEventsForTray(trayId: Long): Flow<List<EventEntity>>
 
+    @Query("SELECT * FROM events")
+    fun getAll(): Flow<List<EventEntity>>
+
     @Query("SELECT * FROM events WHERE id = :id")
     suspend fun getById(id: Long): EventEntity?
 
