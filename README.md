@@ -31,11 +31,12 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       sovrascrivibili, con cache giornaliera locale. Chiamate dirette con
       OkHttp + kotlinx.serialization. Build verificata con successo su
       GitHub Actions.
-- [ ] **Fase 5** (in verifica) — Foto: scatto con fotocamera di sistema o
-      selezione dalla galleria (Photo Picker, nessun permesso storage
-      richiesto), storage privato dell'app (`filesDir/photos`, eliminato
-      alla disinstallazione), galleria orizzontale sul vassoio e sul singolo
-      evento con visualizzatore a schermo intero ed eliminazione.
+- [x] **Fase 5** — Foto: scatto con fotocamera di sistema o selezione dalla
+      galleria (Photo Picker, nessun permesso storage richiesto), storage
+      privato dell'app (`filesDir/photos`, eliminato alla disinstallazione),
+      galleria orizzontale sul vassoio e sul singolo evento con
+      visualizzatore a schermo intero ed eliminazione. Build verificata con
+      successo su GitHub Actions.
 - [ ] Fase 6 — Statistiche
 
 ## Build
