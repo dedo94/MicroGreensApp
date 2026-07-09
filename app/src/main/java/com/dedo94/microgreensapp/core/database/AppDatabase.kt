@@ -5,12 +5,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.dedo94.microgreensapp.core.database.converters.Converters
 import com.dedo94.microgreensapp.core.database.dao.EventDao
+import com.dedo94.microgreensapp.core.database.dao.PhotoDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
 import com.dedo94.microgreensapp.core.database.dao.WeatherDailyDao
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
+import com.dedo94.microgreensapp.core.database.entity.PhotoEntity
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
@@ -25,8 +27,9 @@ import com.dedo94.microgreensapp.core.database.entity.WeatherDailyEntity
         TrayStepEntity::class,
         EventEntity::class,
         WeatherDailyEntity::class,
+        PhotoEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -37,6 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun trayStepDao(): TrayStepDao
     abstract fun eventDao(): EventDao
     abstract fun weatherDailyDao(): WeatherDailyDao
+    abstract fun photoDao(): PhotoDao
 
     companion object {
         const val DATABASE_NAME = "microgreens.db"

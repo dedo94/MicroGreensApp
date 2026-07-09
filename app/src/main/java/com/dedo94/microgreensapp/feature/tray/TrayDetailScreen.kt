@@ -44,6 +44,7 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.ui.PhotoGallery
 import com.dedo94.microgreensapp.ui.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +58,7 @@ fun TrayDetailScreen(
     val tray by viewModel.tray.collectAsStateWithLifecycle()
     val steps by viewModel.steps.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle()
+    val photos by viewModel.photos.collectAsStateWithLifecycle()
     val timeline = remember(steps, events) { buildTimeline(steps, events) }
 
     var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
@@ -144,6 +146,15 @@ fun TrayDetailScreen(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+                PhotoGallery(
+                    photos = photos,
+                    fileFor = viewModel::photoFile,
+                    onCreateCaptureTarget = viewModel::createCaptureTarget,
+                    onPhotoCaptured = viewModel::onPhotoCaptured,
+                    onPhotoPicked = viewModel::onPhotoPicked,
+                    onDeletePhoto = viewModel::deletePhoto,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
                 HorizontalDivider()
             }
 
