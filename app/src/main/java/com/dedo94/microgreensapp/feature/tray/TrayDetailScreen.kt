@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -46,6 +47,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.ui.PhotoGallery
 import com.dedo94.microgreensapp.ui.displayLabel
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +66,7 @@ fun TrayDetailScreen(
 
     var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
     var stepPendingDeletion by remember { mutableStateOf<TrayStepEntity?>(null) }
+    var stepPendingFutureConfirmation by remember { mutableStateOf<TrayStepEntity?>(null) }
     var eventPendingDeletion by remember { mutableStateOf<EventEntity?>(null) }
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteTrayDialog by remember { mutableStateOf(false) }
@@ -192,8 +195,15 @@ fun TrayDetailScreen(
                         when (entry) {
                             is TrayTimelineEntry.StepEntry -> StepTimelineCard(
                                 step = entry.step,
-                                onMarkDone = { viewModel.markDone(entry.step) },
+                                onMarkDone = {
+                                    if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
+                                        stepPendingFutureConfirmation = entry.step
+                                    } else {
+                                        viewModel.markDone(entry.step)
+                                    }
+                                },
                                 onMarkSkipped = { viewModel.markSkipped(entry.step) },
+                                onMarkPending = { viewModel.markPending(entry.step) },
                                 onEdit = { stepBeingEdited = entry.step },
                                 onDelete = if (entry.step.isAdHoc) {
                                     { stepPendingDeletion = entry.step }
@@ -239,6 +249,28 @@ fun TrayDetailScreen(
         )
     }
 
+    stepPendingFutureConfirmation?.let { step ->
+        AlertDialog(
+            onDismissRequest = { stepPendingFutureConfirmation = null },
+            title = { Text("Confermare in anticipo?") },
+            text = {
+                Text(
+                    "\"${step.name}\" è previsto per il ${step.plannedStartDate}, una data futura. " +
+                        "Vuoi segnarlo comunque come fatto?"
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.markDone(step)
+                    stepPendingFutureConfirmation = null
+                }) { Text("Conferma") }
+            },
+            dismissButton = {
+                TextButton(onClick = { stepPendingFutureConfirmation = null }) { Text("Annulla") }
+            },
+        )
+    }
+
     eventPendingDeletion?.let { event ->
         AlertDialog(
             onDismissRequest = { eventPendingDeletion = null },
@@ -278,6 +310,7 @@ private fun StepTimelineCard(
     step: TrayStepEntity,
     onMarkDone: () -> Unit,
     onMarkSkipped: () -> Unit,
+    onMarkPending: () -> Unit,
     onEdit: () -> Unit,
     onDelete: (() -> Unit)?,
 ) {
@@ -302,6 +335,10 @@ private fun StepTimelineCard(
                     }
                     IconButton(onClick = onMarkSkipped) {
                         Icon(Icons.Default.Close, contentDescription = "Salta")
+                    }
+                } else {
+                    IconButton(onClick = onMarkPending) {
+                        Icon(Icons.Default.Replay, contentDescription = "Annulla completamento")
                     }
                 }
                 IconButton(onClick = onEdit) {

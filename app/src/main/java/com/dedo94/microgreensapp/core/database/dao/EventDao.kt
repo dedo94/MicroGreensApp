@@ -30,6 +30,9 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE id = :id")
     suspend fun getById(id: Long): EventEntity?
 
+    @Query("DELETE FROM events WHERE trayStepId = :trayStepId")
+    suspend fun deleteByTrayStepId(trayStepId: Long)
+
     @Query("SELECT * FROM events WHERE eventDate BETWEEN :start AND :end")
     fun getEventsInRange(start: LocalDate, end: LocalDate): Flow<List<EventEntity>>
 }

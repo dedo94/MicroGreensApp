@@ -170,6 +170,18 @@ class TrayRepository @Inject constructor(
         rescheduleReminders(step.trayId)
     }
 
+    /**
+     * Riporta uno step DONE/SKIPPED a PENDING, per correggere una spunta
+     * data per errore. Rimuove anche l'eventuale evento di diario creato da
+     * [markStepDone], altrimenti resterebbe conteggiato nelle statistiche
+     * pur avendo annullato lo step.
+     */
+    suspend fun markStepPending(step: TrayStepEntity) {
+        trayStepDao.update(step.copy(status = TrayStepStatus.PENDING))
+        eventDao.deleteByTrayStepId(step.id)
+        rescheduleReminders(step.trayId)
+    }
+
     private suspend fun rescheduleReminders(trayId: Long) {
         val trayName = trayDao.observeById(trayId).firstOrNull()?.name ?: return
         val steps = trayStepDao.getStepsForTrayOnce(trayId)
