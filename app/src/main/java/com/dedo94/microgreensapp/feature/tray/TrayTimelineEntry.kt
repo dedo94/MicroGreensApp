@@ -16,6 +16,12 @@ sealed interface TrayTimelineEntry {
     }
 }
 
+/**
+ * Gli eventi con trayStepId non nullo sono l'"eco" nel diario generata da
+ * markStepDone: lo step stesso (già visibile come StepEntry, ora DONE) li
+ * rappresenta già, quindi non vanno mostrati una seconda volta come riga
+ * separata. Restano comunque in tabella per le statistiche.
+ */
 fun buildTimeline(steps: List<TrayStepEntity>, events: List<EventEntity>): List<TrayTimelineEntry> =
-    (steps.map(TrayTimelineEntry::StepEntry) + events.map(TrayTimelineEntry::EventEntry))
+    (steps.map(TrayTimelineEntry::StepEntry) + events.filter { it.trayStepId == null }.map(TrayTimelineEntry::EventEntry))
         .sortedBy { it.date }

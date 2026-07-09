@@ -44,6 +44,11 @@ class TrayRepository @Inject constructor(
      * righe [TrayStepEntity] con date assolute. Da questo momento il
      * vassoio non legge più il template: modificarlo in seguito non ha
      * alcun effetto su questo vassoio.
+     *
+     * Uno step del template che copre più giorni (es. "Crescita/Luce" nei
+     * giorni 5-10) viene qui espanso in una riga per ciascun giorno, così
+     * ogni vassoio ha un task giornaliero confermabile singolarmente invece
+     * di un unico step con un'unica spunta per l'intero intervallo.
      */
     suspend fun createTray(
         name: String,
@@ -66,22 +71,26 @@ class TrayRepository @Inject constructor(
             )
         )
         val templateSteps = templateStepDao.getStepsForTemplateOnce(templateId)
-        val traySteps = templateSteps.map { step ->
-            TrayStepEntity(
-                trayId = trayId,
-                sourceTemplateStepId = step.id,
-                orderIndex = step.orderIndex,
-                name = step.name,
-                actionType = step.actionType,
-                plannedStartDate = sowingDate.plusDays(step.offsetStartDays.toLong()),
-                plannedEndDate = sowingDate.plusDays(
-                    (step.offsetEndDays ?: step.offsetStartDays).toLong()
-                ),
-                durationHours = step.durationHours,
-                repeatPerDay = step.repeatPerDay,
-                reminderTimes = step.reminderTimes,
-                instructions = step.instructions,
-            )
+        val traySteps = templateSteps.flatMap { step ->
+            val start = sowingDate.plusDays(step.offsetStartDays.toLong())
+            val end = sowingDate.plusDays((step.offsetEndDays ?: step.offsetStartDays).toLong())
+            generateSequence(start) { it.plusDays(1) }
+                .takeWhile { !it.isAfter(end) }
+                .map { day ->
+                    TrayStepEntity(
+                        trayId = trayId,
+                        sourceTemplateStepId = step.id,
+                        orderIndex = step.orderIndex,
+                        name = step.name,
+                        actionType = step.actionType,
+                        plannedStartDate = day,
+                        plannedEndDate = day,
+                        durationHours = step.durationHours,
+                        repeatPerDay = step.repeatPerDay,
+                        reminderTimes = step.reminderTimes,
+                        instructions = step.instructions,
+                    )
+                }
         }
         if (traySteps.isNotEmpty()) {
             trayStepDao.insertAll(traySteps)
@@ -121,7 +130,7 @@ class TrayRepository @Inject constructor(
             EventEntity(
                 trayId = step.trayId,
                 trayStepId = step.id,
-                eventDate = LocalDate.now(),
+                eventDate = step.plannedStartDate,
                 eventType = step.actionType,
                 title = step.name,
                 quantityValue = quantityValue,
