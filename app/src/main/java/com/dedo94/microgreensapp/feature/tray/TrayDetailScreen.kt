@@ -53,6 +53,7 @@ fun TrayDetailScreen(
     onBack: () -> Unit,
     onAddEvent: (Long) -> Unit,
     onEditEvent: (Long, Long) -> Unit,
+    onEditTray: (Long) -> Unit,
     viewModel: TrayDetailViewModel = hiltViewModel(),
 ) {
     val tray by viewModel.tray.collectAsStateWithLifecycle()
@@ -85,6 +86,13 @@ fun TrayDetailScreen(
                             expanded = showStatusMenu,
                             onDismissRequest = { showStatusMenu = false },
                         ) {
+                            DropdownMenuItem(
+                                text = { Text("Modifica vassoio") },
+                                onClick = {
+                                    showStatusMenu = false
+                                    onEditTray(viewModel.trayId)
+                                },
+                            )
                             DropdownMenuItem(
                                 text = { Text("Segna come raccolto") },
                                 onClick = {

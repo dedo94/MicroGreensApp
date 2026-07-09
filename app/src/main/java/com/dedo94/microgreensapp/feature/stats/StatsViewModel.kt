@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.dedo94.microgreensapp.core.repository.StatsOverview
 import com.dedo94.microgreensapp.core.repository.StatsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -17,4 +19,26 @@ class StatsViewModel @Inject constructor(
 
     val overview: StateFlow<StatsOverview?> = repository.observeOverview()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** null = "tutte le varietà". */
+    private val _varietyFilter = MutableStateFlow<String?>(null)
+    val varietyFilter: StateFlow<String?> = _varietyFilter.asStateFlow()
+
+    private val _compareTrayAId = MutableStateFlow<Long?>(null)
+    val compareTrayAId: StateFlow<Long?> = _compareTrayAId.asStateFlow()
+
+    private val _compareTrayBId = MutableStateFlow<Long?>(null)
+    val compareTrayBId: StateFlow<Long?> = _compareTrayBId.asStateFlow()
+
+    fun onVarietyFilterChange(variety: String?) {
+        _varietyFilter.value = variety
+    }
+
+    fun onCompareTrayAChange(trayId: Long?) {
+        _compareTrayAId.value = trayId
+    }
+
+    fun onCompareTrayBChange(trayId: Long?) {
+        _compareTrayBId.value = trayId
+    }
 }

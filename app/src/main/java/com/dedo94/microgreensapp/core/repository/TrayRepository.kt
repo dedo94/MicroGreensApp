@@ -99,6 +99,31 @@ class TrayRepository @Inject constructor(
         return trayId
     }
 
+    /**
+     * Aggiorna i metadati modificabili del vassoio (nome, semi, substrato).
+     * Non tocca sowingDate né gli step già pianificati: cambiarla
+     * richiederebbe ricalcolare le date assolute di tutti gli step ancora
+     * da fare, fuori scope per ora. Ricalcola i promemoria perché il nome
+     * del vassoio è incluso nel testo delle notifiche già in coda.
+     */
+    suspend fun updateTrayDetails(
+        tray: TrayEntity,
+        name: String,
+        initialSeedQuantityGrams: Double?,
+        substrateType: SubstrateType,
+        substrateNotes: String,
+    ) {
+        trayDao.update(
+            tray.copy(
+                name = name,
+                initialSeedQuantityGrams = initialSeedQuantityGrams,
+                substrateType = substrateType,
+                substrateNotes = substrateNotes,
+            )
+        )
+        rescheduleReminders(tray.id)
+    }
+
     suspend fun updateTrayStatus(tray: TrayEntity, status: TrayStatus) {
         trayDao.update(tray.copy(status = status))
         if (status == TrayStatus.IN_PROGRESS) {

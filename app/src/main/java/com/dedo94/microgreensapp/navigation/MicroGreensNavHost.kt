@@ -33,6 +33,7 @@ import com.dedo94.microgreensapp.feature.template.TemplateEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateListScreen
 import com.dedo94.microgreensapp.feature.tray.TrayCreateScreen
 import com.dedo94.microgreensapp.feature.tray.TrayDetailScreen
+import com.dedo94.microgreensapp.feature.tray.TrayEditScreen
 import com.dedo94.microgreensapp.feature.tray.TraysListScreen
 
 @Composable
@@ -124,7 +125,11 @@ fun MicroGreensNavHost(
                     onEditEvent = { trayId, eventId ->
                         navController.navigate(EventEditRoute(trayId = trayId, eventId = eventId))
                     },
+                    onEditTray = { trayId -> navController.navigate(TrayEditRoute(trayId)) },
                 )
+            }
+            composable<TrayEditRoute> {
+                TrayEditScreen(onBack = { navController.popBackStack() })
             }
             composable<EventEditRoute> {
                 EventEditScreen(onBack = { navController.popBackStack() })
