@@ -37,7 +37,15 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       galleria orizzontale sul vassoio e sul singolo evento con
       visualizzatore a schermo intero ed eliminazione. Build verificata con
       successo su GitHub Actions.
-- [ ] Fase 6 — Statistiche
+- [x] **Fase 6** — Statistiche: per vassoio (semi, acqua totale, resa
+      raccolto, resa per grammo di seme, efficienza idrica, durata effettiva
+      vs pianificata, condizioni medie registrate); per varietà (cicli,
+      tasso di successo, resa/durata medie); produzione mensile totale;
+      record personali (raccolto più abbondante, miglior resa/seme, ciclo
+      più breve). Calcolate in Kotlin dai dati già presenti, nessuna nuova
+      dipendenza. Build verificata con successo su GitHub Actions.
+
+Tutte e 6 le fasi del piano sono complete.
 
 ## Build
 
@@ -63,7 +71,7 @@ feature/template   CRUD template di varietà e step
 feature/tray       Vassoi: lista, creazione, dettaglio/timeline/galleria foto
 feature/event      Form aggiungi/modifica evento (meteo pre-compilato, foto)
 feature/calendar   Vista mensile con filtro per vassoio
-feature/stats      Placeholder (Fase 6)
+feature/stats      Dashboard: per vassoio, per varietà, produzione mensile, record
 feature/settings   Permesso notifiche, ricerca/impostazione posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
 ui, ui/theme       Componenti condivisi (date picker, galleria foto, colori/etichette) e tema Material 3
