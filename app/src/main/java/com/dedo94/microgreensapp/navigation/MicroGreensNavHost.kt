@@ -12,7 +12,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -32,10 +36,20 @@ import com.dedo94.microgreensapp.feature.tray.TrayDetailScreen
 import com.dedo94.microgreensapp.feature.tray.TraysListScreen
 
 @Composable
-fun MicroGreensNavHost() {
+fun MicroGreensNavHost(
+    deepLinkTrayId: MutableState<Long?> = remember { mutableStateOf(null) },
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+
+    LaunchedEffect(deepLinkTrayId.value) {
+        val trayId = deepLinkTrayId.value
+        if (trayId != null) {
+            navController.navigate(TrayDetailRoute(trayId))
+            deepLinkTrayId.value = null
+        }
+    }
 
     fun navigateToTopLevel(route: Any) {
         navController.navigate(route) {

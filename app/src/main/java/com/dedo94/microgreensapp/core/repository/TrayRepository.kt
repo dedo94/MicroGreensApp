@@ -10,7 +10,9 @@ import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.core.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,6 +23,7 @@ class TrayRepository @Inject constructor(
     private val trayStepDao: TrayStepDao,
     private val eventDao: EventDao,
     private val templateStepDao: TemplateStepDao,
+    private val notificationScheduler: NotificationScheduler,
 ) {
     fun observeTrays(): Flow<List<TrayEntity>> = trayDao.getAll()
 
@@ -83,17 +86,33 @@ class TrayRepository @Inject constructor(
         if (traySteps.isNotEmpty()) {
             trayStepDao.insertAll(traySteps)
         }
+        notificationScheduler.rescheduleForTray(trayId, name, traySteps)
         return trayId
     }
 
-    suspend fun updateTrayStatus(tray: TrayEntity, status: TrayStatus) =
+    suspend fun updateTrayStatus(tray: TrayEntity, status: TrayStatus) {
         trayDao.update(tray.copy(status = status))
+        if (status == TrayStatus.IN_PROGRESS) {
+            rescheduleReminders(tray.id)
+        } else {
+            notificationScheduler.cancelForTray(tray.id)
+        }
+    }
 
-    suspend fun deleteTray(tray: TrayEntity) = trayDao.delete(tray)
+    suspend fun deleteTray(tray: TrayEntity) {
+        trayDao.delete(tray)
+        notificationScheduler.cancelForTray(tray.id)
+    }
 
-    suspend fun updateTrayStep(step: TrayStepEntity) = trayStepDao.update(step)
+    suspend fun updateTrayStep(step: TrayStepEntity) {
+        trayStepDao.update(step)
+        rescheduleReminders(step.trayId)
+    }
 
-    suspend fun deleteTrayStep(step: TrayStepEntity) = trayStepDao.delete(step)
+    suspend fun deleteTrayStep(step: TrayStepEntity) {
+        trayStepDao.delete(step)
+        rescheduleReminders(step.trayId)
+    }
 
     /** Segna uno step pianificato come fatto e registra l'evento corrispondente nel diario. */
     suspend fun markStepDone(step: TrayStepEntity, quantityValue: Double? = null, quantityUnit: String = "") {
@@ -109,10 +128,19 @@ class TrayRepository @Inject constructor(
                 quantityUnit = quantityUnit,
             )
         )
+        rescheduleReminders(step.trayId)
     }
 
-    suspend fun markStepSkipped(step: TrayStepEntity) =
+    suspend fun markStepSkipped(step: TrayStepEntity) {
         trayStepDao.update(step.copy(status = TrayStepStatus.SKIPPED))
+        rescheduleReminders(step.trayId)
+    }
+
+    private suspend fun rescheduleReminders(trayId: Long) {
+        val trayName = trayDao.observeById(trayId).firstOrNull()?.name ?: return
+        val steps = trayStepDao.getStepsForTrayOnce(trayId)
+        notificationScheduler.rescheduleForTray(trayId, trayName, steps)
+    }
 
     suspend fun getEvent(eventId: Long): EventEntity? = eventDao.getById(eventId)
 

@@ -10,6 +10,7 @@ import androidx.navigation.toRoute
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.repository.TrayRepository
+import com.dedo94.microgreensapp.core.repository.WeatherRepository
 import com.dedo94.microgreensapp.navigation.EventEditRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EventEditViewModel @Inject constructor(
     private val repository: TrayRepository,
+    private val weatherRepository: WeatherRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -43,12 +45,20 @@ class EventEditViewModel @Inject constructor(
         private set
     var quantityUnit by mutableStateOf("")
         private set
+    var temperatureText by mutableStateOf("")
+        private set
+    var humidityText by mutableStateOf("")
+        private set
+    var lightNotes by mutableStateOf("")
+        private set
 
     val canSave: Boolean
         get() = title.isNotBlank()
 
     init {
-        if (!isNew) {
+        if (isNew) {
+            prefillFromWeather()
+        } else {
             viewModelScope.launch {
                 repository.getEvent(route.eventId)?.let { event ->
                     existingEvent = event
@@ -59,7 +69,22 @@ class EventEditViewModel @Inject constructor(
                     notes = event.notes
                     quantityText = event.quantityValue?.toString() ?: ""
                     quantityUnit = event.quantityUnit
+                    temperatureText = event.actualTemperature?.toString() ?: ""
+                    humidityText = event.actualHumidity?.toString() ?: ""
+                    lightNotes = event.actualLightNotes
                 }
+            }
+        }
+    }
+
+    private fun prefillFromWeather() {
+        viewModelScope.launch {
+            val weather = weatherRepository.fetchTodayIfNeeded() ?: return@launch
+            if (temperatureText.isBlank()) {
+                temperatureText = weather.fetchedTemperature?.toString() ?: ""
+            }
+            if (humidityText.isBlank()) {
+                humidityText = weather.fetchedHumidity?.toString() ?: ""
             }
         }
     }
@@ -92,6 +117,18 @@ class EventEditViewModel @Inject constructor(
         quantityUnit = value
     }
 
+    fun onTemperatureChange(value: String) {
+        temperatureText = value.filter { it.isDigit() || it == '.' || it == '-' }
+    }
+
+    fun onHumidityChange(value: String) {
+        humidityText = value.filter { it.isDigit() || it == '.' }
+    }
+
+    fun onLightNotesChange(value: String) {
+        lightNotes = value
+    }
+
     fun save(onSaved: () -> Unit) {
         if (title.isBlank()) return
         val time = eventTimeText.takeIf { it.isNotBlank() }
@@ -113,6 +150,9 @@ class EventEditViewModel @Inject constructor(
                 notes = notes,
                 quantityValue = quantity,
                 quantityUnit = quantityUnit,
+                actualTemperature = temperatureText.toDoubleOrNull(),
+                actualHumidity = humidityText.toDoubleOrNull(),
+                actualLightNotes = lightNotes,
             )
             if (existingEvent == null) {
                 repository.addEvent(event)
