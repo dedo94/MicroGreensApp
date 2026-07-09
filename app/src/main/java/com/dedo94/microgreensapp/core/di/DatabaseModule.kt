@@ -10,6 +10,7 @@ import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
+import com.dedo94.microgreensapp.core.database.dao.WeatherDailyDao
 import com.dedo94.microgreensapp.core.database.seed.SunflowerTemplateSeed
 import dagger.Module
 import dagger.Provides
@@ -68,4 +69,7 @@ object DatabaseModule {
 
     @Provides
     fun provideEventDao(database: AppDatabase): EventDao = database.eventDao()
+
+    @Provides
+    fun provideWeatherDailyDao(database: AppDatabase): WeatherDailyDao = database.weatherDailyDao()
 }

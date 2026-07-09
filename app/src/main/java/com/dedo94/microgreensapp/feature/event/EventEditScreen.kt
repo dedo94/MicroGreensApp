@@ -20,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -154,6 +155,41 @@ fun EventEditScreen(
                 onValueChange = viewModel::onNotesChange,
                 label = { Text("Note") },
                 minLines = 3,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "Condizioni ambientali",
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = "Precompilate dal meteo della posizione impostata, modificabili perché in casa le condizioni possono essere diverse.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = viewModel.temperatureText,
+                    onValueChange = viewModel::onTemperatureChange,
+                    label = { Text("Temperatura (°C)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = viewModel.humidityText,
+                    onValueChange = viewModel::onHumidityChange,
+                    label = { Text("Umidità (%)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = viewModel.lightNotes,
+                onValueChange = viewModel::onLightNotesChange,
+                label = { Text("Note su luce/esposizione (opzionale)") },
                 modifier = Modifier.fillMaxWidth(),
             )
         }

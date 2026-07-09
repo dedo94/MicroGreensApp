@@ -5,15 +5,23 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,10 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val context = LocalContext.current
     var hasNotificationPermission by remember {
         mutableStateOf(
@@ -43,6 +53,8 @@ fun SettingsScreen() {
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> hasNotificationPermission = granted }
+
+    val location by viewModel.location.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Impostazioni") }) },
@@ -69,7 +81,37 @@ fun SettingsScreen() {
 
             Text("Meteo", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            Text("La gestione della posizione per il meteo arriverà in una prossima fase.")
+            Text(
+                location?.let { "Posizione attuale: ${it.name}" }
+                    ?: "Nessuna posizione impostata: temperatura/umidità/alba-tramonto non verranno pre-compilate negli eventi.",
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = viewModel.query,
+                onValueChange = viewModel::onQueryChange,
+                label = { Text("Cerca una città") },
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = viewModel::search) {
+                        Icon(Icons.Default.Search, contentDescription = "Cerca")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (viewModel.isSearching) {
+                Spacer(Modifier.height(8.dp))
+                Text("Ricerca in corso…", style = MaterialTheme.typography.bodySmall)
+            }
+            viewModel.results.forEach { result ->
+                val subtitle = listOfNotNull(result.admin1, result.country).joinToString(", ")
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.selectLocation(result) },
+                    headlineContent = { Text(result.name) },
+                    supportingContent = { Text(subtitle) },
+                )
+            }
         }
     }
 }

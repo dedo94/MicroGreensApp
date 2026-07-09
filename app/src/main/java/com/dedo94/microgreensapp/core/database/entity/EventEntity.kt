@@ -43,5 +43,8 @@ data class EventEntity(
     val notes: String = "",
     val quantityValue: Double? = null,
     val quantityUnit: String = "",
+    val actualTemperature: Double? = null,
+    val actualHumidity: Double? = null,
+    val actualLightNotes: String = "",
     val createdAt: Instant = Instant.now(),
 )
