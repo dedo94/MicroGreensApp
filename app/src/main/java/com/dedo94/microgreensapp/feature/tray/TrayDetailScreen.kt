@@ -1,0 +1,342 @@
+package com.dedo94.microgreensapp.feature.tray
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dedo94.microgreensapp.core.database.entity.EventEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStatus
+import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.ui.displayLabel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TrayDetailScreen(
+    onBack: () -> Unit,
+    onAddEvent: (Long) -> Unit,
+    onEditEvent: (Long, Long) -> Unit,
+    viewModel: TrayDetailViewModel = hiltViewModel(),
+) {
+    val tray by viewModel.tray.collectAsStateWithLifecycle()
+    val steps by viewModel.steps.collectAsStateWithLifecycle()
+    val events by viewModel.events.collectAsStateWithLifecycle()
+    val timeline = remember(steps, events) { buildTimeline(steps, events) }
+
+    var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
+    var stepPendingDeletion by remember { mutableStateOf<TrayStepEntity?>(null) }
+    var eventPendingDeletion by remember { mutableStateOf<EventEntity?>(null) }
+    var showStatusMenu by remember { mutableStateOf(false) }
+    var showDeleteTrayDialog by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(tray?.name ?: "") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
+                    }
+                },
+                actions = {
+                    Box {
+                        IconButton(onClick = { showStatusMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Altre azioni")
+                        }
+                        DropdownMenu(
+                            expanded = showStatusMenu,
+                            onDismissRequest = { showStatusMenu = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Segna come raccolto") },
+                                onClick = {
+                                    viewModel.setStatus(TrayStatus.HARVESTED)
+                                    showStatusMenu = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Segna come abbandonato") },
+                                onClick = {
+                                    viewModel.setStatus(TrayStatus.ABANDONED)
+                                    showStatusMenu = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Segna come in corso") },
+                                onClick = {
+                                    viewModel.setStatus(TrayStatus.IN_PROGRESS)
+                                    showStatusMenu = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Elimina vassoio") },
+                                onClick = {
+                                    showStatusMenu = false
+                                    showDeleteTrayDialog = true
+                                },
+                            )
+                        }
+                    }
+                },
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onAddEvent(viewModel.trayId) }) {
+                Icon(Icons.Default.Add, contentDescription = "Aggiungi evento")
+            }
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            tray?.let { t ->
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        text = "${t.varietyName} · ${t.status.displayLabel()}",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    val seedInfo = t.initialSeedQuantityGrams?.let { " · Semi: ${it}g" } ?: ""
+                    Text(
+                        text = "Semina: ${t.sowingDate}$seedInfo",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    val substrateInfo = if (t.substrateNotes.isNotBlank()) " (${t.substrateNotes})" else ""
+                    Text(
+                        text = "Substrato: ${t.substrateType.displayLabel()}$substrateInfo",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                HorizontalDivider()
+            }
+
+            if (timeline.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                ) {
+                    Text("Nessun evento ancora. Tocca + per registrarne uno.")
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                ) {
+                    items(
+                        items = timeline,
+                        key = { entry ->
+                            when (entry) {
+                                is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
+                                is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
+                            }
+                        },
+                    ) { entry ->
+                        when (entry) {
+                            is TrayTimelineEntry.StepEntry -> StepTimelineCard(
+                                step = entry.step,
+                                onMarkDone = { viewModel.markDone(entry.step) },
+                                onMarkSkipped = { viewModel.markSkipped(entry.step) },
+                                onEdit = { stepBeingEdited = entry.step },
+                                onDelete = if (entry.step.isAdHoc) {
+                                    { stepPendingDeletion = entry.step }
+                                } else null,
+                            )
+
+                            is TrayTimelineEntry.EventEntry -> EventTimelineCard(
+                                event = entry.event,
+                                onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
+                                onDelete = { eventPendingDeletion = entry.event },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    stepBeingEdited?.let { step ->
+        TrayStepEditDialog(
+            step = step,
+            onDismiss = { stepBeingEdited = null },
+            onConfirm = { updated ->
+                viewModel.updateStep(updated)
+                stepBeingEdited = null
+            },
+        )
+    }
+
+    stepPendingDeletion?.let { step ->
+        AlertDialog(
+            onDismissRequest = { stepPendingDeletion = null },
+            title = { Text("Eliminare lo step \"${step.name}\"?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteStep(step)
+                    stepPendingDeletion = null
+                }) { Text("Elimina") }
+            },
+            dismissButton = {
+                TextButton(onClick = { stepPendingDeletion = null }) { Text("Annulla") }
+            },
+        )
+    }
+
+    eventPendingDeletion?.let { event ->
+        AlertDialog(
+            onDismissRequest = { eventPendingDeletion = null },
+            title = { Text("Eliminare l'evento \"${event.title}\"?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteEvent(event)
+                    eventPendingDeletion = null
+                }) { Text("Elimina") }
+            },
+            dismissButton = {
+                TextButton(onClick = { eventPendingDeletion = null }) { Text("Annulla") }
+            },
+        )
+    }
+
+    if (showDeleteTrayDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteTrayDialog = false },
+            title = { Text("Eliminare questo vassoio?") },
+            text = { Text("Tutti gli step e gli eventi registrati verranno eliminati. L'operazione non è reversibile.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteTrayDialog = false
+                    viewModel.deleteTray(onBack)
+                }) { Text("Elimina") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteTrayDialog = false }) { Text("Annulla") }
+            },
+        )
+    }
+}
+
+@Composable
+private fun StepTimelineCard(
+    step: TrayStepEntity,
+    onMarkDone: () -> Unit,
+    onMarkSkipped: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: (() -> Unit)?,
+) {
+    Card(modifier = Modifier.padding(vertical = 4.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(step.name, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = "${step.actionType.displayLabel()} · ${dateRangeText(step)}${step.status.displayLabel()}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Row {
+                if (step.status == TrayStepStatus.PENDING) {
+                    IconButton(onClick = onMarkDone) {
+                        Icon(Icons.Default.Check, contentDescription = "Segna come fatto")
+                    }
+                    IconButton(onClick = onMarkSkipped) {
+                        Icon(Icons.Default.Close, contentDescription = "Salta")
+                    }
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Modifica")
+                }
+                if (onDelete != null) {
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Elimina")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun dateRangeText(step: TrayStepEntity): String =
+    if (step.plannedEndDate != step.plannedStartDate) {
+        "${step.plannedStartDate} → ${step.plannedEndDate} · "
+    } else {
+        "${step.plannedStartDate} · "
+    }
+
+@Composable
+private fun EventTimelineCard(
+    event: EventEntity,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Card(modifier = Modifier.padding(vertical = 4.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(event.title, style = MaterialTheme.typography.titleSmall)
+                val quantityInfo = event.quantityValue?.let { " · ${it}${event.quantityUnit}" } ?: ""
+                Text(
+                    text = "${event.eventType.displayLabel()} · ${event.eventDate}$quantityInfo",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                if (event.notes.isNotBlank()) {
+                    Text(event.notes, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            Row {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Modifica")
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Elimina")
+                }
+            }
+        }
+    }
+}
