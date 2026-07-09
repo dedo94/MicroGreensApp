@@ -11,7 +11,8 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
 
 - [x] **Fase 1** — Scaffold progetto (Gradle/Kotlin/Compose/Hilt/Room) e CRUD
       completo dei template di varietà (metadati + step riordinabili), con
-      il template "Girasole" precaricato al primo avvio.
+      il template "Girasole" precaricato al primo avvio. Build verificata
+      con successo su GitHub Actions.
 - [ ] Fase 2 — Vassoi, eventi, calendario
 - [ ] Fase 3 — Notifiche
 - [ ] Fase 4 — Meteo (Open-Meteo)
