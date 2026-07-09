@@ -19,11 +19,12 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       mensile con filtro per vassoio, bottom nav (Calendario/Vassoi/
       Statistiche/Impostazioni). Build verificata con successo su GitHub
       Actions.
-- [ ] **Fase 3** (in verifica) — Promemoria locali con WorkManager derivati
-      dagli step pianificati (orari di sciacquo/irrigazione/raccolta ecc.),
-      ricalcolati automaticamente ad ogni modifica del piano di un vassoio,
-      con tap sulla notifica che apre il vassoio corrispondente. Richiesta
-      permesso notifiche dalle Impostazioni.
+- [x] **Fase 3** — Promemoria locali con WorkManager derivati dagli step
+      pianificati (orari di sciacquo/irrigazione/raccolta ecc.), ricalcolati
+      automaticamente ad ogni modifica del piano di un vassoio, con tap
+      sulla notifica che apre il vassoio corrispondente. Richiesta permesso
+      notifiche dalle Impostazioni. Build verificata con successo su
+      GitHub Actions.
 - [ ] Fase 4 — Meteo (Open-Meteo)
 - [ ] Fase 5 — Foto
 - [ ] Fase 6 — Statistiche
