@@ -90,7 +90,7 @@ fun TemplateListScreen(
         AlertDialog(
             onDismissRequest = { templateToDelete = null },
             title = { Text("Eliminare \"${template.name}\"?") },
-            text = { Text("Verranno eliminati anche tutti gli step del template. L'operazione non è reversibile.") },
+            text = { Text("Se non è mai stato usato per un vassoio verrà eliminato definitivamente insieme ai suoi step; altrimenti verrà solo archiviato e non comparirà più tra le varietà disponibili per nuovi vassoi.") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteTemplate(template)

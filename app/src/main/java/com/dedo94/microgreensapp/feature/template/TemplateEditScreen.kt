@@ -233,7 +233,7 @@ fun TemplateEditScreen(
         AlertDialog(
             onDismissRequest = { showDeleteTemplateDialog = false },
             title = { Text("Eliminare questa varietà?") },
-            text = { Text("Tutti gli step del template verranno eliminati. L'operazione non è reversibile.") },
+            text = { Text("Se non è mai stato usato per un vassoio verrà eliminato definitivamente insieme ai suoi step; altrimenti verrà solo archiviato e non comparirà più tra le varietà disponibili per nuovi vassoi.") },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteTemplateDialog = false

@@ -1,6 +1,7 @@
 package com.dedo94.microgreensapp.core.repository
 
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
+import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.core.database.entity.VarietyTemplateEntity
@@ -13,6 +14,7 @@ import javax.inject.Singleton
 class TemplateRepository @Inject constructor(
     private val templateDao: VarietyTemplateDao,
     private val stepDao: TemplateStepDao,
+    private val trayDao: TrayDao,
 ) {
     fun activeTemplates(): Flow<List<VarietyTemplateEntity>> = templateDao.getActive()
 
@@ -31,13 +33,18 @@ class TemplateRepository @Inject constructor(
         templateDao.update(template.copy(updatedAt = Instant.now()))
 
     /**
-     * Elimina il template se non ha vassoi collegati (nessun vassoio esiste
-     * ancora in questa fase, quindi elimina sempre in modo definitivo); in
-     * fasi successive, quando esisteranno i vassoi, questa funzione dovrà
-     * fare soft-delete (isArchived = true) se il template è referenziato.
+     * Elimina definitivamente il template se nessun vassoio lo referenzia;
+     * altrimenti lo archivia (soft-delete) così i vassoi esistenti e le
+     * statistiche per varietà restano validi, ma il template sparisce dal
+     * selettore per i nuovi vassoi.
      */
-    suspend fun deleteTemplate(template: VarietyTemplateEntity) =
-        templateDao.delete(template)
+    suspend fun deleteTemplate(template: VarietyTemplateEntity) {
+        if (trayDao.countByTemplate(template.id) > 0) {
+            archiveTemplate(template)
+        } else {
+            templateDao.delete(template)
+        }
+    }
 
     suspend fun archiveTemplate(template: VarietyTemplateEntity) =
         templateDao.update(template.copy(isArchived = true, updatedAt = Instant.now()))

@@ -13,7 +13,11 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       completo dei template di varietà (metadati + step riordinabili), con
       il template "Girasole" precaricato al primo avvio. Build verificata
       con successo su GitHub Actions.
-- [ ] Fase 2 — Vassoi, eventi, calendario
+- [ ] **Fase 2** (in verifica) — Vassoi con snapshot del piano dal template
+      scelto, timeline unificata di step pianificati + eventi liberi per
+      vassoio (segna fatto/salta/modifica senza toccare il template),
+      calendario mensile con filtro per vassoio, bottom nav (Calendario/
+      Vassoi/Statistiche/Impostazioni).
 - [ ] Fase 3 — Notifiche
 - [ ] Fase 4 — Meteo (Open-Meteo)
 - [ ] Fase 5 — Foto
@@ -38,6 +42,11 @@ core/database   Room: entity, dao, converter, seed
 core/di         Moduli Hilt
 core/repository Repository che orchestrano i DAO per le ViewModel
 feature/template CRUD template di varietà e step
-navigation      Grafo di navigazione Compose (rotte type-safe)
-ui/theme        Tema Material 3
+feature/tray     Vassoi: lista, creazione, dettaglio/timeline
+feature/event    Form aggiungi/modifica evento
+feature/calendar Vista mensile con filtro per vassoio
+feature/stats    Placeholder (Fase 6)
+feature/settings Placeholder (Fase 4)
+navigation      Grafo di navigazione Compose (rotte type-safe) + bottom nav
+ui, ui/theme    Componenti condivisi (date picker, colori/etichette) e tema Material 3
 ```

@@ -5,7 +5,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.dedo94.microgreensapp.core.database.AppDatabase
+import com.dedo94.microgreensapp.core.database.dao.EventDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
+import com.dedo94.microgreensapp.core.database.dao.TrayDao
+import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
 import com.dedo94.microgreensapp.core.database.seed.SunflowerTemplateSeed
 import dagger.Module
@@ -42,6 +45,11 @@ object DatabaseModule {
                     }
                 }
             })
+            // L'app non ha ancora utenti con dati reali salvati: va bene
+            // ricreare il DB ad ogni cambio di schema durante lo sviluppo.
+            // Da sostituire con Migration esplicite prima di una release
+            // stabile con dati utente da preservare.
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides
@@ -51,4 +59,13 @@ object DatabaseModule {
     @Provides
     fun provideTemplateStepDao(database: AppDatabase): TemplateStepDao =
         database.templateStepDao()
+
+    @Provides
+    fun provideTrayDao(database: AppDatabase): TrayDao = database.trayDao()
+
+    @Provides
+    fun provideTrayStepDao(database: AppDatabase): TrayStepDao = database.trayStepDao()
+
+    @Provides
+    fun provideEventDao(database: AppDatabase): EventDao = database.eventDao()
 }

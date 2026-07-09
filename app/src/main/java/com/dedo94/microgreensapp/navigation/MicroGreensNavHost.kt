@@ -1,27 +1,129 @@
 package com.dedo94.microgreensapp.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.QueryStats
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.dedo94.microgreensapp.feature.calendar.CalendarScreen
+import com.dedo94.microgreensapp.feature.event.EventEditScreen
+import com.dedo94.microgreensapp.feature.settings.SettingsScreen
+import com.dedo94.microgreensapp.feature.stats.StatsScreen
 import com.dedo94.microgreensapp.feature.template.TemplateEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateListScreen
+import com.dedo94.microgreensapp.feature.tray.TrayCreateScreen
+import com.dedo94.microgreensapp.feature.tray.TrayDetailScreen
+import com.dedo94.microgreensapp.feature.tray.TraysListScreen
 
 @Composable
 fun MicroGreensNavHost() {
     val navController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
 
-    NavHost(navController = navController, startDestination = TemplateListRoute) {
-        composable<TemplateListRoute> {
-            TemplateListScreen(
-                onCreateTemplate = { navController.navigate(TemplateEditRoute(templateId = 0L)) },
-                onOpenTemplate = { id -> navController.navigate(TemplateEditRoute(templateId = id)) },
-            )
+    fun navigateToTopLevel(route: Any) {
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
         }
-        composable<TemplateEditRoute> {
-            TemplateEditScreen(
-                onBack = { navController.popBackStack() },
-            )
+    }
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy?.any { it.hasRoute<CalendarRoute>() } == true,
+                    onClick = { navigateToTopLevel(CalendarRoute) },
+                    icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendario") },
+                    label = { Text("Calendario") },
+                )
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy?.any { it.hasRoute<TraysListRoute>() } == true,
+                    onClick = { navigateToTopLevel(TraysListRoute) },
+                    icon = { Icon(Icons.Default.Eco, contentDescription = "Vassoi") },
+                    label = { Text("Vassoi") },
+                )
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy?.any { it.hasRoute<StatsRoute>() } == true,
+                    onClick = { navigateToTopLevel(StatsRoute) },
+                    icon = { Icon(Icons.Default.QueryStats, contentDescription = "Statistiche") },
+                    label = { Text("Statistiche") },
+                )
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy?.any { it.hasRoute<SettingsRoute>() } == true,
+                    onClick = { navigateToTopLevel(SettingsRoute) },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Impostazioni") },
+                    label = { Text("Impostazioni") },
+                )
+            }
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = CalendarRoute,
+            modifier = Modifier.padding(padding),
+        ) {
+            composable<CalendarRoute> {
+                CalendarScreen(onOpenTray = { id -> navController.navigate(TrayDetailRoute(id)) })
+            }
+            composable<TraysListRoute> {
+                TraysListScreen(
+                    onCreateTray = { navController.navigate(TrayCreateRoute) },
+                    onOpenTray = { id -> navController.navigate(TrayDetailRoute(id)) },
+                    onManageVarieties = { navController.navigate(TemplateListRoute) },
+                )
+            }
+            composable<StatsRoute> { StatsScreen() }
+            composable<SettingsRoute> { SettingsScreen() }
+
+            composable<TrayCreateRoute> {
+                TrayCreateScreen(
+                    onBack = { navController.popBackStack() },
+                    onCreated = { id ->
+                        navController.navigate(TrayDetailRoute(id)) {
+                            popUpTo<TrayCreateRoute> { inclusive = true }
+                        }
+                    },
+                )
+            }
+            composable<TrayDetailRoute> {
+                TrayDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddEvent = { trayId -> navController.navigate(EventEditRoute(trayId = trayId)) },
+                    onEditEvent = { trayId, eventId ->
+                        navController.navigate(EventEditRoute(trayId = trayId, eventId = eventId))
+                    },
+                )
+            }
+            composable<EventEditRoute> {
+                EventEditScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable<TemplateListRoute> {
+                TemplateListScreen(
+                    onCreateTemplate = { navController.navigate(TemplateEditRoute(templateId = 0L)) },
+                    onOpenTemplate = { id -> navController.navigate(TemplateEditRoute(templateId = id)) },
+                )
+            }
+            composable<TemplateEditRoute> {
+                TemplateEditScreen(onBack = { navController.popBackStack() })
+            }
         }
     }
 }

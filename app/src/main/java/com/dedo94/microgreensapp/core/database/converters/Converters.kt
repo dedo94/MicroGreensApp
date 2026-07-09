@@ -2,6 +2,9 @@ package com.dedo94.microgreensapp.core.database.converters
 
 import androidx.room.TypeConverter
 import com.dedo94.microgreensapp.core.database.entity.ActionType
+import com.dedo94.microgreensapp.core.database.entity.SubstrateType
+import com.dedo94.microgreensapp.core.database.entity.TrayStatus
+import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -39,6 +42,24 @@ class Converters {
 
     @TypeConverter
     fun toActionType(value: String): ActionType = ActionType.valueOf(value)
+
+    @TypeConverter
+    fun fromTrayStatus(value: TrayStatus): String = value.name
+
+    @TypeConverter
+    fun toTrayStatus(value: String): TrayStatus = TrayStatus.valueOf(value)
+
+    @TypeConverter
+    fun fromTrayStepStatus(value: TrayStepStatus): String = value.name
+
+    @TypeConverter
+    fun toTrayStepStatus(value: String): TrayStepStatus = TrayStepStatus.valueOf(value)
+
+    @TypeConverter
+    fun fromSubstrateType(value: SubstrateType): String = value.name
+
+    @TypeConverter
+    fun toSubstrateType(value: String): SubstrateType = SubstrateType.valueOf(value)
 
     @TypeConverter
     fun fromLocalTimeList(value: List<LocalTime>): String =
