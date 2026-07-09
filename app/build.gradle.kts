@@ -28,6 +28,20 @@ android {
     }
 
     signingConfigs {
+        getByName("debug") {
+            // Keystore fissa e committata (solo build di debug, non è un
+            // segreto): firma sempre l'APK di debug con la stessa chiave,
+            // invece di quella auto-generata da AGP che su CI cambia ad
+            // ogni run. Così l'APK aggiornato si installa sopra quello
+            // precedente senza dover disinstallare (e perdere i dati locali).
+            // AGP crea già un signingConfig "debug" di default: va
+            // configurato con getByName, non ricreato con create (altrimenti
+            // fallisce con "SigningConfig with that name already exists").
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
             if (keystorePropertiesFile.exists()) {
@@ -54,6 +68,7 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
