@@ -13,11 +13,12 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       completo dei template di varietà (metadati + step riordinabili), con
       il template "Girasole" precaricato al primo avvio. Build verificata
       con successo su GitHub Actions.
-- [ ] **Fase 2** (in verifica) — Vassoi con snapshot del piano dal template
-      scelto, timeline unificata di step pianificati + eventi liberi per
-      vassoio (segna fatto/salta/modifica senza toccare il template),
-      calendario mensile con filtro per vassoio, bottom nav (Calendario/
-      Vassoi/Statistiche/Impostazioni).
+- [x] **Fase 2** — Vassoi con snapshot del piano dal template scelto,
+      timeline unificata di step pianificati + eventi liberi per vassoio
+      (segna fatto/salta/modifica senza toccare il template), calendario
+      mensile con filtro per vassoio, bottom nav (Calendario/Vassoi/
+      Statistiche/Impostazioni). Build verificata con successo su GitHub
+      Actions.
 - [ ] Fase 3 — Notifiche
 - [ ] Fase 4 — Meteo (Open-Meteo)
 - [ ] Fase 5 — Foto
