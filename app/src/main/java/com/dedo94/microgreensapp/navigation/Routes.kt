@@ -27,4 +27,7 @@ object TrayCreateRoute
 data class TrayDetailRoute(val trayId: Long)
 
 @Serializable
+data class TrayEditRoute(val trayId: Long)
+
+@Serializable
 data class EventEditRoute(val trayId: Long, val eventId: Long = 0L)

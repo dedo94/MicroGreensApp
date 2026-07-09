@@ -67,6 +67,10 @@ class TrayDetailViewModel @Inject constructor(
         viewModelScope.launch { repository.markStepSkipped(step) }
     }
 
+    fun markPending(step: TrayStepEntity) {
+        viewModelScope.launch { repository.markStepPending(step) }
+    }
+
     fun updateStep(step: TrayStepEntity) {
         viewModelScope.launch { repository.updateTrayStep(step) }
     }
