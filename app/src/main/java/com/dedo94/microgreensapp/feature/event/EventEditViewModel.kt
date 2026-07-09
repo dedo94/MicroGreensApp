@@ -1,5 +1,6 @@
 package com.dedo94.microgreensapp.feature.event
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,11 +10,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
+import com.dedo94.microgreensapp.core.database.entity.PhotoEntity
+import com.dedo94.microgreensapp.core.repository.PhotoRepository
 import com.dedo94.microgreensapp.core.repository.TrayRepository
 import com.dedo94.microgreensapp.core.repository.WeatherRepository
 import com.dedo94.microgreensapp.navigation.EventEditRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
@@ -22,12 +29,16 @@ import javax.inject.Inject
 class EventEditViewModel @Inject constructor(
     private val repository: TrayRepository,
     private val weatherRepository: WeatherRepository,
+    private val photoRepository: PhotoRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val route: EventEditRoute = savedStateHandle.toRoute()
     val trayId: Long = route.trayId
     val isNew: Boolean = route.eventId == 0L
+
+    val photos: StateFlow<List<PhotoEntity>> = photoRepository.observePhotosForEvent(route.eventId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private var existingEvent: EventEntity? = null
 
@@ -127,6 +138,22 @@ class EventEditViewModel @Inject constructor(
 
     fun onLightNotesChange(value: String) {
         lightNotes = value
+    }
+
+    fun photoFile(photo: PhotoEntity): File = photoRepository.fileFor(photo)
+
+    fun createCaptureTarget(): Pair<File, Uri> = photoRepository.createCaptureTarget()
+
+    fun onPhotoCaptured(file: File) {
+        viewModelScope.launch { photoRepository.savePhoto(file, trayId, eventId = route.eventId) }
+    }
+
+    fun onPhotoPicked(uri: Uri) {
+        viewModelScope.launch { photoRepository.importFromUri(uri, trayId, eventId = route.eventId) }
+    }
+
+    fun deletePhoto(photo: PhotoEntity) {
+        viewModelScope.launch { photoRepository.deletePhoto(photo) }
     }
 
     fun save(onSaved: () -> Unit) {

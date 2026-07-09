@@ -31,7 +31,12 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       sovrascrivibili, con cache giornaliera locale. Chiamate dirette con
       OkHttp + kotlinx.serialization. Build verificata con successo su
       GitHub Actions.
-- [ ] Fase 5 — Foto
+- [x] **Fase 5** — Foto: scatto con fotocamera di sistema o selezione dalla
+      galleria (Photo Picker, nessun permesso storage richiesto), storage
+      privato dell'app (`filesDir/photos`, eliminato alla disinstallazione),
+      galleria orizzontale sul vassoio e sul singolo evento con
+      visualizzatore a schermo intero ed eliminazione. Build verificata con
+      successo su GitHub Actions.
 - [ ] Fase 6 — Statistiche
 
 ## Build
@@ -55,11 +60,11 @@ core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
 feature/template   CRUD template di varietà e step
-feature/tray       Vassoi: lista, creazione, dettaglio/timeline
-feature/event      Form aggiungi/modifica evento (con meteo pre-compilato)
+feature/tray       Vassoi: lista, creazione, dettaglio/timeline/galleria foto
+feature/event      Form aggiungi/modifica evento (meteo pre-compilato, foto)
 feature/calendar   Vista mensile con filtro per vassoio
 feature/stats      Placeholder (Fase 6)
 feature/settings   Permesso notifiche, ricerca/impostazione posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date picker, colori/etichette) e tema Material 3
+ui, ui/theme       Componenti condivisi (date picker, galleria foto, colori/etichette) e tema Material 3
 ```
