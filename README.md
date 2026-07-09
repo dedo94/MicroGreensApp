@@ -25,10 +25,12 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       sulla notifica che apre il vassoio corrispondente. Richiesta permesso
       notifiche dalle Impostazioni. Build verificata con successo su
       GitHub Actions.
-- [ ] **Fase 4** (in verifica) — Meteo Open-Meteo: ricerca e impostazione
-      posizione dalle Impostazioni (cambiabile in qualsiasi momento),
-      temperatura/umidità/alba-tramonto del giorno pre-compilate nel form
-      evento ma sempre sovrascrivibili, con cache giornaliera locale.
+- [x] **Fase 4** — Meteo Open-Meteo: ricerca e impostazione posizione dalle
+      Impostazioni (cambiabile in qualsiasi momento), temperatura/umidità/
+      alba-tramonto del giorno pre-compilate nel form evento ma sempre
+      sovrascrivibili, con cache giornaliera locale. Chiamate dirette con
+      OkHttp + kotlinx.serialization. Build verificata con successo su
+      GitHub Actions.
 - [ ] Fase 5 — Foto
 - [ ] Fase 6 — Statistiche
 
@@ -49,7 +51,7 @@ dalla scheda "Actions" del repository.
 ```
 core/database      Room: entity, dao, converter, seed
 core/di            Moduli Hilt
-core/network       Client Retrofit Open-Meteo (geocoding + forecast) e DTO
+core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
 feature/template   CRUD template di varietà e step
