@@ -19,7 +19,11 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
       mensile con filtro per vassoio, bottom nav (Calendario/Vassoi/
       Statistiche/Impostazioni). Build verificata con successo su GitHub
       Actions.
-- [ ] Fase 3 — Notifiche
+- [ ] **Fase 3** (in verifica) — Promemoria locali con WorkManager derivati
+      dagli step pianificati (orari di sciacquo/irrigazione/raccolta ecc.),
+      ricalcolati automaticamente ad ogni modifica del piano di un vassoio,
+      con tap sulla notifica che apre il vassoio corrispondente. Richiesta
+      permesso notifiche dalle Impostazioni.
 - [ ] Fase 4 — Meteo (Open-Meteo)
 - [ ] Fase 5 — Foto
 - [ ] Fase 6 — Statistiche
@@ -39,15 +43,16 @@ dalla scheda "Actions" del repository.
 ## Struttura
 
 ```
-core/database   Room: entity, dao, converter, seed
-core/di         Moduli Hilt
-core/repository Repository che orchestrano i DAO per le ViewModel
-feature/template CRUD template di varietà e step
-feature/tray     Vassoi: lista, creazione, dettaglio/timeline
-feature/event    Form aggiungi/modifica evento
-feature/calendar Vista mensile con filtro per vassoio
-feature/stats    Placeholder (Fase 6)
-feature/settings Placeholder (Fase 4)
-navigation      Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme    Componenti condivisi (date picker, colori/etichette) e tema Material 3
+core/database      Room: entity, dao, converter, seed
+core/di            Moduli Hilt
+core/notifications Canale, scheduler WorkManager e worker dei promemoria
+core/repository    Repository che orchestrano i DAO per le ViewModel
+feature/template   CRUD template di varietà e step
+feature/tray       Vassoi: lista, creazione, dettaglio/timeline
+feature/event      Form aggiungi/modifica evento
+feature/calendar   Vista mensile con filtro per vassoio
+feature/stats      Placeholder (Fase 6)
+feature/settings   Permesso notifiche; posizione meteo arriverà in Fase 4
+navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
+ui, ui/theme       Componenti condivisi (date picker, colori/etichette) e tema Material 3
 ```

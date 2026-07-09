@@ -27,6 +27,9 @@ interface TrayStepDao {
     @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedStartDate, orderIndex")
     fun getStepsForTray(trayId: Long): Flow<List<TrayStepEntity>>
 
+    @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedStartDate, orderIndex")
+    suspend fun getStepsForTrayOnce(trayId: Long): List<TrayStepEntity>
+
     @Query(
         "SELECT * FROM tray_steps WHERE plannedStartDate <= :end AND plannedEndDate >= :start"
     )
