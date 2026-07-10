@@ -3,12 +3,14 @@ package com.dedo94.microgreensapp.feature.tray
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -28,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -38,9 +41,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
@@ -67,9 +72,21 @@ fun TrayDetailScreen(
     var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
     var stepPendingDeletion by remember { mutableStateOf<TrayStepEntity?>(null) }
     var stepPendingFutureConfirmation by remember { mutableStateOf<TrayStepEntity?>(null) }
+    var stepPendingQuantityInput by remember { mutableStateOf<TrayStepEntity?>(null) }
     var eventPendingDeletion by remember { mutableStateOf<EventEntity?>(null) }
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteTrayDialog by remember { mutableStateOf(false) }
+
+    // Per gli step di raccolta/irrigazione, prima di segnarli fatti chiediamo
+    // la quantità (grammi raccolti o ml d'acqua): altrimenti non ci sarebbe
+    // mai un punto in cui inserirla.
+    fun proceedMarkDone(step: TrayStepEntity) {
+        if (step.actionType == ActionType.HARVEST || step.actionType == ActionType.WATERING) {
+            stepPendingQuantityInput = step
+        } else {
+            viewModel.markDone(step)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -182,6 +199,7 @@ fun TrayDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(bottom = 96.dp),
                 ) {
                     items(
                         items = timeline,
@@ -199,7 +217,7 @@ fun TrayDetailScreen(
                                     if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
                                         stepPendingFutureConfirmation = entry.step
                                     } else {
-                                        viewModel.markDone(entry.step)
+                                        proceedMarkDone(entry.step)
                                     }
                                 },
                                 onMarkSkipped = { viewModel.markSkipped(entry.step) },
@@ -261,12 +279,43 @@ fun TrayDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.markDone(step)
                     stepPendingFutureConfirmation = null
+                    proceedMarkDone(step)
                 }) { Text("Conferma") }
             },
             dismissButton = {
                 TextButton(onClick = { stepPendingFutureConfirmation = null }) { Text("Annulla") }
+            },
+        )
+    }
+
+    stepPendingQuantityInput?.let { step ->
+        val isHarvest = step.actionType == ActionType.HARVEST
+        var quantityText by remember(step.id) { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { stepPendingQuantityInput = null },
+            title = { Text(if (isHarvest) "Registra il raccolto" else "Registra l'irrigazione") },
+            text = {
+                OutlinedTextField(
+                    value = quantityText,
+                    onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text(if (isHarvest) "Quantità raccolta (g)" else "Acqua data (ml)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.markDone(
+                        step = step,
+                        quantityValue = quantityText.toDoubleOrNull(),
+                        quantityUnit = if (isHarvest) "g" else "ml",
+                    )
+                    stepPendingQuantityInput = null
+                }) { Text("Conferma") }
+            },
+            dismissButton = {
+                TextButton(onClick = { stepPendingQuantityInput = null }) { Text("Annulla") }
             },
         )
     }

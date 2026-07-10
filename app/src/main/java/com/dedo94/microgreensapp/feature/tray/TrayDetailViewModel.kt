@@ -59,8 +59,8 @@ class TrayDetailViewModel @Inject constructor(
         viewModelScope.launch { photoRepository.deletePhoto(photo) }
     }
 
-    fun markDone(step: TrayStepEntity) {
-        viewModelScope.launch { repository.markStepDone(step) }
+    fun markDone(step: TrayStepEntity, quantityValue: Double? = null, quantityUnit: String = "") {
+        viewModelScope.launch { repository.markStepDone(step, quantityValue, quantityUnit) }
     }
 
     fun markSkipped(step: TrayStepEntity) {
