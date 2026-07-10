@@ -67,6 +67,7 @@ fun TrayDetailScreen(
     val steps by viewModel.steps.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle()
     val photos by viewModel.photos.collectAsStateWithLifecycle()
+    val harvestPrediction by viewModel.harvestPrediction.collectAsStateWithLifecycle()
     val timeline = remember(steps, events) { buildTimeline(steps, events) }
 
     var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
@@ -173,6 +174,17 @@ fun TrayDetailScreen(
                         text = "Substrato: ${t.substrateType.displayLabel()}$substrateInfo",
                         style = MaterialTheme.typography.bodyMedium,
                     )
+                    if (t.status == TrayStatus.IN_PROGRESS) {
+                        harvestPrediction?.let { prediction ->
+                            Text(
+                                text = "Previsione raccolto: ~${"%.1f".format(prediction.predictedGrams)}g " +
+                                    "(basata su ${prediction.basedOnCycles} " +
+                                    if (prediction.basedOnCycles == 1) "ciclo precedente)" else "cicli precedenti)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                 }
                 PhotoGallery(
                     photos = photos,

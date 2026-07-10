@@ -32,6 +32,8 @@ data class VarietyStats(
     val abandonedCount: Int,
     val avgHarvestGrams: Double?,
     val avgCycleDays: Double?,
+    val avgYieldPerSeedGram: Double?,
+    val yieldSampleCount: Int,
 )
 
 data class StatsOverview(
@@ -105,6 +107,7 @@ class StatsRepository @Inject constructor(
                 .map { (varietyName, statsForVariety) ->
                     val harvestValues = statsForVariety.mapNotNull { it.harvestTotalGrams }
                     val cycleValues = statsForVariety.mapNotNull { it.actualCycleDays }
+                    val yieldRatioValues = statsForVariety.mapNotNull { it.yieldPerSeedGram }
                     VarietyStats(
                         varietyName = varietyName,
                         cycleCount = statsForVariety.size,
@@ -114,6 +117,8 @@ class StatsRepository @Inject constructor(
                         avgCycleDays = cycleValues.takeIf { it.isNotEmpty() }
                             ?.map { it.toDouble() }
                             ?.average(),
+                        avgYieldPerSeedGram = yieldRatioValues.takeIf { it.isNotEmpty() }?.average(),
+                        yieldSampleCount = yieldRatioValues.size,
                     )
                 }
                 .sortedBy { it.varietyName }

@@ -27,11 +27,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dedo94.microgreensapp.core.database.entity.TrayEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
 
@@ -44,6 +47,13 @@ fun TraysListScreen(
     viewModel: TraysListViewModel = hiltViewModel(),
 ) {
     val trays by viewModel.trays.collectAsStateWithLifecycle()
+    val sections = remember(trays) {
+        listOf(
+            "In corso" to trays.filter { it.status == TrayStatus.IN_PROGRESS },
+            "Raccolti" to trays.filter { it.status == TrayStatus.HARVESTED },
+            "Abbandonati" to trays.filter { it.status == TrayStatus.ABANDONED },
+        ).filter { it.second.isNotEmpty() }
+    }
 
     Scaffold(
         topBar = {
@@ -80,26 +90,41 @@ fun TraysListScreen(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(bottom = 96.dp),
             ) {
-                items(trays, key = { it.id }) { tray ->
-                    ListItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenTray(tray.id) },
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(tray.displayColor()),
-                            )
-                        },
-                        headlineContent = { Text(tray.name) },
-                        supportingContent = {
-                            Text("${tray.varietyName} · ${tray.status.displayLabel()} · semina ${tray.sowingDate}")
-                        },
-                    )
+                sections.forEach { (title, sectionTrays) ->
+                    item(key = "header-$title") {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        )
+                    }
+                    items(sectionTrays, key = { it.id }) { tray ->
+                        TrayListItem(tray = tray, onClick = { onOpenTray(tray.id) })
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun TrayListItem(tray: TrayEntity, onClick: () -> Unit) {
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(tray.displayColor()),
+            )
+        },
+        headlineContent = { Text(tray.name) },
+        supportingContent = {
+            Text("${tray.varietyName} · ${tray.status.displayLabel()} · semina ${tray.sowingDate}")
+        },
+    )
 }
