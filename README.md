@@ -47,6 +47,41 @@ Il piano di implementazione completo è in `/root/.claude/plans/logical-discover
 
 Tutte e 6 le fasi del piano sono complete.
 
+## Dopo le 6 fasi
+
+Miglioramenti e correzioni successivi al piano iniziale, dall'uso reale
+dell'app:
+
+- **Step giornalieri**: uno step di template su più giorni (es. "Crescita"
+  giorni 5-10) viene copiato nel vassoio come un task per ciascun giorno,
+  confermabile singolarmente invece che con un'unica spunta per l'intera
+  fase. Risolta anche una spunta che appariva duplicata nella timeline.
+- **Annulla completamento**: uno step segnato fatto/saltato per errore si
+  può riportare a "da fare"; confermare uno step pianificato per un giorno
+  futuro chiede prima conferma.
+- **Registrazione del raccolto**: segnare come fatto uno step di Raccolta o
+  Irrigazione chiede la quantità (grammi/ml), che prima non aveva mai un
+  punto in cui essere inserita e non contribuiva alle statistiche.
+- **Modifica vassoio**: nome, quantità semi, substrato e note si possono
+  modificare dopo la creazione (la data di semina resta fissa: da essa
+  dipendono le date già calcolate degli step pianificati).
+- **Statistiche potenziate**: filtro per varietà, grafico dell'andamento
+  della resa nel tempo, produzione mensile come grafico a barre, confronto
+  affiancato di due vassoi. Grafici scritti con Canvas/Compose, nessuna
+  libreria di charting aggiunta.
+- **Lista vassoi per sezioni**: In corso / Raccolti / Abbandonati, invece di
+  un unico elenco misto.
+- **Previsione raccolto**: nel dettaglio di un vassoio in corso, se esiste
+  almeno un ciclo già raccolto della stessa varietà, una stima basata sui
+  semi usati in questo vassoio × resa media per grammo di seme storica.
+- **Restyling**: tema verde/allegro sempre visibile (il dynamic color di
+  Android 12+ lo sostituiva con i colori dello sfondo del telefono), forme
+  più morbide in tutta l'app, fix di un paio di FAB che coprivano l'ultimo
+  elemento delle liste.
+- **Aggiornamenti senza perdita dati**: keystore di debug fissa invece di
+  quella rigenerata ad ogni build di CI, così il nuovo APK si installa
+  sopra quello precedente senza dover disinstallare.
+
 ## Build
 
 Il progetto richiede l'Android SDK (compileSdk 35, minSdk 26). Per compilare:
@@ -68,11 +103,14 @@ core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
 feature/template   CRUD template di varietà e step
-feature/tray       Vassoi: lista, creazione, dettaglio/timeline/galleria foto
+feature/tray       Vassoi: lista per sezioni, creazione, modifica, dettaglio/
+                   timeline/galleria foto/previsione raccolto
 feature/event      Form aggiungi/modifica evento (meteo pre-compilato, foto)
 feature/calendar   Vista mensile con filtro per vassoio
-feature/stats      Dashboard: per vassoio, per varietà, produzione mensile, record
+feature/stats      Dashboard: per vassoio, per varietà (con filtro), grafici
+                   andamento/produzione mensile, confronto vassoi, record
 feature/settings   Permesso notifiche, ricerca/impostazione posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date picker, galleria foto, colori/etichette) e tema Material 3
+ui, ui/theme       Componenti condivisi (date picker, galleria foto, colori/
+                   etichette), grafici Canvas (ui/charts) e tema Material 3
 ```
