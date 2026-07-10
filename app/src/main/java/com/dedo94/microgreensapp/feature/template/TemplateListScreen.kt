@@ -3,6 +3,7 @@ package com.dedo94.microgreensapp.feature.template
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -66,7 +67,10 @@ fun TemplateListScreen(
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentPadding = PaddingValues(bottom = 96.dp),
+            ) {
                 items(templates, key = { it.id }) { template ->
                     ListItem(
                         modifier = Modifier
