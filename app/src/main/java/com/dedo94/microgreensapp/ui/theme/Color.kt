@@ -2,23 +2,27 @@ package com.dedo94.microgreensapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val GreenPrimary = Color(0xFF2E7D32)
+// Palette "allegra": verdi più vivi (germoglio/foglia) con un accento
+// giallo sole e uno corallo/terracotta caldo, al posto dei toni scuri e
+// seriosi usati in precedenza.
+val GreenPrimary = Color(0xFF43A047)
 val GreenPrimaryDark = Color(0xFF81C784)
-val GreenSecondary = Color(0xFF558B2F)
-val GreenSecondaryDark = Color(0xFFAED581)
-val SoilBrown = Color(0xFF6D4C41)
-val Background = Color(0xFFF7FAF3)
-val BackgroundDark = Color(0xFF12140F)
-val Surface = Color(0xFFFFFFFF)
+val SunYellow = Color(0xFFFFB300)
+val SunYellowDark = Color(0xFFFFD54F)
+val Terracotta = Color(0xFFFF7043)
+val TerracottaDark = Color(0xFFFFAB91)
+val Background = Color(0xFFF6FBF1)
+val BackgroundDark = Color(0xFF14190F)
+val Surface = Color(0xFFFFFFFE)
 val SurfaceDark = Color(0xFF1D2018)
 
 val TrayPalette = listOf(
-    Color(0xFF2E7D32),
-    Color(0xFFEF6C00),
-    Color(0xFF1565C0),
-    Color(0xFF6A1B9A),
-    Color(0xFFC62828),
-    Color(0xFF00838F),
-    Color(0xFF9E9D24),
-    Color(0xFFAD1457),
+    Color(0xFF4CAF50),
+    Color(0xFFFFA726),
+    Color(0xFF42A5F5),
+    Color(0xFFAB47BC),
+    Color(0xFFEF5350),
+    Color(0xFF26C6DA),
+    Color(0xFFFFCA28),
+    Color(0xFFEC407A),
 )

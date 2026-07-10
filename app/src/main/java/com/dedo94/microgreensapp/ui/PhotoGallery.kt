@@ -78,7 +78,7 @@ fun PhotoGallery(
                 modifier = Modifier
                     .size(88.dp)
                     .clickable { viewerPhoto = photo },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(14.dp),
             ) {
                 AsyncImage(
                     model = fileFor(photo),
@@ -95,7 +95,7 @@ fun PhotoGallery(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
                     .padding(8.dp),
             ) {
                 Row(
@@ -151,7 +151,7 @@ private fun AddPhotoTile(
         modifier = Modifier
             .size(88.dp)
             .clickable { showChooser = true },
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

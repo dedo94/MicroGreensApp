@@ -47,7 +47,7 @@ fun MonthlyBarChart(points: List<Pair<String, Double>>, modifier: Modifier = Mod
                         modifier = Modifier
                             .width(24.dp)
                             .height(barHeight)
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)),
+                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp)),
                     )
                 }
                 Spacer(Modifier.height(4.dp))
