@@ -24,9 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.repository.StatsOverview
 import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.core.repository.VarietyStats
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.charts.MonthlyBarChart
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
 import com.dedo94.microgreensapp.ui.displayLabel
@@ -56,15 +55,13 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
     val compareTrayAId by viewModel.compareTrayAId.collectAsStateWithLifecycle()
     val compareTrayBId by viewModel.compareTrayBId.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Statistiche") }) },
-    ) { padding ->
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader("Statistiche")
         val currentOverview = overview
         if (currentOverview == null || currentOverview.trayStats.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
                     .padding(32.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -79,7 +76,6 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
                 compareTrayBId = compareTrayBId,
                 onCompareTrayAChange = viewModel::onCompareTrayAChange,
                 onCompareTrayBChange = viewModel::onCompareTrayBChange,
-                modifier = Modifier.padding(padding),
             )
         }
     }
@@ -334,12 +330,8 @@ private fun VarietyStatsCard(stats: VarietyStats) {
     Card(modifier = Modifier.padding(vertical = 4.dp)) {
         Column(Modifier.padding(12.dp)) {
             Text(stats.varietyName, style = MaterialTheme.typography.titleSmall)
-            val successInfo = if (stats.harvestedCount + stats.abandonedCount > 0) {
-                val rate = 100.0 * stats.harvestedCount / (stats.harvestedCount + stats.abandonedCount)
-                " · Successo: ${"%.0f".format(rate)}%"
-            } else ""
             Text(
-                text = "${stats.cycleCount} cicli$successInfo",
+                text = "${stats.cycleCount} cicli · ${stats.harvestedCount} raccolti",
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(

@@ -24,9 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,6 +41,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.feature.tray.TrayTimelineEntry
 import com.dedo94.microgreensapp.feature.tray.buildTimeline
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
 import java.time.DayOfWeek
@@ -83,14 +82,8 @@ fun CalendarScreen(
         )
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Calendario") }) },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader("Calendario")
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,7 +178,6 @@ fun CalendarScreen(
                 }
             }
         }
-    }
 }
 
 private fun buildDotsByDate(

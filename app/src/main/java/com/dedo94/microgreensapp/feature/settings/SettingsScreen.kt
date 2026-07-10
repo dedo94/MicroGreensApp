@@ -12,19 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dedo94.microgreensapp.ui.CompactHeader
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onManageVarieties: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     val context = LocalContext.current
     var hasNotificationPermission by remember {
         mutableStateOf(
@@ -56,15 +60,30 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
     val location by viewModel.location.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Impostazioni") }) },
-    ) { padding ->
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader("Opzioni")
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
+            Text("Varietà", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onManageVarieties),
+                leadingContent = { Icon(Icons.Default.Eco, contentDescription = null) },
+                headlineContent = { Text("Gestisci varietà") },
+                supportingContent = { Text("Crea e modifica le varietà e i loro piani di coltivazione") },
+                trailingContent = {
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                },
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+
             Text("Notifiche", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             if (hasNotificationPermission) {

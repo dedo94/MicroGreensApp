@@ -96,8 +96,8 @@ fun MicroGreensNavHost(
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<SettingsRoute>() } == true,
                     onClick = { navigateToTopLevel(SettingsRoute) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Impostazioni") },
-                    label = { Text("Impostazioni") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Opzioni") },
+                    label = { Text("Opzioni") },
                 )
             }
         },
@@ -113,15 +113,19 @@ fun MicroGreensNavHost(
             composable<TraysListRoute> {
                 TraysListScreen(
                     onOpenTray = { id -> navController.navigate(TrayDetailRoute(id)) },
-                    onManageVarieties = { navController.navigate(TemplateListRoute) },
                 )
             }
             composable<StatsRoute> { StatsScreen() }
-            composable<SettingsRoute> { SettingsScreen() }
+            composable<SettingsRoute> {
+                SettingsScreen(
+                    onManageVarieties = { navController.navigate(TemplateListRoute) },
+                )
+            }
 
             composable<TrayCreateRoute> {
                 TrayCreateScreen(
                     onBack = { navController.popBackStack() },
+                    onManageVarieties = { navController.navigate(TemplateListRoute) },
                     onCreated = { id ->
                         navController.navigate(TrayDetailRoute(id)) {
                             popUpTo<TrayCreateRoute> { inclusive = true }

@@ -1,16 +1,13 @@
 package com.dedo94.microgreensapp.feature.tray
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
-import com.dedo94.microgreensapp.core.database.entity.PhotoEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
-import com.dedo94.microgreensapp.core.repository.PhotoRepository
 import com.dedo94.microgreensapp.core.repository.StatsRepository
 import com.dedo94.microgreensapp.core.repository.TrayRepository
 import com.dedo94.microgreensapp.navigation.TrayDetailRoute
@@ -20,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 data class HarvestPrediction(val predictedGrams: Double, val basedOnCycles: Int)
@@ -28,7 +24,6 @@ data class HarvestPrediction(val predictedGrams: Double, val basedOnCycles: Int)
 @HiltViewModel
 class TrayDetailViewModel @Inject constructor(
     private val repository: TrayRepository,
-    private val photoRepository: PhotoRepository,
     statsRepository: StatsRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -62,25 +57,6 @@ class TrayDetailViewModel @Inject constructor(
 
     val events: StateFlow<List<EventEntity>> = repository.eventsForTray(trayId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    val photos: StateFlow<List<PhotoEntity>> = photoRepository.observePhotosForTray(trayId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    fun photoFile(photo: PhotoEntity): File = photoRepository.fileFor(photo)
-
-    fun createCaptureTarget(): Pair<File, Uri> = photoRepository.createCaptureTarget()
-
-    fun onPhotoCaptured(file: File) {
-        viewModelScope.launch { photoRepository.savePhoto(file, trayId, eventId = null) }
-    }
-
-    fun onPhotoPicked(uri: Uri) {
-        viewModelScope.launch { photoRepository.importFromUri(uri, trayId, eventId = null) }
-    }
-
-    fun deletePhoto(photo: PhotoEntity) {
-        viewModelScope.launch { photoRepository.deletePhoto(photo) }
-    }
 
     fun markDone(step: TrayStepEntity, quantityValue: Double? = null, quantityUnit: String = "") {
         viewModelScope.launch { repository.markStepDone(step, quantityValue, quantityUnit) }

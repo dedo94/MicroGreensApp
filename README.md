@@ -2,7 +2,7 @@
 
 App Android nativa (Kotlin + Jetpack Compose) per tenere traccia di tutto il
 processo di coltivazione dei microgreens, organizzato per vassoi: template di
-fasi personalizzabili, calendario unico degli eventi, notifiche, foto, dati
+fasi personalizzabili, calendario unico degli eventi, notifiche, dati
 meteo/alba-tramonto e statistiche. Uso personale, dati 100% locali (Room), nessun account.
 
 Il piano di implementazione completo è in `/root/.claude/plans/logical-discovering-pinwheel.md` (sessione di sviluppo) ed è riassunto nelle 6 fasi qui sotto.
@@ -69,8 +69,9 @@ dell'app:
   della resa nel tempo, produzione mensile come grafico a barre, confronto
   affiancato di due vassoi. Grafici scritti con Canvas/Compose, nessuna
   libreria di charting aggiunta.
-- **Lista vassoi per sezioni**: In corso / Raccolti / Abbandonati, invece di
-  un unico elenco misto.
+- **Lista vassoi a tab**: In corso / Raccolti, invece di un unico elenco
+  misto. Lo stato "Abbandonato" è stato rimosso: un vassoio abbandonato si
+  elimina e basta.
 - **Previsione raccolto**: nel dettaglio di un vassoio in corso, se esiste
   almeno un ciclo già raccolto della stessa varietà, una stima basata sui
   semi usati in questo vassoio × resa media per grammo di seme storica.
@@ -81,6 +82,13 @@ dell'app:
 - **Aggiornamenti senza perdita dati**: keystore di debug fissa invece di
   quella rigenerata ad ogni build di CI, così il nuovo APK si installa
   sopra quello precedente senza dover disinstallare.
+- **Revisione UX**: rimossa la feature foto (poco usata, occupava spazio in
+  ogni schermata e portava con sé la dipendenza Coil e il FileProvider);
+  intestazioni compatte sulle 4 schede principali al posto delle TopAppBar;
+  gestione varietà spostata in Opzioni con una voce esplicita (al posto di
+  un'icona a foglia poco chiara); nel dettaglio vassoio il FAB flottante è
+  sostituito da una card "+" in fondo alla timeline; la scheda
+  "Impostazioni" è stata rinominata "Opzioni".
 
 ## Build
 
@@ -103,14 +111,14 @@ core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
 feature/template   CRUD template di varietà e step
-feature/tray       Vassoi: lista per sezioni, creazione, modifica, dettaglio/
-                   timeline/galleria foto/previsione raccolto
-feature/event      Form aggiungi/modifica evento (meteo pre-compilato, foto)
+feature/tray       Vassoi: tab In corso/Raccolti, creazione, modifica,
+                   dettaglio/timeline/previsione raccolto
+feature/event      Form aggiungi/modifica evento (meteo pre-compilato)
 feature/calendar   Vista mensile con filtro per vassoio
 feature/stats      Dashboard: per vassoio, per varietà (con filtro), grafici
                    andamento/produzione mensile, confronto vassoi, record
-feature/settings   Permesso notifiche, ricerca/impostazione posizione meteo
+feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date picker, galleria foto, colori/
+ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
                    etichette), grafici Canvas (ui/charts) e tema Material 3
 ```
