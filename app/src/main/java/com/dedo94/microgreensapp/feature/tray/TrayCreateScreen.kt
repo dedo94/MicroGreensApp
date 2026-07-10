@@ -41,6 +41,7 @@ import com.dedo94.microgreensapp.ui.displayLabel
 @Composable
 fun TrayCreateScreen(
     onBack: () -> Unit,
+    onManageVarieties: () -> Unit,
     onCreated: (Long) -> Unit,
     viewModel: TrayCreateViewModel = hiltViewModel(),
 ) {
@@ -97,8 +98,11 @@ fun TrayCreateScreen(
                 ) {
                     if (templates.isEmpty()) {
                         DropdownMenuItem(
-                            text = { Text("Nessuna varietà: creane una prima") },
-                            onClick = { templateMenuExpanded = false },
+                            text = { Text("Nessuna varietà: toccami per crearne una") },
+                            onClick = {
+                                templateMenuExpanded = false
+                                onManageVarieties()
+                            },
                         )
                     }
                     templates.forEach { template ->

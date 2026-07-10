@@ -13,19 +13,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -33,67 +31,61 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TraysListScreen(
     onOpenTray: (Long) -> Unit,
-    onManageVarieties: () -> Unit,
     viewModel: TraysListViewModel = hiltViewModel(),
 ) {
     val trays by viewModel.trays.collectAsStateWithLifecycle()
-    val sections = remember(trays) {
-        listOf(
-            "In corso" to trays.filter { it.status == TrayStatus.IN_PROGRESS },
-            "Raccolti" to trays.filter { it.status == TrayStatus.HARVESTED },
-            "Abbandonati" to trays.filter { it.status == TrayStatus.ABANDONED },
-        ).filter { it.second.isNotEmpty() }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val visibleTrays = remember(trays, selectedTab) {
+        val status = if (selectedTab == 0) TrayStatus.IN_PROGRESS else TrayStatus.HARVESTED
+        trays.filter { it.status == status }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Vassoi") },
-                actions = {
-                    IconButton(onClick = onManageVarieties) {
-                        Icon(Icons.Default.Eco, contentDescription = "Gestisci varietà")
-                    }
-                },
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader("Vassoi")
+
+        TabRow(selectedTabIndex = selectedTab) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("In corso") },
             )
-        },
-    ) { padding ->
-        if (trays.isEmpty()) {
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("Raccolti") },
+            )
+        }
+
+        if (visibleTrays.isEmpty()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
                     .padding(32.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Nessun vassoio ancora. Tocca + nella barra in basso per iniziare una coltivazione.",
+                    text = if (selectedTab == 0) {
+                        "Nessun vassoio in corso. Tocca + nella barra in basso per iniziare una coltivazione."
+                    } else {
+                        "Nessun vassoio raccolto finora."
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 16.dp),
             ) {
-                sections.forEach { (title, sectionTrays) ->
-                    item(key = "header-$title") {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        )
-                    }
-                    items(sectionTrays, key = { it.id }) { tray ->
-                        TrayListItem(tray = tray, onClick = { onOpenTray(tray.id) })
-                    }
+                items(visibleTrays, key = { it.id }) { tray ->
+                    TrayListItem(tray = tray, onClick = { onOpenTray(tray.id) })
                 }
             }
         }

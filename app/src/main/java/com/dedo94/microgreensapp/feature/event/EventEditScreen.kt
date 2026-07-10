@@ -35,10 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.ui.DatePickerField
-import com.dedo94.microgreensapp.ui.PhotoGallery
 import com.dedo94.microgreensapp.ui.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +46,6 @@ fun EventEditScreen(
     viewModel: EventEditViewModel = hiltViewModel(),
 ) {
     var typeMenuExpanded by remember { mutableStateOf(false) }
-    val photos by viewModel.photos.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -195,25 +192,6 @@ fun EventEditScreen(
                 label = { Text("Note su luce/esposizione (opzionale)") },
                 modifier = Modifier.fillMaxWidth(),
             )
-
-            Spacer(Modifier.height(20.dp))
-            Text(text = "Foto", style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(8.dp))
-            if (viewModel.isNew) {
-                Text(
-                    text = "Salva l'evento per poter allegare delle foto.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            } else {
-                PhotoGallery(
-                    photos = photos,
-                    fileFor = viewModel::photoFile,
-                    onCreateCaptureTarget = viewModel::createCaptureTarget,
-                    onPhotoCaptured = viewModel::onPhotoCaptured,
-                    onPhotoPicked = viewModel::onPhotoPicked,
-                    onDeletePhoto = viewModel::deletePhoto,
-                )
-            }
         }
     }
 }

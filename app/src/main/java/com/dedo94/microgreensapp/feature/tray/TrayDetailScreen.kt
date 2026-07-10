@@ -25,7 +25,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -50,7 +50,6 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
-import com.dedo94.microgreensapp.ui.PhotoGallery
 import com.dedo94.microgreensapp.ui.displayLabel
 import java.time.LocalDate
 
@@ -66,7 +65,6 @@ fun TrayDetailScreen(
     val tray by viewModel.tray.collectAsStateWithLifecycle()
     val steps by viewModel.steps.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle()
-    val photos by viewModel.photos.collectAsStateWithLifecycle()
     val harvestPrediction by viewModel.harvestPrediction.collectAsStateWithLifecycle()
     val timeline = remember(steps, events) { buildTimeline(steps, events) }
 
@@ -122,13 +120,6 @@ fun TrayDetailScreen(
                                 },
                             )
                             DropdownMenuItem(
-                                text = { Text("Segna come abbandonato") },
-                                onClick = {
-                                    viewModel.setStatus(TrayStatus.ABANDONED)
-                                    showStatusMenu = false
-                                },
-                            )
-                            DropdownMenuItem(
                                 text = { Text("Segna come in corso") },
                                 onClick = {
                                     viewModel.setStatus(TrayStatus.IN_PROGRESS)
@@ -146,11 +137,6 @@ fun TrayDetailScreen(
                     }
                 },
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onAddEvent(viewModel.trayId) }) {
-                Icon(Icons.Default.Add, contentDescription = "Aggiungi evento")
-            }
         },
     ) { padding ->
         Column(
@@ -186,67 +172,51 @@ fun TrayDetailScreen(
                         }
                     }
                 }
-                PhotoGallery(
-                    photos = photos,
-                    fileFor = viewModel::photoFile,
-                    onCreateCaptureTarget = viewModel::createCaptureTarget,
-                    onPhotoCaptured = viewModel::onPhotoCaptured,
-                    onPhotoPicked = viewModel::onPhotoPicked,
-                    onDeletePhoto = viewModel::deletePhoto,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
                 HorizontalDivider()
             }
 
-            if (timeline.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                ) {
-                    Text("Nessun evento ancora. Tocca + per registrarne uno.")
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    contentPadding = PaddingValues(bottom = 96.dp),
-                ) {
-                    items(
-                        items = timeline,
-                        key = { entry ->
-                            when (entry) {
-                                is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
-                                is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
-                            }
-                        },
-                    ) { entry ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
+            ) {
+                items(
+                    items = timeline,
+                    key = { entry ->
                         when (entry) {
-                            is TrayTimelineEntry.StepEntry -> StepTimelineCard(
-                                step = entry.step,
-                                onMarkDone = {
-                                    if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
-                                        stepPendingFutureConfirmation = entry.step
-                                    } else {
-                                        proceedMarkDone(entry.step)
-                                    }
-                                },
-                                onMarkSkipped = { viewModel.markSkipped(entry.step) },
-                                onMarkPending = { viewModel.markPending(entry.step) },
-                                onEdit = { stepBeingEdited = entry.step },
-                                onDelete = if (entry.step.isAdHoc) {
-                                    { stepPendingDeletion = entry.step }
-                                } else null,
-                            )
-
-                            is TrayTimelineEntry.EventEntry -> EventTimelineCard(
-                                event = entry.event,
-                                onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
-                                onDelete = { eventPendingDeletion = entry.event },
-                            )
+                            is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
+                            is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
                         }
+                    },
+                ) { entry ->
+                    when (entry) {
+                        is TrayTimelineEntry.StepEntry -> StepTimelineCard(
+                            step = entry.step,
+                            onMarkDone = {
+                                if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
+                                    stepPendingFutureConfirmation = entry.step
+                                } else {
+                                    proceedMarkDone(entry.step)
+                                }
+                            },
+                            onMarkSkipped = { viewModel.markSkipped(entry.step) },
+                            onMarkPending = { viewModel.markPending(entry.step) },
+                            onEdit = { stepBeingEdited = entry.step },
+                            onDelete = if (entry.step.isAdHoc) {
+                                { stepPendingDeletion = entry.step }
+                            } else null,
+                        )
+
+                        is TrayTimelineEntry.EventEntry -> EventTimelineCard(
+                            event = entry.event,
+                            onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
+                            onDelete = { eventPendingDeletion = entry.event },
+                        )
                     }
+                }
+                item(key = "add-event") {
+                    AddEventCard(onClick = { onAddEvent(viewModel.trayId) })
                 }
             }
         }
@@ -363,6 +333,30 @@ fun TrayDetailScreen(
                 TextButton(onClick = { showDeleteTrayDialog = false }) { Text("Annulla") }
             },
         )
+    }
+}
+
+/**
+ * Chiusura naturale della timeline: una card identica a quelle degli step
+ * con un + centrato, al posto di un FAB che galleggiava sopra il contenuto.
+ */
+@Composable
+private fun AddEventCard(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Aggiungi evento")
+        }
     }
 }
 

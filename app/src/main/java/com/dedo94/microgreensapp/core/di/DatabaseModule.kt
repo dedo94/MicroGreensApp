@@ -6,7 +6,6 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.dedo94.microgreensapp.core.database.AppDatabase
 import com.dedo94.microgreensapp.core.database.dao.EventDao
-import com.dedo94.microgreensapp.core.database.dao.PhotoDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
@@ -74,6 +73,4 @@ object DatabaseModule {
     @Provides
     fun provideWeatherDailyDao(database: AppDatabase): WeatherDailyDao = database.weatherDailyDao()
 
-    @Provides
-    fun providePhotoDao(database: AppDatabase): PhotoDao = database.photoDao()
 }

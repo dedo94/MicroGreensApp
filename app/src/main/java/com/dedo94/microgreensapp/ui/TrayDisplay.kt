@@ -10,7 +10,6 @@ import com.dedo94.microgreensapp.ui.theme.TrayPalette
 fun TrayStatus.displayLabel(): String = when (this) {
     TrayStatus.IN_PROGRESS -> "In corso"
     TrayStatus.HARVESTED -> "Raccolto"
-    TrayStatus.ABANDONED -> "Abbandonato"
 }
 
 fun TrayStepStatus.displayLabel(): String = when (this) {

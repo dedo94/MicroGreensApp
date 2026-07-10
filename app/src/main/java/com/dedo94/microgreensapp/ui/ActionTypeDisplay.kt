@@ -12,6 +12,5 @@ fun ActionType.displayLabel(): String = when (this) {
     ActionType.STORAGE -> "Conservazione"
     ActionType.WATERING -> "Irrigazione"
     ActionType.NOTE -> "Nota"
-    ActionType.PHOTO_ONLY -> "Solo foto"
     ActionType.CUSTOM -> "Personalizzato"
 }

@@ -29,7 +29,6 @@ data class VarietyStats(
     val varietyName: String,
     val cycleCount: Int,
     val harvestedCount: Int,
-    val abandonedCount: Int,
     val avgHarvestGrams: Double?,
     val avgCycleDays: Double?,
     val avgYieldPerSeedGram: Double?,
@@ -112,7 +111,6 @@ class StatsRepository @Inject constructor(
                         varietyName = varietyName,
                         cycleCount = statsForVariety.size,
                         harvestedCount = statsForVariety.count { it.tray.status == TrayStatus.HARVESTED },
-                        abandonedCount = statsForVariety.count { it.tray.status == TrayStatus.ABANDONED },
                         avgHarvestGrams = harvestValues.takeIf { it.isNotEmpty() }?.average(),
                         avgCycleDays = cycleValues.takeIf { it.isNotEmpty() }
                             ?.map { it.toDouble() }

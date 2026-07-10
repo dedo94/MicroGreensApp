@@ -15,6 +15,5 @@ enum class ActionType {
     STORAGE,
     WATERING,
     NOTE,
-    PHOTO_ONLY,
     CUSTOM,
 }
