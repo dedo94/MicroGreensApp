@@ -1,11 +1,14 @@
 package com.dedo94.microgreensapp.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -18,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -75,6 +79,14 @@ fun MicroGreensNavHost(
                     icon = { Icon(Icons.Default.Eco, contentDescription = "Vassoi") },
                     label = { Text("Vassoi") },
                 )
+                FilledIconButton(
+                    onClick = { navController.navigate(TrayCreateRoute) },
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(48.dp),
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Nuovo vassoio")
+                }
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<StatsRoute>() } == true,
                     onClick = { navigateToTopLevel(StatsRoute) },
@@ -100,7 +112,6 @@ fun MicroGreensNavHost(
             }
             composable<TraysListRoute> {
                 TraysListScreen(
-                    onCreateTray = { navController.navigate(TrayCreateRoute) },
                     onOpenTray = { id -> navController.navigate(TrayDetailRoute(id)) },
                     onManageVarieties = { navController.navigate(TemplateListRoute) },
                 )

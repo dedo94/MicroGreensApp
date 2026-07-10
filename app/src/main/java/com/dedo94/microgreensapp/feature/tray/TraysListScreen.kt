@@ -14,10 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -41,7 +39,6 @@ import com.dedo94.microgreensapp.ui.displayLabel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TraysListScreen(
-    onCreateTray: () -> Unit,
     onOpenTray: (Long) -> Unit,
     onManageVarieties: () -> Unit,
     viewModel: TraysListViewModel = hiltViewModel(),
@@ -66,11 +63,6 @@ fun TraysListScreen(
                 },
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onCreateTray) {
-                Icon(Icons.Default.Add, contentDescription = "Nuovo vassoio")
-            }
-        },
     ) { padding ->
         if (trays.isEmpty()) {
             Column(
@@ -81,14 +73,14 @@ fun TraysListScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Nessun vassoio ancora. Tocca + per iniziare una coltivazione.",
+                    text = "Nessun vassoio ancora. Tocca + nella barra in basso per iniziare una coltivazione.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(bottom = 96.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
             ) {
                 sections.forEach { (title, sectionTrays) ->
                     item(key = "header-$title") {
