@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,13 +87,6 @@ fun TemplateEditScreen(
                 },
             )
         },
-        floatingActionButton = {
-            if (templateId != null) {
-                FloatingActionButton(onClick = { showNewStepDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Aggiungi step")
-                }
-            }
-        },
     ) { padding ->
         LazyColumn(
             state = lazyListState,
@@ -102,7 +94,7 @@ fun TemplateEditScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(bottom = 96.dp),
+            contentPadding = PaddingValues(bottom = 16.dp),
         ) {
             item {
                 Column(Modifier.padding(vertical = 12.dp)) {
@@ -190,6 +182,12 @@ fun TemplateEditScreen(
                     }
                 }
             }
+
+            if (templateId != null) {
+                item(key = "add-step") {
+                    AddStepCard(onClick = { showNewStepDialog = true })
+                }
+            }
         }
     }
 
@@ -246,6 +244,26 @@ fun TemplateEditScreen(
                 TextButton(onClick = { showDeleteTemplateDialog = false }) { Text("Annulla") }
             },
         )
+    }
+}
+
+@Composable
+private fun AddStepCard(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Aggiungi step")
+        }
     }
 }
 

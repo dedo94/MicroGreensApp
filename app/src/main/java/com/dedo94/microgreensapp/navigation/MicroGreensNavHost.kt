@@ -152,6 +152,7 @@ fun MicroGreensNavHost(
 
             composable<TemplateListRoute> {
                 TemplateListScreen(
+                    onBack = { navController.popBackStack() },
                     onCreateTemplate = { navController.navigate(TemplateEditRoute(templateId = 0L)) },
                     onOpenTemplate = { id -> navController.navigate(TemplateEditRoute(templateId = id)) },
                 )
