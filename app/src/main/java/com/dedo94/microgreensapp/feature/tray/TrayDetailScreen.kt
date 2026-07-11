@@ -1,5 +1,6 @@
 package com.dedo94.microgreensapp.feature.tray
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.ActionType
@@ -49,6 +48,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,41 +134,47 @@ fun TrayDetailScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
             tray?.let { t ->
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        text = "${t.varietyName} · ${t.status.displayLabel()}",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    val seedInfo = t.initialSeedQuantityGrams?.let { " · Semi: ${it}g" } ?: ""
-                    Text(
-                        text = "Semina: ${t.sowingDate}$seedInfo",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    val substrateInfo = if (t.substrateNotes.isNotBlank()) " (${t.substrateNotes})" else ""
-                    Text(
-                        text = "Substrato: ${t.substrateType.displayLabel()}$substrateInfo",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    if (t.status == TrayStatus.IN_PROGRESS) {
-                        harvestPrediction?.let { prediction ->
-                            Text(
-                                text = "Previsione raccolto: ~${"%.1f".format(prediction.predictedGrams)}g " +
-                                    "(basata su ${prediction.basedOnCycles} " +
-                                    if (prediction.basedOnCycles == 1) "ciclo precedente)" else "cicli precedenti)",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Spacing.md, vertical = Spacing.sm)
+                        .animateContentSize(),
+                ) {
+                    Column(Modifier.padding(Spacing.md)) {
+                        Text(
+                            text = "${t.varietyName} · ${t.status.displayLabel()}",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        val seedInfo = t.initialSeedQuantityGrams?.let { " · Semi: ${it}g" } ?: ""
+                        Text(
+                            text = "Semina: ${t.sowingDate}$seedInfo",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        val substrateInfo = if (t.substrateNotes.isNotBlank()) " (${t.substrateNotes})" else ""
+                        Text(
+                            text = "Substrato: ${t.substrateType.displayLabel()}$substrateInfo",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        if (t.status == TrayStatus.IN_PROGRESS) {
+                            harvestPrediction?.let { prediction ->
+                                Text(
+                                    text = "Previsione raccolto: ~${"%.1f".format(prediction.predictedGrams)}g " +
+                                        "(basata su ${prediction.basedOnCycles} " +
+                                        if (prediction.basedOnCycles == 1) "ciclo precedente)" else "cicli precedenti)",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         }
                     }
                 }
-                HorizontalDivider()
             }
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(bottom = 16.dp),
+                    .padding(horizontal = Spacing.md),
+                contentPadding = PaddingValues(bottom = Spacing.md),
             ) {
                 items(
                     items = timeline,
@@ -335,12 +341,12 @@ private fun AddEventCard(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(Spacing.md),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -358,11 +364,11 @@ private fun StepTimelineCard(
     onEdit: () -> Unit,
     onDelete: (() -> Unit)?,
 ) {
-    Card(modifier = Modifier.padding(vertical = 4.dp)) {
+    Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(Spacing.sm),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(Modifier.weight(1f)) {
@@ -411,11 +417,11 @@ private fun EventTimelineCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card(modifier = Modifier.padding(vertical = 4.dp)) {
+    Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(Spacing.sm),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(Modifier.weight(1f)) {
