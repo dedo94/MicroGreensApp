@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Eco
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -74,11 +74,11 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onManageVarieties),
-                leadingContent = { Icon(Icons.Default.Eco, contentDescription = null) },
+                leadingContent = { Icon(Icons.Outlined.Eco, contentDescription = null) },
                 headlineContent = { Text("Gestisci varietà") },
                 supportingContent = { Text("Crea e modifica le varietà e i loro piani di coltivazione") },
                 trailingContent = {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
                 },
             )
 
@@ -112,7 +112,7 @@ fun SettingsScreen(
                 singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = viewModel::search) {
-                        Icon(Icons.Default.Search, contentDescription = "Cerca")
+                        Icon(Icons.Outlined.Search, contentDescription = "Cerca")
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

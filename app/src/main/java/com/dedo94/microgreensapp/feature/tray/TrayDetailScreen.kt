@@ -12,13 +12,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -92,7 +92,7 @@ fun TrayDetailScreen(
             actions = {
                 Box {
                     IconButton(onClick = { showStatusMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Altre azioni")
+                        Icon(Icons.Outlined.MoreVert, contentDescription = "Altre azioni")
                     }
                     DropdownMenu(
                         expanded = showStatusMenu,
@@ -344,7 +344,7 @@ private fun AddEventCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Aggiungi evento")
+            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi evento")
         }
     }
 }
@@ -375,22 +375,22 @@ private fun StepTimelineCard(
             Row {
                 if (step.status == TrayStepStatus.PENDING) {
                     IconButton(onClick = onMarkDone) {
-                        Icon(Icons.Default.Check, contentDescription = "Segna come fatto")
+                        Icon(Icons.Outlined.Check, contentDescription = "Segna come fatto")
                     }
                     IconButton(onClick = onMarkSkipped) {
-                        Icon(Icons.Default.Close, contentDescription = "Salta")
+                        Icon(Icons.Outlined.Close, contentDescription = "Salta")
                     }
                 } else {
                     IconButton(onClick = onMarkPending) {
-                        Icon(Icons.Default.Replay, contentDescription = "Annulla completamento")
+                        Icon(Icons.Outlined.Replay, contentDescription = "Annulla completamento")
                     }
                 }
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifica")
+                    Icon(Icons.Outlined.Edit, contentDescription = "Modifica")
                 }
                 if (onDelete != null) {
                     IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Elimina")
+                        Icon(Icons.Outlined.Delete, contentDescription = "Elimina")
                     }
                 }
             }
@@ -431,10 +431,10 @@ private fun EventTimelineCard(
             }
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifica")
+                    Icon(Icons.Outlined.Edit, contentDescription = "Modifica")
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Elimina")
+                    Icon(Icons.Outlined.Delete, contentDescription = "Elimina")
                 }
             }
         }

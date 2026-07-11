@@ -12,7 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -54,7 +54,7 @@ fun EventEditScreen(
                     onClick = { viewModel.save(onBack) },
                     enabled = viewModel.canSave,
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = "Salva")
+                    Icon(Icons.Outlined.Check, contentDescription = "Salva")
                 }
             },
         )
