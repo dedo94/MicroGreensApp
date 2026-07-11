@@ -44,6 +44,7 @@ import com.dedo94.microgreensapp.feature.tray.buildTimeline
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -84,100 +85,103 @@ fun CalendarScreen(
 
     Column(Modifier.fillMaxSize()) {
         CompactHeader("Calendario")
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = viewModel::goToPreviousMonth) {
-                    Icon(Icons.Outlined.ChevronLeft, contentDescription = "Mese precedente")
-                }
-                Text(monthLabel(month), style = MaterialTheme.typography.titleMedium)
-                IconButton(onClick = viewModel::goToNextMonth) {
-                    Icon(Icons.Outlined.ChevronRight, contentDescription = "Mese successivo")
-                }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.sm),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = viewModel::goToPreviousMonth) {
+                Icon(Icons.Outlined.ChevronLeft, contentDescription = "Mese precedente")
             }
-
-            LazyRow(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item {
-                    FilterChip(
-                        selected = selectedTrayId == null,
-                        onClick = { viewModel.selectTrayFilter(null) },
-                        label = { Text("Tutti") },
-                    )
-                }
-                items(trays, key = { it.id }) { tray ->
-                    FilterChip(
-                        selected = selectedTrayId == tray.id,
-                        onClick = { viewModel.selectTrayFilter(tray.id) },
-                        label = { Text(tray.name) },
-                    )
-                }
+            Text(monthLabel(month), style = MaterialTheme.typography.titleMedium)
+            IconButton(onClick = viewModel::goToNextMonth) {
+                Icon(Icons.Outlined.ChevronRight, contentDescription = "Mese successivo")
             }
+        }
 
-            MonthGrid(
-                month = month,
-                selectedDate = selectedDate,
-                dotsByDate = dotsByDate,
-                trayColorById = trayColorById,
-                onDayClick = viewModel::selectDate,
-            )
-
-            Text(
-                text = "Il ${selectedDate}",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(16.dp),
-            )
-
-            if (dayEntries.isEmpty()) {
-                Text(
-                    text = "Nessun evento in questo giorno.",
-                    modifier = Modifier.padding(horizontal = 16.dp),
+        LazyRow(
+            modifier = Modifier.padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            item {
+                FilterChip(
+                    selected = selectedTrayId == null,
+                    onClick = { viewModel.selectTrayFilter(null) },
+                    label = { Text("Tutti") },
                 )
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    items(
-                        items = dayEntries,
-                        key = { entry ->
-                            when (entry) {
-                                is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
-                                is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
-                            }
-                        },
-                    ) { entry ->
-                        val trayId = when (entry) {
-                            is TrayTimelineEntry.StepEntry -> entry.step.trayId
-                            is TrayTimelineEntry.EventEntry -> entry.event.trayId
-                        }
-                        val trayName = trays.firstOrNull { it.id == trayId }?.name ?: ""
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable { onOpenTray(trayId) },
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(trayName, style = MaterialTheme.typography.labelMedium)
-                                when (entry) {
-                                    is TrayTimelineEntry.StepEntry -> Text(
-                                        "${entry.step.name} · ${entry.step.actionType.displayLabel()}"
-                                    )
+            }
+            items(trays, key = { it.id }) { tray ->
+                FilterChip(
+                    selected = selectedTrayId == tray.id,
+                    onClick = { viewModel.selectTrayFilter(tray.id) },
+                    label = { Text(tray.name) },
+                )
+            }
+        }
 
-                                    is TrayTimelineEntry.EventEntry -> Text(
-                                        "${entry.event.title} · ${entry.event.eventType.displayLabel()}"
-                                    )
-                                }
+        MonthGrid(
+            month = month,
+            selectedDate = selectedDate,
+            dotsByDate = dotsByDate,
+            trayColorById = trayColorById,
+            onDayClick = viewModel::selectDate,
+        )
+
+        Text(
+            text = "Il ${selectedDate}",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(Spacing.md),
+        )
+
+        if (dayEntries.isEmpty()) {
+            Text(
+                text = "Nessun evento in questo giorno.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = Spacing.md),
+            )
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md)) {
+                items(
+                    items = dayEntries,
+                    key = { entry ->
+                        when (entry) {
+                            is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
+                            is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
+                        }
+                    },
+                ) { entry ->
+                    val trayId = when (entry) {
+                        is TrayTimelineEntry.StepEntry -> entry.step.trayId
+                        is TrayTimelineEntry.EventEntry -> entry.event.trayId
+                    }
+                    val trayName = trays.firstOrNull { it.id == trayId }?.name ?: ""
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.xs)
+                            .clickable { onOpenTray(trayId) }
+                            .animateItem(),
+                    ) {
+                        Column(Modifier.padding(Spacing.sm)) {
+                            Text(trayName, style = MaterialTheme.typography.labelMedium)
+                            when (entry) {
+                                is TrayTimelineEntry.StepEntry -> Text(
+                                    "${entry.step.name} · ${entry.step.actionType.displayLabel()}"
+                                )
+
+                                is TrayTimelineEntry.EventEntry -> Text(
+                                    "${entry.event.title} · ${entry.event.eventType.displayLabel()}"
+                                )
                             }
                         }
                     }
                 }
             }
         }
+    }
 }
 
 private fun buildDotsByDate(
@@ -217,7 +221,7 @@ private fun MonthGrid(
     val gridStart = firstOfMonth.minusDays(leadingBlanks.toLong())
     val weeks = 6
 
-    Column(Modifier.padding(horizontal = 8.dp)) {
+    Column(Modifier.padding(horizontal = Spacing.sm)) {
         Row(Modifier.fillMaxWidth()) {
             for (dayOfWeek in DayOfWeek.values()) {
                 Text(
