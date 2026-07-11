@@ -104,6 +104,37 @@ dell'app:
   schermate raggiunte "andando avanti" (Nuovo/Modifica vassoio, Nuovo/
   Modifica evento, dettaglio vassoio, Gestisci varietà), con freccia
   indietro e azioni integrate nello stesso componente compatto.
+- **Fix crash all'avvio**: `fallbackToDestructiveMigrationOnDowngrade()` da
+  solo copriva solo i downgrade, non gli aggiornamenti da uno schema
+  pre-versione-5 (il DB è passato per le versioni 1→2→3→4→5 nel tempo,
+  sempre gestite finora con la fallback distruttiva generica). Chi aveva
+  ancora un DB locale fermo a una di quelle versioni otteneva un crash
+  immediato all'avvio. Aggiunto `fallbackToDestructiveMigrationFrom(1, 2, 3,
+  4)` per coprire quel salto storico una volta per tutte.
+
+## Redesign UI (in corso)
+
+Restyling completo in chiave "fresh & organic" (Material 3, coltivazione/
+natura/freschezza), pianificato in più fasi — una PR per fase, ciascuna
+autoconclusiva:
+
+- **Fase 1 — fondamenta del tema**: schema colori Material 3 completo
+  (light + dark, tutti i ruoli) derivato da 5 colori seed (verde foglia
+  `#4C956C`, verde salvia `#7A9E7E`, accento sole `#E8A33D`, superfici
+  chiarissima verdastra in light/verde scurissima in dark);
+  `onPrimary`/`onSecondary`/`onTertiary` in inchiostro scuro invece che
+  bianco per rispettare il contrasto minimo WCAG AA con questi seed a
+  luminosità media. Font Manrope (variabile, licenza SIL OFL, bundlato
+  come file statico in `res/font/`, nessuna dipendenza di rete/Google Play
+  Services) con una scala tipografica pesata (display/headline in
+  bold-semibold, title semibold, body regular, label medium). Corner
+  radius delle Card nel range 16-20dp. Nuovo token di spaziatura da 8dp
+  (`ui/theme/Spacing.kt`). Palette dei pallini identificativi dei vassoi
+  attenuata per stare in armonia con le nuove superfici verdi.
+- **In arrivo**: sweep delle icone su Material Icons Outlined, tab "In
+  corso" dei vassoi arricchita con giorni dalla semina/progresso/stima
+  raccolto, restyling di dettaglio vassoio, form vassoio, Statistiche,
+  Calendario e schermate minori.
 
 ## Build
 
@@ -136,4 +167,5 @@ feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione met
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
 ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
                    etichette), grafici Canvas (ui/charts) e tema Material 3
+                   (colori, tipografia con font Manrope, forme, spaziatura)
 ```
