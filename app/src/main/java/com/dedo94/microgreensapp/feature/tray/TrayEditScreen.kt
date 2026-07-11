@@ -27,11 +27,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dedo94.microgreensapp.core.database.entity.SubstrateType
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +59,7 @@ fun TrayEditScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(Spacing.md)
                 .verticalScroll(rememberScrollState()),
         ) {
             OutlinedTextField(
@@ -69,7 +69,7 @@ fun TrayEditScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.seedQuantityText,
                 onValueChange = viewModel::onSeedQuantityChange,
@@ -78,7 +78,7 @@ fun TrayEditScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             ExposedDropdownMenuBox(
                 expanded = substrateMenuExpanded,
                 onExpandedChange = { substrateMenuExpanded = it },
@@ -111,7 +111,7 @@ fun TrayEditScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.substrateNotes,
                 onValueChange = viewModel::onSubstrateNotesChange,
