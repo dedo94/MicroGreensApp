@@ -19,12 +19,8 @@ fun TrayStepStatus.displayLabel(): String = when (this) {
 }
 
 fun SubstrateType.displayLabel(): String = when (this) {
+    SubstrateType.HYDROPONIC_MAT -> "Idroponica"
     SubstrateType.SOIL -> "Terriccio"
-    SubstrateType.COCO_COIR -> "Fibra di cocco"
-    SubstrateType.HEMP_MAT -> "Tappetino di canapa"
-    SubstrateType.PAPER_TOWEL -> "Carta assorbente"
-    SubstrateType.PERLITE_VERMICULITE -> "Perlite/Vermiculite"
-    SubstrateType.HYDROPONIC_MAT -> "Tappetino idroponico"
     SubstrateType.OTHER -> "Altro"
 }
 

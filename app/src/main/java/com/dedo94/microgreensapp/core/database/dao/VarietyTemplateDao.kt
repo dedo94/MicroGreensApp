@@ -32,6 +32,9 @@ interface VarietyTemplateDao {
     @Query("SELECT * FROM variety_templates WHERE id = :id")
     suspend fun getById(id: Long): VarietyTemplateEntity?
 
+    @Query("SELECT * FROM variety_templates WHERE name = :name LIMIT 1")
+    suspend fun getByName(name: String): VarietyTemplateEntity?
+
     @Query("SELECT COUNT(*) FROM variety_templates WHERE name = :name AND id != :excludeId")
     suspend fun countByName(name: String, excludeId: Long = 0L): Int
 }

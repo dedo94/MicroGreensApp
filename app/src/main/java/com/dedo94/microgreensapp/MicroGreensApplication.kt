@@ -3,6 +3,7 @@ package com.dedo94.microgreensapp
 import android.app.Application
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
+import com.dedo94.microgreensapp.core.database.seed.PeaTemplateSeed
 import com.dedo94.microgreensapp.core.database.seed.SunflowerTemplateSeed
 import com.dedo94.microgreensapp.core.di.ApplicationScope
 import com.dedo94.microgreensapp.core.notifications.NotificationHelper
@@ -33,6 +34,7 @@ class MicroGreensApplication : Application() {
         // ricreato da zero per qualunque motivo.
         applicationScope.launch {
             SunflowerTemplateSeed.seedIfNeeded(varietyTemplateDao, templateStepDao)
+            PeaTemplateSeed.seedIfNeeded(varietyTemplateDao, templateStepDao)
         }
     }
 }

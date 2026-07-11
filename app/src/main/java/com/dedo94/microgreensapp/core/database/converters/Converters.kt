@@ -58,8 +58,13 @@ class Converters {
     @TypeConverter
     fun fromSubstrateType(value: SubstrateType): String = value.name
 
+    // I substrati disponibili sono stati ridotti a 3 (idroponica/terriccio/
+    // altro): un vassoio salvato in precedenza con un substrato ormai
+    // rimosso (es. fibra di cocco) va a "Altro" invece di far crashare
+    // l'app al caricamento.
     @TypeConverter
-    fun toSubstrateType(value: String): SubstrateType = SubstrateType.valueOf(value)
+    fun toSubstrateType(value: String): SubstrateType =
+        runCatching { SubstrateType.valueOf(value) }.getOrDefault(SubstrateType.OTHER)
 
     @TypeConverter
     fun fromLocalTimeList(value: List<LocalTime>): String =

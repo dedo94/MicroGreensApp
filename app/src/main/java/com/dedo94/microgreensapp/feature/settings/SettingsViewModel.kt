@@ -6,7 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dedo94.microgreensapp.core.network.dto.GeocodingResultDto
+import com.dedo94.microgreensapp.core.notifications.NotificationScheduler
 import com.dedo94.microgreensapp.core.repository.LocationPreference
+import com.dedo94.microgreensapp.core.repository.NotificationPreferenceRepository
+import com.dedo94.microgreensapp.core.repository.TrayRepository
 import com.dedo94.microgreensapp.core.repository.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,10 +21,27 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val weatherRepository: WeatherRepository,
+    private val notificationPreferenceRepository: NotificationPreferenceRepository,
+    private val trayRepository: TrayRepository,
+    private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
 
     val location: StateFlow<LocationPreference?> = weatherRepository.observeLocation()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val notificationsEnabled: StateFlow<Boolean> = notificationPreferenceRepository.enabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    fun onNotificationsEnabledChange(enabled: Boolean) {
+        viewModelScope.launch {
+            notificationPreferenceRepository.setEnabled(enabled)
+            if (enabled) {
+                trayRepository.rescheduleAllReminders()
+            } else {
+                notificationScheduler.cancelAllReminders()
+            }
+        }
+    }
 
     var query by mutableStateOf("")
         private set

@@ -6,7 +6,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.core.repository.NotificationPreferenceRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -23,12 +25,14 @@ import javax.inject.Singleton
 @Singleton
 class NotificationScheduler @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val preferenceRepository: NotificationPreferenceRepository,
 ) {
     private val workManager: WorkManager
         get() = WorkManager.getInstance(context)
 
-    fun rescheduleForTray(trayId: Long, trayName: String, steps: List<TrayStepEntity>) {
+    suspend fun rescheduleForTray(trayId: Long, trayName: String, steps: List<TrayStepEntity>) {
         workManager.cancelAllWorkByTag(tagForTray(trayId))
+        if (!preferenceRepository.enabled.first()) return
         val now = LocalDateTime.now()
         steps
             .filter { it.status == TrayStepStatus.PENDING && it.reminderTimes.isNotEmpty() }
@@ -37,6 +41,11 @@ class NotificationScheduler @Inject constructor(
 
     fun cancelForTray(trayId: Long) {
         workManager.cancelAllWorkByTag(tagForTray(trayId))
+    }
+
+    /** Cancella tutti i promemoria di tutti i vassoi, es. quando l'utente disattiva il toggle. */
+    fun cancelAllReminders() {
+        workManager.cancelAllWorkByTag(REMINDER_TAG)
     }
 
     private fun enqueueOccurrences(trayId: Long, trayName: String, step: TrayStepEntity, now: LocalDateTime) {
@@ -70,9 +79,14 @@ class NotificationScheduler @Inject constructor(
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(data)
             .addTag(tagForTray(trayId))
+            .addTag(REMINDER_TAG)
             .build()
         workManager.enqueue(request)
     }
 
     private fun tagForTray(trayId: Long) = "tray_reminders_$trayId"
+
+    private companion object {
+        const val REMINDER_TAG = "microgreens_reminder"
+    }
 }

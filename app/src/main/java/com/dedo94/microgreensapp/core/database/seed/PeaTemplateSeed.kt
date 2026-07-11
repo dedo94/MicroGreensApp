@@ -8,29 +8,22 @@ import com.dedo94.microgreensapp.core.database.entity.VarietyTemplateEntity
 import java.time.LocalTime
 
 /**
- * Template precaricato al primo avvio, ricalcato esattamente sull'appunto
- * di coltivazione idroponica dei microgreens di girasole fornito dall'utente.
+ * Template precaricato per i piselli, sullo stesso schema del girasole
+ * (stessa sequenza di fasi, tempi tipici per microgreens di piselli):
+ * completamente modificabile da "Gestisci varietà" una volta creato.
  */
-object SunflowerTemplateSeed {
+object PeaTemplateSeed {
 
-    private const val PLANT_TYPE = "Helianthus Annuus"
+    private const val PLANT_TYPE = "Pisum Sativum"
 
     suspend fun seedIfNeeded(templateDao: VarietyTemplateDao, stepDao: TemplateStepDao) {
-        val existing = templateDao.getByName("Girasole")
-        if (existing != null) {
-            // Corregge il nome botanico su installazioni già seedate in
-            // precedenza, senza toccare gli step già copiati sui vassoi.
-            if (existing.plantType != PLANT_TYPE) {
-                templateDao.update(existing.copy(plantType = PLANT_TYPE))
-            }
-            return
-        }
+        if (templateDao.countByName("Piselli") > 0) return
 
         val templateId = templateDao.insert(
             VarietyTemplateEntity(
-                name = "Girasole",
+                name = "Piselli",
                 plantType = PLANT_TYPE,
-                notes = "Coltivazione idroponica dei microgreens di girasole.",
+                notes = "Coltivazione idroponica dei microgreens di piselli.",
             )
         )
 
@@ -42,10 +35,10 @@ object SunflowerTemplateSeed {
                 actionType = ActionType.SOAKING,
                 offsetStartDays = 0,
                 offsetEndDays = 0,
-                durationHours = 8,
+                durationHours = 12,
                 repeatPerDay = 1,
                 reminderTimes = listOf(LocalTime.of(8, 0)),
-                instructions = "8 ore di ammollo. I semi devono stare completamente sommersi.",
+                instructions = "12 ore di ammollo. I semi devono stare completamente sommersi.",
             ),
             TemplateStepEntity(
                 templateId = templateId,
@@ -53,7 +46,7 @@ object SunflowerTemplateSeed {
                 name = "Prevenzione muffa",
                 actionType = ActionType.MOLD_PREVENTION,
                 offsetStartDays = 1,
-                offsetEndDays = 3,
+                offsetEndDays = 2,
                 repeatPerDay = 2,
                 reminderTimes = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
                 instructions = "Sciacquare i semi sotto acqua corrente 2 volte al giorno. " +
@@ -64,8 +57,8 @@ object SunflowerTemplateSeed {
                 orderIndex = 2,
                 name = "Trasferimento nel vassoio",
                 actionType = ActionType.TRAY_TRANSFER,
-                offsetStartDays = 4,
-                offsetEndDays = 4,
+                offsetStartDays = 3,
+                offsetEndDays = 3,
                 repeatPerDay = 1,
                 reminderTimes = listOf(LocalTime.of(8, 0)),
                 instructions = "Mettere i semi nel vassoio per la crescita. Mantenerli coperti " +
@@ -77,8 +70,8 @@ object SunflowerTemplateSeed {
                 orderIndex = 3,
                 name = "Crescita",
                 actionType = ActionType.LIGHT_GROWTH,
-                offsetStartDays = 5,
-                offsetEndDays = 10,
+                offsetStartDays = 4,
+                offsetEndDays = 9,
                 repeatPerDay = 1,
                 reminderTimes = listOf(LocalTime.of(8, 0)),
                 instructions = "Se iniziano a crescere le radici sotto, esporre le piante alla " +
@@ -89,19 +82,19 @@ object SunflowerTemplateSeed {
                 orderIndex = 4,
                 name = "Raccolta",
                 actionType = ActionType.HARVEST,
-                offsetStartDays = 10,
-                offsetEndDays = 10,
+                offsetStartDays = 9,
+                offsetEndDays = 9,
                 repeatPerDay = 1,
                 reminderTimes = listOf(LocalTime.of(8, 0)),
-                instructions = "Raccolta quando appaiono le prime vere foglie. Tagliare il più " +
-                    "vicino alla radice possibile.",
+                instructions = "Raccolta quando i germogli sono alti 7-10cm, prima che appaiano i " +
+                    "viticci. Tagliare il più vicino alla radice possibile.",
             ),
             TemplateStepEntity(
                 templateId = templateId,
                 orderIndex = 5,
                 name = "Conservazione",
                 actionType = ActionType.STORAGE,
-                offsetStartDays = 10,
+                offsetStartDays = 9,
                 offsetEndDays = null,
                 repeatPerDay = 1,
                 reminderTimes = emptyList(),
