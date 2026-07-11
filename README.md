@@ -5,7 +5,8 @@ processo di coltivazione dei microgreens, organizzato per vassoi: template di
 fasi personalizzabili, calendario unico degli eventi, notifiche, dati
 meteo/alba-tramonto e statistiche. Uso personale, dati 100% locali (Room), nessun account.
 
-Il piano di implementazione completo è in `/root/.claude/plans/logical-discovering-pinwheel.md` (sessione di sviluppo) ed è riassunto nelle 6 fasi qui sotto.
+Sviluppato in 6 fasi iniziali, riassunte qui sotto, seguite da miglioramenti
+successivi e da un redesign completo dell'interfaccia.
 
 ## Stato di avanzamento
 
@@ -163,7 +164,8 @@ core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
 feature/template   CRUD template di varietà e step
-feature/tray       Vassoi: tab In corso/Raccolti, creazione, modifica,
+feature/tray       Vassoi: tab In corso (giorni dalla semina, progresso,
+                   stima raccolto)/Raccolti, creazione, modifica,
                    dettaglio/timeline/previsione raccolto
 feature/event      Form aggiungi/modifica evento (meteo pre-compilato)
 feature/calendar   Vista mensile con filtro per vassoio
