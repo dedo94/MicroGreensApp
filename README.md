@@ -112,13 +112,13 @@ dell'app:
   immediato all'avvio. Aggiunto `fallbackToDestructiveMigrationFrom(1, 2, 3,
   4)` per coprire quel salto storico una volta per tutte.
 
-## Redesign UI (in corso)
+## Redesign UI
 
 Restyling completo in chiave "fresh & organic" (Material 3, coltivazione/
-natura/freschezza), pianificato in più fasi — una PR per fase, ciascuna
+natura/freschezza), fatto in più fasi — una PR per fase, ciascuna
 autoconclusiva:
 
-- **Fase 1 — fondamenta del tema**: schema colori Material 3 completo
+- **Fondamenta del tema**: schema colori Material 3 completo
   (light + dark, tutti i ruoli) derivato da 5 colori seed (verde foglia
   `#4C956C`, verde salvia `#7A9E7E`, accento sole `#E8A33D`, superfici
   chiarissima verdastra in light/verde scurissima in dark);
@@ -131,10 +131,16 @@ autoconclusiva:
   radius delle Card nel range 16-20dp. Nuovo token di spaziatura da 8dp
   (`ui/theme/Spacing.kt`). Palette dei pallini identificativi dei vassoi
   attenuata per stare in armonia con le nuove superfici verdi.
-- **In arrivo**: sweep delle icone su Material Icons Outlined, tab "In
-  corso" dei vassoi arricchita con giorni dalla semina/progresso/stima
-  raccolto, restyling di dettaglio vassoio, form vassoio, Statistiche,
-  Calendario e schermate minori.
+- **Icone**: tutte le icone (17 in totale) passate da Material Icons
+  Filled a Outlined, coerente con lo stile più pulito del resto.
+- **Dashboard vassoi**: la tab "In corso" mostra ora giorni dalla semina,
+  barra di progresso e giorni al raccolto stimato per ogni vassoio con un
+  piano di coltivazione (nessun badge di fase testuale, solo numeri).
+- **Dettaglio vassoio, form, Statistiche, Calendario, schermate minori**
+  (Opzioni, Varietà, evento): spaziatura sui token `Spacing`, card con le
+  nuove forme/colori, empty state con icona invece di solo testo,
+  transizioni leggere (`animateItem`/`animateContentSize`) su comparsa e
+  aggiornamento delle card.
 
 ## Build
 

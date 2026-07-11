@@ -36,12 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -83,25 +83,25 @@ fun TemplateEditScreen(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(bottom = 16.dp),
+                .padding(horizontal = Spacing.md),
+            contentPadding = PaddingValues(bottom = Spacing.md),
         ) {
             item {
-                Column(Modifier.padding(vertical = 12.dp)) {
+                Column(Modifier.padding(vertical = Spacing.sm)) {
                     OutlinedTextField(
                         value = viewModel.name,
                         onValueChange = viewModel::onNameChange,
                         label = { Text("Nome varietà") },
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(Spacing.sm))
                     OutlinedTextField(
                         value = viewModel.plantType,
                         onValueChange = viewModel::onPlantTypeChange,
                         label = { Text("Tipo pianta") },
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(Spacing.sm))
                     OutlinedTextField(
                         value = viewModel.notes,
                         onValueChange = viewModel::onNotesChange,
@@ -110,35 +110,35 @@ fun TemplateEditScreen(
                         minLines = 2,
                     )
                     if (viewModel.isNew && templateId == null) {
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(Spacing.sm))
                         Text(
                             text = "Salva le informazioni base per poter aggiungere gli step.",
                             style = MaterialTheme.typography.bodySmall,
                         )
                     } else if (!viewModel.isInfoSaved) {
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(Spacing.sm))
                         Text(
                             text = "Modifiche non salvate. Tocca ✓ per salvare.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
-                    HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(top = Spacing.md))
                     Text(
                         text = "Step del piano di coltivazione",
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(vertical = 12.dp),
+                        modifier = Modifier.padding(vertical = Spacing.sm),
                     )
                 }
             }
 
             items(steps, key = { it.id }) { step ->
                 ReorderableItem(reorderableState, key = step.id) { _ ->
-                    Card(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
+                                .padding(Spacing.sm),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
@@ -152,7 +152,7 @@ fun TemplateEditScreen(
                                 ) {
                                     Icon(Icons.Outlined.DragHandle, contentDescription = "Riordina")
                                 }
-                                Spacer(Modifier.width(8.dp))
+                                Spacer(Modifier.width(Spacing.sm))
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
@@ -243,12 +243,12 @@ private fun AddStepCard(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(Spacing.md),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {

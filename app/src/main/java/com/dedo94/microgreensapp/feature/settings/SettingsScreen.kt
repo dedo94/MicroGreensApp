@@ -33,11 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.theme.Spacing
 
 @Composable
 fun SettingsScreen(
@@ -66,10 +66,10 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(Spacing.md),
         ) {
             Text("Varietà", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Spacing.xs))
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,29 +82,29 @@ fun SettingsScreen(
                 },
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.lg))
 
             Text("Notifiche", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.sm))
             if (hasNotificationPermission) {
                 Text("I promemoria per le azioni pianificate sono attivi.")
             } else {
                 Text("Attiva le notifiche per ricevere i promemoria (es. \"oggi sciacqua i semi\").")
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Spacing.sm))
                 Button(onClick = { permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
                     Text("Attiva notifiche")
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.lg))
 
             Text("Meteo", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.sm))
             Text(
                 location?.let { "Posizione attuale: ${it.name}" }
                     ?: "Nessuna posizione impostata: temperatura/umidità/alba-tramonto non verranno pre-compilate negli eventi.",
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.query,
                 onValueChange = viewModel::onQueryChange,
@@ -118,7 +118,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             if (viewModel.isSearching) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Spacing.sm))
                 Text("Ricerca in corso…", style = MaterialTheme.typography.bodySmall)
             }
             viewModel.results.forEach { result ->
