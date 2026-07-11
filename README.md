@@ -89,6 +89,16 @@ dell'app:
   un'icona a foglia poco chiara); nel dettaglio vassoio il FAB flottante è
   sostituito da una card "+" in fondo alla timeline; la scheda
   "Impostazioni" è stata rinominata "Opzioni".
+- **Fix perdita dati e restyling varietà**: il seeding del template
+  "Girasole" precaricato non dipende più dal Callback.onCreate di Room (che
+  non si rieseguiva in modo affidabile) ma viene rieseguito ad ogni avvio
+  dell'app in modo idempotente, così torna sempre disponibile. Rimosso anche
+  `fallbackToDestructiveMigration()`, che cancellava l'intero database ad
+  ogni cambio di schema: da qui in avanti i cambi di schema richiedono una
+  Migration esplicita. Le schermate "Gestisci varietà" (lista e dettaglio),
+  rimaste indietro rispetto al resto della revisione UX, ora hanno la
+  freccia indietro nella TopAppBar e la card "+" in fondo alla lista al
+  posto del FAB flottante.
 
 ## Build
 

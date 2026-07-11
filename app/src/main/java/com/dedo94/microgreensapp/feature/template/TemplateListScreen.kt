@@ -4,18 +4,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,6 +41,7 @@ import com.dedo94.microgreensapp.core.database.entity.VarietyTemplateEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemplateListScreen(
+    onBack: () -> Unit,
     onCreateTemplate: () -> Unit,
     onOpenTemplate: (Long) -> Unit,
     viewModel: TemplateListViewModel = hiltViewModel(),
@@ -46,11 +50,15 @@ fun TemplateListScreen(
     var templateToDelete by remember { mutableStateOf<VarietyTemplateEntity?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Varietà") }) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onCreateTemplate) {
-                Icon(Icons.Default.Add, contentDescription = "Nuova varietà")
-            }
+        topBar = {
+            TopAppBar(
+                title = { Text("Varietà") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
+                    }
+                },
+            )
         },
     ) { padding ->
         if (templates.isEmpty()) {
@@ -62,14 +70,15 @@ fun TemplateListScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Nessuna varietà ancora. Tocca + per crearne una.",
+                    text = "Nessuna varietà ancora. Tocca + qui sotto per crearne una.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                AddTemplateCard(onClick = onCreateTemplate)
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(bottom = 96.dp),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
             ) {
                 items(templates, key = { it.id }) { template ->
                     ListItem(
@@ -85,6 +94,9 @@ fun TemplateListScreen(
                             }
                         },
                     )
+                }
+                item(key = "add-template") {
+                    AddTemplateCard(onClick = onCreateTemplate)
                 }
             }
         }
@@ -105,5 +117,25 @@ fun TemplateListScreen(
                 TextButton(onClick = { templateToDelete = null }) { Text("Annulla") }
             },
         )
+    }
+}
+
+@Composable
+private fun AddTemplateCard(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Nuova varietà")
+        }
     }
 }
