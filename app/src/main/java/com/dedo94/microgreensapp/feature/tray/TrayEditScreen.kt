@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,9 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dedo94.microgreensapp.core.database.entity.SubstrateType
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,32 +41,24 @@ fun TrayEditScreen(
 ) {
     var substrateMenuExpanded by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Modifica vassoio") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { viewModel.save(onBack) },
-                        enabled = viewModel.canSave,
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = "Salva")
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        if (!viewModel.isLoaded) return@Scaffold
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader(
+            title = "Modifica vassoio",
+            onBack = onBack,
+            actions = {
+                IconButton(
+                    onClick = { viewModel.save(onBack) },
+                    enabled = viewModel.canSave,
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = "Salva")
+                }
+            },
+        )
+        if (!viewModel.isLoaded) return@Column
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {

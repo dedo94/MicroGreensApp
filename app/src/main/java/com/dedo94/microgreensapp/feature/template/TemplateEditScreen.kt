@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -28,10 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -66,33 +64,25 @@ fun TemplateEditScreen(
         viewModel.moveStep(from.index, to.index)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(if (viewModel.isNew) "Nuova varietà" else "Modifica varietà") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader(
+            title = if (viewModel.isNew) "Nuova varietà" else "Modifica varietà",
+            onBack = onBack,
+            actions = {
+                IconButton(onClick = { viewModel.saveTemplateInfo() }) {
+                    Icon(Icons.Default.Check, contentDescription = "Salva")
+                }
+                if (templateId != null) {
+                    IconButton(onClick = { showDeleteTemplateDialog = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Elimina varietà")
                     }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.saveTemplateInfo() }) {
-                        Icon(Icons.Default.Check, contentDescription = "Salva")
-                    }
-                    if (templateId != null) {
-                        IconButton(onClick = { showDeleteTemplateDialog = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Elimina varietà")
-                        }
-                    }
-                },
-            )
-        },
-    ) { padding ->
+                }
+            },
+        )
         LazyColumn(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {

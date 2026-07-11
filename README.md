@@ -99,6 +99,11 @@ dell'app:
   rimaste indietro rispetto al resto della revisione UX, ora hanno la
   freccia indietro nella TopAppBar e la card "+" in fondo alla lista al
   posto del FAB flottante.
+- **Header compatti ovunque**: l'intestazione compatta, prima solo sulle 4
+  schede principali, ora sostituisce la TopAppBar (64dp) anche in tutte le
+  schermate raggiunte "andando avanti" (Nuovo/Modifica vassoio, Nuovo/
+  Modifica evento, dettaglio vassoio, Gestisci varietà), con freccia
+  indietro e azioni integrate nello stesso componente compatto.
 
 ## Build
 
