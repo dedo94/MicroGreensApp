@@ -12,7 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.dedo94.microgreensapp.ui.theme.Spacing
 
 /**
  * Intestazione compatta al posto di una TopAppBar (64dp): stesso titolo,
@@ -28,8 +28,8 @@ fun CompactHeader(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(
-            start = if (onBack != null) 4.dp else 16.dp,
-            end = 4.dp,
+            start = if (onBack != null) Spacing.xs else Spacing.md,
+            end = Spacing.xs,
         ),
     ) {
         if (onBack != null) {
@@ -42,7 +42,7 @@ fun CompactHeader(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .padding(vertical = 10.dp)
+                .padding(vertical = Spacing.sm)
                 .weight(1f),
         )
         actions()
