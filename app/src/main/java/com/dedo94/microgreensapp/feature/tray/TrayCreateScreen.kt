@@ -27,13 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.SubstrateType
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.DatePickerField
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +63,7 @@ fun TrayCreateScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(Spacing.md)
                 .verticalScroll(rememberScrollState()),
         ) {
             ExposedDropdownMenuBox(
@@ -107,7 +107,7 @@ fun TrayCreateScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.trayName,
                 onValueChange = viewModel::onNameChange,
@@ -115,7 +115,7 @@ fun TrayCreateScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             DatePickerField(
                 label = "Data di semina",
                 date = viewModel.sowingDate,
@@ -123,7 +123,7 @@ fun TrayCreateScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.seedQuantityText,
                 onValueChange = viewModel::onSeedQuantityChange,
@@ -132,7 +132,7 @@ fun TrayCreateScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             ExposedDropdownMenuBox(
                 expanded = substrateMenuExpanded,
                 onExpandedChange = { substrateMenuExpanded = it },
@@ -165,7 +165,7 @@ fun TrayCreateScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.substrateNotes,
                 onValueChange = viewModel::onSubstrateNotesChange,
