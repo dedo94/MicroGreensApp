@@ -26,10 +26,15 @@ object DatabaseModule {
         @ApplicationContext context: Context,
     ): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.DATABASE_NAME)
-            // Un downgrade (es. reinstallo di una build più vecchia) non è
-            // un caso reale d'uso: va bene ricreare il DB solo in quel caso.
-            // Ogni cambio di schema in avanti richiede da qui in poi una
+            // Le versioni 1-4 sono schema pre-esistenti per cui non è mai
+            // stata scritta una Migration esplicita (venivano ricreate a
+            // ogni cambio con fallbackToDestructiveMigration()): senza
+            // questa riga, chiunque avesse ancora un DB locale a una di
+            // quelle versioni otteneva un crash all'avvio (IllegalStateException:
+            // migration mancante) invece del comportamento precedente.
+            // Da qui in avanti (6+) ogni cambio di schema richiede una
             // Migration esplicita, per non perdere più i dati dell'utente.
+            .fallbackToDestructiveMigrationFrom(1, 2, 3, 4)
             .fallbackToDestructiveMigrationOnDowngrade()
             .build()
 
