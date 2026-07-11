@@ -188,6 +188,13 @@ class TrayRepository @Inject constructor(
         notificationScheduler.rescheduleForTray(trayId, trayName, steps)
     }
 
+    /** Ripianifica i promemoria di tutti i vassoi in corso, es. quando l'utente riattiva il toggle notifiche. */
+    suspend fun rescheduleAllReminders() {
+        trayDao.getByStatusOnce(TrayStatus.IN_PROGRESS).forEach { tray ->
+            rescheduleReminders(tray.id)
+        }
+    }
+
     suspend fun getEvent(eventId: Long): EventEntity? = eventDao.getById(eventId)
 
     suspend fun addEvent(event: EventEntity): Long = eventDao.insert(event)

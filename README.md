@@ -143,6 +143,23 @@ autoconclusiva:
   transizioni leggere (`animateItem`/`animateContentSize`) su comparsa e
   aggiornamento delle card.
 
+## Dopo il redesign
+
+- **Substrati semplificati**: la scelta del substrato in "Nuovo vassoio" è
+  ridotta a Idroponica (default), Terriccio e Altro — le altre opzioni
+  (fibra di cocco, canapa, carta assorbente, perlite/vermiculite) sono
+  state rimosse. Un vassoio già salvato con uno di quei valori non
+  crasha: viene letto come "Altro".
+- **Nomi botanici delle varietà**: il girasole precaricato ora ha come tipo
+  pianta "Helianthus Annuus" (era una descrizione generica); aggiunta una
+  seconda varietà precaricata, "Piselli" (Pisum Sativum), con un piano di
+  coltivazione di partenza sullo stesso schema del girasole — completamente
+  modificabile da "Gestisci varietà".
+- **Notifiche on/off**: in Opzioni, un interruttore attiva/disattiva i
+  promemoria in qualsiasi momento, indipendentemente dal permesso di
+  sistema. Disattivandolo si cancellano subito tutti i promemoria già in
+  coda; riattivandolo si ripianificano quelli dei vassoi in corso.
+
 ## Build
 
 Il progetto richiede l'Android SDK (compileSdk 35, minSdk 26). Per compilare:

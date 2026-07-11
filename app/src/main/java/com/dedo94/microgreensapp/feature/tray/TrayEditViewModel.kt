@@ -29,7 +29,7 @@ class TrayEditViewModel @Inject constructor(
         private set
     var seedQuantityText by mutableStateOf("")
         private set
-    var substrateType by mutableStateOf(SubstrateType.SOIL)
+    var substrateType by mutableStateOf(SubstrateType.HYDROPONIC_MAT)
         private set
     var substrateNotes by mutableStateOf("")
         private set

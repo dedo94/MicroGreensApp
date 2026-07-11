@@ -6,7 +6,9 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,12 +27,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -59,6 +63,7 @@ fun SettingsScreen(
     ) { granted -> hasNotificationPermission = granted }
 
     val location by viewModel.location.collectAsStateWithLifecycle()
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize()) {
         CompactHeader("Opzioni")
@@ -86,13 +91,33 @@ fun SettingsScreen(
 
             Text("Notifiche", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(Spacing.sm))
-            if (hasNotificationPermission) {
-                Text("I promemoria per le azioni pianificate sono attivi.")
-            } else {
-                Text("Attiva le notifiche per ricevere i promemoria (es. \"oggi sciacqua i semi\").")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Promemoria attivi")
+                    Text(
+                        text = "Ricevi una notifica per le azioni pianificate (es. \"oggi sciacqua i semi\").",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(
+                    checked = notificationsEnabled,
+                    onCheckedChange = viewModel::onNotificationsEnabledChange,
+                )
+            }
+            if (!hasNotificationPermission) {
+                Spacer(Modifier.height(Spacing.sm))
+                Text(
+                    text = "Il sistema richiede anche il permesso di notifica per mostrarle davvero.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
                 Spacer(Modifier.height(Spacing.sm))
                 Button(onClick = { permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
-                    Text("Attiva notifiche")
+                    Text("Concedi permesso")
                 }
             }
 
