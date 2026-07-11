@@ -175,3 +175,10 @@ ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
                    etichette), grafici Canvas (ui/charts) e tema Material 3
                    (colori, tipografia con font Manrope, forme, spaziatura)
 ```
+
+## Licenza
+
+Tutti i diritti riservati — vedi [`LICENSE`](LICENSE). Il repository è
+pubblico per consultazione, ma non è concessa alcuna licenza d'uso, copia
+o ridistribuzione del codice senza permesso esplicito. Progetto personale,
+non accetto contributi esterni — vedi [`CONTRIBUTING.md`](CONTRIBUTING.md).

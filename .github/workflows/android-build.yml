@@ -7,6 +7,13 @@ on:
     branches: ["**"]
   workflow_dispatch:
 
+# Il GITHUB_TOKEN di default non serve a niente di più che leggere il
+# checkout e caricare l'artifact: nessun push, nessuna PR, nessuna
+# scrittura sul repo. Limitarlo esplicitamente riduce cosa una PR (anche
+# da un fork) può fare tramite questo workflow.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
