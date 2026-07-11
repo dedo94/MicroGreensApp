@@ -1,5 +1,6 @@
 package com.dedo94.microgreensapp.feature.stats
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +25,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -42,6 +47,7 @@ import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.charts.MonthlyBarChart
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -59,13 +65,24 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
         CompactHeader("Statistiche")
         val currentOverview = overview
         if (currentOverview == null || currentOverview.trayStats.isEmpty()) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center,
+                    .padding(Spacing.xl),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Crea e coltiva un vassoio per vedere le statistiche qui.")
+                Icon(
+                    imageVector = Icons.Outlined.QueryStats,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(Spacing.md))
+                Text(
+                    text = "Crea e coltiva un vassoio per vedere le statistiche qui.",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
         } else {
             StatsContent(
@@ -113,11 +130,11 @@ private fun StatsContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(vertical = 16.dp),
+            .padding(horizontal = Spacing.md),
+        contentPadding = PaddingValues(vertical = Spacing.md),
     ) {
         item {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 item {
                     FilterChip(
                         selected = varietyFilter == null,
@@ -133,7 +150,7 @@ private fun StatsContent(
                     )
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Spacing.xs))
         }
 
         if (overview.bestYieldTray != null || overview.bestYieldRatioTray != null || overview.shortestCycleTray != null) {
@@ -151,7 +168,7 @@ private fun StatsContent(
                     }
                 }
             }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
         if (overview.monthlyHarvestGrams.isNotEmpty()) {
@@ -161,29 +178,29 @@ private fun StatsContent(
                     points = overview.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
                 )
             }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
         if (trendPoints.isNotEmpty()) {
             item { SectionTitle("Andamento resa · $varietyFilter") }
             item { TrendLineChart(points = trendPoints) }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
         if (filteredVarietyStats.isNotEmpty()) {
             item { SectionTitle("Per varietà") }
             items(items = filteredVarietyStats, key = { it.varietyName }) { stats ->
-                VarietyStatsCard(stats)
+                VarietyStatsCard(stats, modifier = Modifier.animateItem())
             }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
         item { SectionTitle("Per vassoio") }
         items(items = filteredTrayStats, key = { it.tray.id }) { stats ->
-            TrayStatsCard(stats)
+            TrayStatsCard(stats, modifier = Modifier.animateItem())
         }
 
-        item { Spacer(Modifier.height(12.dp)) }
+        item { Spacer(Modifier.height(Spacing.sm)) }
         item { SectionTitle("Confronta due vassoi") }
         item {
             CompareSection(
@@ -217,7 +234,7 @@ private fun CompareSection(
             onSelect = onTrayAChange,
             modifier = Modifier.weight(1f),
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(Spacing.sm))
         TrayPickerDropdown(
             label = "Vassoio B",
             trayStats = trayStats,
@@ -227,22 +244,26 @@ private fun CompareSection(
         )
     }
 
-    if (trayA != null && trayB != null) {
-        Spacer(Modifier.height(8.dp))
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("", modifier = Modifier.weight(1f))
-                    Text(trayA.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                    Text(trayB.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+    Box(Modifier.animateContentSize()) {
+        if (trayA != null && trayB != null) {
+            Column {
+                Spacer(Modifier.height(Spacing.sm))
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(Spacing.sm)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("", modifier = Modifier.weight(1f))
+                            Text(trayA.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                            Text(trayB.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
+                        ComparisonRow("Semi", formatGrams(trayA.tray.initialSeedQuantityGrams), formatGrams(trayB.tray.initialSeedQuantityGrams))
+                        ComparisonRow("Acqua", "${"%.0f".format(trayA.waterTotalMl)}ml", "${"%.0f".format(trayB.waterTotalMl)}ml")
+                        ComparisonRow("Raccolto", formatGrams(trayA.harvestTotalGrams), formatGrams(trayB.harvestTotalGrams))
+                        ComparisonRow("Resa/seme", formatRatio(trayA.yieldPerSeedGram), formatRatio(trayB.yieldPerSeedGram))
+                        ComparisonRow("Efficienza idrica", formatRatio(trayA.waterPerHarvestGram), formatRatio(trayB.waterPerHarvestGram))
+                        ComparisonRow("Durata", formatDays(trayA.actualCycleDays), formatDays(trayB.actualCycleDays))
+                    }
                 }
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                ComparisonRow("Semi", formatGrams(trayA.tray.initialSeedQuantityGrams), formatGrams(trayB.tray.initialSeedQuantityGrams))
-                ComparisonRow("Acqua", "${"%.0f".format(trayA.waterTotalMl)}ml", "${"%.0f".format(trayB.waterTotalMl)}ml")
-                ComparisonRow("Raccolto", formatGrams(trayA.harvestTotalGrams), formatGrams(trayB.harvestTotalGrams))
-                ComparisonRow("Resa/seme", formatRatio(trayA.yieldPerSeedGram), formatRatio(trayB.yieldPerSeedGram))
-                ComparisonRow("Efficienza idrica", formatRatio(trayA.waterPerHarvestGram), formatRatio(trayB.waterPerHarvestGram))
-                ComparisonRow("Durata", formatDays(trayA.actualCycleDays), formatDays(trayB.actualCycleDays))
             }
         }
     }
@@ -294,7 +315,7 @@ private fun ComparisonRow(label: String, valueA: String, valueB: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
@@ -308,7 +329,7 @@ private fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+        modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm),
     )
 }
 
@@ -317,7 +338,7 @@ private fun RecordRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Spacing.xs),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
@@ -326,9 +347,9 @@ private fun RecordRow(label: String, value: String) {
 }
 
 @Composable
-private fun VarietyStatsCard(stats: VarietyStats) {
-    Card(modifier = Modifier.padding(vertical = 4.dp)) {
-        Column(Modifier.padding(12.dp)) {
+private fun VarietyStatsCard(stats: VarietyStats, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.padding(vertical = Spacing.xs)) {
+        Column(Modifier.padding(Spacing.sm)) {
             Text(stats.varietyName, style = MaterialTheme.typography.titleSmall)
             Text(
                 text = "${stats.cycleCount} cicli · ${stats.harvestedCount} raccolti",
@@ -343,9 +364,9 @@ private fun VarietyStatsCard(stats: VarietyStats) {
 }
 
 @Composable
-private fun TrayStatsCard(stats: TrayStats) {
-    Card(modifier = Modifier.padding(vertical = 4.dp)) {
-        Column(Modifier.padding(12.dp)) {
+private fun TrayStatsCard(stats: TrayStats, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.padding(vertical = Spacing.xs)) {
+        Column(Modifier.padding(Spacing.sm)) {
             Text(
                 text = "${stats.tray.name} · ${stats.tray.varietyName} · ${stats.tray.status.displayLabel()}",
                 style = MaterialTheme.typography.titleSmall,
