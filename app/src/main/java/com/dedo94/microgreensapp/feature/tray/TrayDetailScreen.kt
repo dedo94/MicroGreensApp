@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -30,10 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +47,7 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
 import java.time.LocalDate
 
@@ -87,62 +85,53 @@ fun TrayDetailScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(tray?.name ?: "") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
+    Column(Modifier.fillMaxSize()) {
+        CompactHeader(
+            title = tray?.name ?: "",
+            onBack = onBack,
+            actions = {
+                Box {
+                    IconButton(onClick = { showStatusMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Altre azioni")
                     }
-                },
-                actions = {
-                    Box {
-                        IconButton(onClick = { showStatusMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Altre azioni")
-                        }
-                        DropdownMenu(
-                            expanded = showStatusMenu,
-                            onDismissRequest = { showStatusMenu = false },
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Modifica vassoio") },
-                                onClick = {
-                                    showStatusMenu = false
-                                    onEditTray(viewModel.trayId)
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Segna come raccolto") },
-                                onClick = {
-                                    viewModel.setStatus(TrayStatus.HARVESTED)
-                                    showStatusMenu = false
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Segna come in corso") },
-                                onClick = {
-                                    viewModel.setStatus(TrayStatus.IN_PROGRESS)
-                                    showStatusMenu = false
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Elimina vassoio") },
-                                onClick = {
-                                    showStatusMenu = false
-                                    showDeleteTrayDialog = true
-                                },
-                            )
-                        }
+                    DropdownMenu(
+                        expanded = showStatusMenu,
+                        onDismissRequest = { showStatusMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Modifica vassoio") },
+                            onClick = {
+                                showStatusMenu = false
+                                onEditTray(viewModel.trayId)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Segna come raccolto") },
+                            onClick = {
+                                viewModel.setStatus(TrayStatus.HARVESTED)
+                                showStatusMenu = false
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Segna come in corso") },
+                            onClick = {
+                                viewModel.setStatus(TrayStatus.IN_PROGRESS)
+                                showStatusMenu = false
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Elimina vassoio") },
+                            onClick = {
+                                showStatusMenu = false
+                                showDeleteTrayDialog = true
+                            },
+                        )
                     }
-                },
-            )
-        },
-    ) { padding ->
+                }
+            },
+        )
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize(),
         ) {
             tray?.let { t ->
                 Column(Modifier.padding(16.dp)) {
