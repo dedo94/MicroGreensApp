@@ -3,11 +3,11 @@ package com.dedo94.microgreensapp.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.QueryStats
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Eco
+import androidx.compose.material.icons.outlined.QueryStats
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -70,13 +70,13 @@ fun MicroGreensNavHost(
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<CalendarRoute>() } == true,
                     onClick = { navigateToTopLevel(CalendarRoute) },
-                    icon = { Icon(Icons.Default.CalendarMonth, contentDescription = "Calendario") },
+                    icon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = "Calendario") },
                     label = { Text("Calendario") },
                 )
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<TraysListRoute>() } == true,
                     onClick = { navigateToTopLevel(TraysListRoute) },
-                    icon = { Icon(Icons.Default.Eco, contentDescription = "Vassoi") },
+                    icon = { Icon(Icons.Outlined.Eco, contentDescription = "Vassoi") },
                     label = { Text("Vassoi") },
                 )
                 FilledIconButton(
@@ -85,18 +85,18 @@ fun MicroGreensNavHost(
                         .padding(horizontal = 8.dp)
                         .size(48.dp),
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Nuovo vassoio")
+                    Icon(Icons.Outlined.Add, contentDescription = "Nuovo vassoio")
                 }
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<StatsRoute>() } == true,
                     onClick = { navigateToTopLevel(StatsRoute) },
-                    icon = { Icon(Icons.Default.QueryStats, contentDescription = "Statistiche") },
+                    icon = { Icon(Icons.Outlined.QueryStats, contentDescription = "Statistiche") },
                     label = { Text("Statistiche") },
                 )
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<SettingsRoute>() } == true,
                     onClick = { navigateToTopLevel(SettingsRoute) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Opzioni") },
+                    icon = { Icon(Icons.Outlined.Settings, contentDescription = "Opzioni") },
                     label = { Text("Opzioni") },
                 )
             }

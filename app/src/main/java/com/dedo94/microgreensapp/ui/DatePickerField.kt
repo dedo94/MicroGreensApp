@@ -1,7 +1,7 @@
 package com.dedo94.microgreensapp.ui
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +42,7 @@ fun DatePickerField(
         label = { Text(label) },
         trailingIcon = {
             IconButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Scegli data")
+                Icon(Icons.Outlined.CalendarToday, contentDescription = "Scegli data")
             }
         },
         modifier = modifier,

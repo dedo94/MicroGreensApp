@@ -15,10 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,11 +70,11 @@ fun TemplateEditScreen(
             onBack = onBack,
             actions = {
                 IconButton(onClick = { viewModel.saveTemplateInfo() }) {
-                    Icon(Icons.Default.Check, contentDescription = "Salva")
+                    Icon(Icons.Outlined.Check, contentDescription = "Salva")
                 }
                 if (templateId != null) {
                     IconButton(onClick = { showDeleteTemplateDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Elimina varietà")
+                        Icon(Icons.Outlined.Delete, contentDescription = "Elimina varietà")
                     }
                 }
             },
@@ -150,7 +150,7 @@ fun TemplateEditScreen(
                                     modifier = Modifier.draggableHandle(),
                                     onClick = {},
                                 ) {
-                                    Icon(Icons.Default.DragHandle, contentDescription = "Riordina")
+                                    Icon(Icons.Outlined.DragHandle, contentDescription = "Riordina")
                                 }
                                 Spacer(Modifier.width(8.dp))
                                 Column(
@@ -166,7 +166,7 @@ fun TemplateEditScreen(
                                 }
                             }
                             IconButton(onClick = { stepPendingDeletion = step }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Elimina step")
+                                Icon(Icons.Outlined.Delete, contentDescription = "Elimina step")
                             }
                         }
                     }
@@ -252,7 +252,7 @@ private fun AddStepCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Aggiungi step")
+            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi step")
         }
     }
 }

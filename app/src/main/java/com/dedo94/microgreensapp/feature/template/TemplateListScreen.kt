@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,12 +72,12 @@ fun TemplateListScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onOpenTemplate(template.id) },
-                        leadingContent = { Icon(Icons.Default.Eco, contentDescription = null) },
+                        leadingContent = { Icon(Icons.Outlined.Eco, contentDescription = null) },
                         headlineContent = { Text(template.name) },
                         supportingContent = { Text(template.plantType) },
                         trailingContent = {
                             IconButton(onClick = { templateToDelete = template }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Elimina")
+                                Icon(Icons.Outlined.Delete, contentDescription = "Elimina")
                             }
                         },
                     )
@@ -122,7 +122,7 @@ private fun AddTemplateCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Nuova varietà")
+            Icon(Icons.Outlined.Add, contentDescription = "Nuova varietà")
         }
     }
 }
