@@ -30,12 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.DatePickerField
 import com.dedo94.microgreensapp.ui.displayLabel
+import com.dedo94.microgreensapp.ui.theme.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,7 +61,7 @@ fun EventEditScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(Spacing.md)
                 .verticalScroll(rememberScrollState()),
         ) {
             ExposedDropdownMenuBox(
@@ -96,7 +96,7 @@ fun EventEditScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.title,
                 onValueChange = viewModel::onTitleChange,
@@ -104,7 +104,7 @@ fun EventEditScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             Row(Modifier.fillMaxWidth()) {
                 DatePickerField(
                     label = "Data",
@@ -112,7 +112,7 @@ fun EventEditScreen(
                     onDateChange = viewModel::onDateChange,
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(Spacing.sm))
                 OutlinedTextField(
                     value = viewModel.eventTimeText,
                     onValueChange = viewModel::onTimeTextChange,
@@ -121,7 +121,7 @@ fun EventEditScreen(
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             Row(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = viewModel.quantityText,
@@ -130,7 +130,7 @@ fun EventEditScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(Spacing.sm))
                 OutlinedTextField(
                     value = viewModel.quantityUnit,
                     onValueChange = viewModel::onQuantityUnitChange,
@@ -139,7 +139,7 @@ fun EventEditScreen(
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.notes,
                 onValueChange = viewModel::onNotesChange,
@@ -148,7 +148,7 @@ fun EventEditScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(Spacing.lg))
             Text(
                 text = "Condizioni ambientali",
                 style = MaterialTheme.typography.titleSmall,
@@ -157,7 +157,7 @@ fun EventEditScreen(
                 text = "Precompilate dal meteo della posizione impostata, modificabili perché in casa le condizioni possono essere diverse.",
                 style = MaterialTheme.typography.bodySmall,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.sm))
             Row(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = viewModel.temperatureText,
@@ -166,7 +166,7 @@ fun EventEditScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(Spacing.sm))
                 OutlinedTextField(
                     value = viewModel.humidityText,
                     onValueChange = viewModel::onHumidityChange,
@@ -175,7 +175,7 @@ fun EventEditScreen(
                     modifier = Modifier.weight(1f),
                 )
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
                 value = viewModel.lightNotes,
                 onValueChange = viewModel::onLightNotesChange,
