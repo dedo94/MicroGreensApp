@@ -16,10 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -69,9 +69,6 @@ fun TemplateEditScreen(
             title = if (viewModel.isNew) "Nuova varietà" else "Modifica varietà",
             onBack = onBack,
             actions = {
-                IconButton(onClick = { viewModel.saveTemplateInfo() }) {
-                    Icon(Icons.Outlined.Check, contentDescription = "Salva")
-                }
                 if (templateId != null) {
                     IconButton(onClick = { showDeleteTemplateDialog = true }) {
                         Icon(Icons.Outlined.Delete, contentDescription = "Elimina varietà")
@@ -82,7 +79,8 @@ fun TemplateEditScreen(
         LazyColumn(
             state = lazyListState,
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(horizontal = Spacing.md),
             contentPadding = PaddingValues(bottom = Spacing.md),
         ) {
@@ -178,6 +176,14 @@ fun TemplateEditScreen(
                     AddStepCard(onClick = { showNewStepDialog = true })
                 }
             }
+        }
+        Button(
+            onClick = { viewModel.saveTemplateInfo() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+        ) {
+            Text("Salva")
         }
     }
 

@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -48,21 +45,11 @@ fun TrayCreateScreen(
     var substrateMenuExpanded by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        CompactHeader(
-            title = "Nuovo vassoio",
-            onBack = onBack,
-            actions = {
-                IconButton(
-                    onClick = { viewModel.save(onCreated) },
-                    enabled = viewModel.canSave,
-                ) {
-                    Icon(Icons.Outlined.Check, contentDescription = "Crea vassoio")
-                }
-            },
-        )
+        CompactHeader(title = "Nuovo vassoio", onBack = onBack)
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(Spacing.md)
                 .verticalScroll(rememberScrollState()),
         ) {
@@ -172,6 +159,15 @@ fun TrayCreateScreen(
                 label = { Text("Note substrato") },
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+        Button(
+            onClick = { viewModel.save(onCreated) },
+            enabled = viewModel.canSave,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+        ) {
+            Text("Crea vassoio")
         }
     }
 }

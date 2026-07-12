@@ -26,7 +26,7 @@ import com.dedo94.microgreensapp.core.database.entity.WeatherDailyEntity
         EventEntity::class,
         WeatherDailyEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

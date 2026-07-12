@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 
 /**
  * Cache del meteo Open-Meteo per un giorno: una riga per data, assumendo una
@@ -19,8 +18,6 @@ data class WeatherDailyEntity(
     val date: LocalDate,
     val fetchedTemperature: Double?,
     val fetchedHumidity: Double?,
-    val fetchedSunrise: LocalTime?,
-    val fetchedSunset: LocalTime?,
     val fetchedAt: Instant,
     val locationNameSnapshot: String,
 )

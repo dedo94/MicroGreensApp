@@ -383,14 +383,12 @@ private fun TrayStatsCard(stats: TrayStats, modifier: Modifier = Modifier) {
             val durationInfo = "Durata: ${formatDays(stats.actualCycleDays)}" +
                 (stats.plannedCycleDays?.let { " (pianificata: ${formatDays(it)})" } ?: "")
             Text(text = durationInfo, style = MaterialTheme.typography.bodySmall)
-            if (stats.avgTemperature != null || stats.avgHumidity != null) {
-                val tempInfo = stats.avgTemperature?.let { "${"%.1f".format(it)}°C" } ?: "—"
-                val humidityInfo = stats.avgHumidity?.let { "${"%.0f".format(it)}%" } ?: "—"
-                Text(
-                    text = "Condizioni medie: $tempInfo · $humidityInfo umidità",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
+            val tempInfo = stats.avgTemperature?.let { "${"%.1f".format(it)}°C" } ?: "—"
+            val humidityInfo = stats.avgHumidity?.let { "${"%.0f".format(it)}%" } ?: "—"
+            Text(
+                text = "Condizioni medie: $tempInfo · $humidityInfo umidità",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
