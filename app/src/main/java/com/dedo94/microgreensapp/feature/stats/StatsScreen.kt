@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
@@ -53,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.repository.StatsOverview
 import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.core.repository.VarietyStats
+import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.charts.MonthlyBarChart
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
@@ -427,32 +427,6 @@ private fun TrayRow(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun AdherenceBadge(percent: Double) {
-    val containerColor = when {
-        percent >= 80 -> MaterialTheme.colorScheme.primaryContainer
-        percent >= 50 -> MaterialTheme.colorScheme.tertiaryContainer
-        else -> MaterialTheme.colorScheme.errorContainer
-    }
-    val onContainerColor = when {
-        percent >= 80 -> MaterialTheme.colorScheme.onPrimaryContainer
-        percent >= 50 -> MaterialTheme.colorScheme.onTertiaryContainer
-        else -> MaterialTheme.colorScheme.onErrorContainer
-    }
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(containerColor)
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
-    ) {
-        Text(
-            text = "${percent.toInt()}%",
-            style = MaterialTheme.typography.labelSmall,
-            color = onContainerColor,
-        )
     }
 }
 

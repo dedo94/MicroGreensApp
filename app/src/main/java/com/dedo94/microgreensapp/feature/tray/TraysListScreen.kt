@@ -41,11 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayColor
-import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 
 @Composable
@@ -114,7 +112,7 @@ fun TraysListScreen(
                         )
                     } else {
                         TrayListItem(
-                            tray = item.tray,
+                            item = item,
                             modifier = Modifier.animateItem(),
                             onClick = { onOpenTray(item.tray.id) },
                         )
@@ -186,10 +184,13 @@ private fun harvestCountdownText(remainingDays: Long?): String = when {
 
 @Composable
 private fun TrayListItem(
-    tray: TrayEntity,
+    item: TrayListItemUiState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tray = item.tray
+    val harvestInfo = item.harvestTotalGrams?.let { "${"%.1f".format(it)}g" } ?: "—"
+    val durationInfo = item.actualCycleDays?.let { "$it giorni" } ?: "—"
     ListItem(
         modifier = modifier
             .fillMaxWidth()
@@ -204,7 +205,7 @@ private fun TrayListItem(
         },
         headlineContent = { Text(tray.name) },
         supportingContent = {
-            Text("${tray.varietyName} · ${tray.status.displayLabel()} · semina ${tray.sowingDate}")
+            Text("${tray.varietyName} · raccolto $harvestInfo · durata $durationInfo")
         },
     )
 }

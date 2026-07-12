@@ -1,25 +1,28 @@
 package com.dedo94.microgreensapp.feature.tray
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.Notes
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -38,7 +41,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.ActionType
@@ -46,10 +51,13 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,10 +69,12 @@ fun TrayDetailScreen(
     viewModel: TrayDetailViewModel = hiltViewModel(),
 ) {
     val tray by viewModel.tray.collectAsStateWithLifecycle()
+    val trayStats by viewModel.trayStats.collectAsStateWithLifecycle()
     val steps by viewModel.steps.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle()
     val harvestPrediction by viewModel.harvestPrediction.collectAsStateWithLifecycle()
     val timeline = remember(steps, events) { buildTimeline(steps, events) }
+    val groupedTimeline = remember(timeline) { timeline.groupBy { it.date } }
 
     var stepBeingEdited by remember { mutableStateOf<TrayStepEntity?>(null) }
     var stepPendingDeletion by remember { mutableStateOf<TrayStepEntity?>(null) }
@@ -141,10 +151,17 @@ fun TrayDetailScreen(
                         .animateContentSize(),
                 ) {
                     Column(Modifier.padding(Spacing.md)) {
-                        Text(
-                            text = "${t.varietyName} · ${t.status.displayLabel()}",
-                            style = MaterialTheme.typography.titleMedium,
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "${t.varietyName} · ${t.status.displayLabel()}",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            trayStats?.adherencePercent?.let { AdherenceBadge(it) }
+                        }
                         val seedInfo = t.initialSeedQuantityGrams?.let { " · Semi: ${it}g" } ?: ""
                         Text(
                             text = "Semina: ${t.sowingDate}$seedInfo",
@@ -176,38 +193,41 @@ fun TrayDetailScreen(
                     .padding(horizontal = Spacing.md),
                 contentPadding = PaddingValues(bottom = Spacing.md),
             ) {
-                items(
-                    items = timeline,
-                    key = { entry ->
+                groupedTimeline.forEach { (date, entries) ->
+                    item(key = "date-$date") { DateHeader(date) }
+                    items(
+                        items = entries,
+                        key = { entry ->
+                            when (entry) {
+                                is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
+                                is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
+                            }
+                        },
+                    ) { entry ->
                         when (entry) {
-                            is TrayTimelineEntry.StepEntry -> "step-${entry.step.id}"
-                            is TrayTimelineEntry.EventEntry -> "event-${entry.event.id}"
-                        }
-                    },
-                ) { entry ->
-                    when (entry) {
-                        is TrayTimelineEntry.StepEntry -> StepTimelineCard(
-                            step = entry.step,
-                            onMarkDone = {
-                                if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
-                                    stepPendingFutureConfirmation = entry.step
-                                } else {
-                                    proceedMarkDone(entry.step)
-                                }
-                            },
-                            onMarkSkipped = { viewModel.markSkipped(entry.step) },
-                            onMarkPending = { viewModel.markPending(entry.step) },
-                            onEdit = { stepBeingEdited = entry.step },
-                            onDelete = if (entry.step.isAdHoc) {
-                                { stepPendingDeletion = entry.step }
-                            } else null,
-                        )
+                            is TrayTimelineEntry.StepEntry -> StepTimelineCard(
+                                step = entry.step,
+                                onMarkDone = {
+                                    if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
+                                        stepPendingFutureConfirmation = entry.step
+                                    } else {
+                                        proceedMarkDone(entry.step)
+                                    }
+                                },
+                                onMarkSkipped = { viewModel.markSkipped(entry.step) },
+                                onMarkPending = { viewModel.markPending(entry.step) },
+                                onEdit = { stepBeingEdited = entry.step },
+                                onDelete = if (entry.step.isAdHoc) {
+                                    { stepPendingDeletion = entry.step }
+                                } else null,
+                            )
 
-                        is TrayTimelineEntry.EventEntry -> EventTimelineCard(
-                            event = entry.event,
-                            onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
-                            onDelete = { eventPendingDeletion = entry.event },
-                        )
+                            is TrayTimelineEntry.EventEntry -> EventTimelineCard(
+                                event = entry.event,
+                                onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
+                                onDelete = { eventPendingDeletion = entry.event },
+                            )
+                        }
                     }
                 }
                 item(key = "add-event") {
@@ -331,6 +351,28 @@ fun TrayDetailScreen(
     }
 }
 
+private val dayHeaderFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.ITALIAN)
+
+private fun dayLabel(date: LocalDate): String {
+    val today = LocalDate.now()
+    return when (date) {
+        today -> "Oggi"
+        today.minusDays(1) -> "Ieri"
+        today.plusDays(1) -> "Domani"
+        else -> date.format(dayHeaderFormatter).replaceFirstChar { it.uppercase() }
+    }
+}
+
+@Composable
+private fun DateHeader(date: LocalDate) {
+    Text(
+        text = dayLabel(date),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.xs),
+    )
+}
+
 /**
  * Chiusura naturale della timeline: una card identica a quelle degli step
  * con un + centrato, al posto di un FAB che galleggiava sopra il contenuto.
@@ -356,6 +398,32 @@ private fun AddEventCard(onClick: () -> Unit) {
 }
 
 @Composable
+private fun StepStatusBadge(status: TrayStepStatus) {
+    val (label, containerColor, onContainerColor) = when (status) {
+        TrayStepStatus.DONE -> Triple(
+            "Fatto",
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        TrayStepStatus.SKIPPED -> Triple(
+            "Saltato",
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer,
+        )
+        TrayStepStatus.PENDING -> return
+    }
+    Box(
+        modifier = Modifier
+            .padding(end = Spacing.xs)
+            .clip(RoundedCornerShape(50))
+            .background(containerColor)
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    ) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = onContainerColor)
+    }
+}
+
+@Composable
 private fun StepTimelineCard(
     step: TrayStepEntity,
     onMarkDone: () -> Unit,
@@ -364,39 +432,71 @@ private fun StepTimelineCard(
     onEdit: () -> Unit,
     onDelete: (() -> Unit)?,
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
     Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Spacing.sm),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                imageVector = Icons.Outlined.CalendarToday,
+                contentDescription = "Step pianificato",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(Spacing.sm))
             Column(Modifier.weight(1f)) {
                 Text(step.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = "${step.actionType.displayLabel()} · ${dateRangeText(step)}${step.status.displayLabel()}",
+                    text = "${step.actionType.displayLabel()} · ${dateRangeText(step)}",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
-            Row {
-                if (step.status == TrayStepStatus.PENDING) {
-                    IconButton(onClick = onMarkDone) {
-                        Icon(Icons.Outlined.Check, contentDescription = "Segna come fatto")
-                    }
-                    IconButton(onClick = onMarkSkipped) {
-                        Icon(Icons.Outlined.Close, contentDescription = "Salta")
-                    }
-                } else {
-                    IconButton(onClick = onMarkPending) {
-                        Icon(Icons.Outlined.Replay, contentDescription = "Annulla completamento")
-                    }
+            StepStatusBadge(step.status)
+            if (step.status == TrayStepStatus.PENDING) {
+                IconButton(onClick = onMarkDone) {
+                    Icon(Icons.Outlined.Check, contentDescription = "Segna come fatto")
                 }
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Outlined.Edit, contentDescription = "Modifica")
+            }
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Outlined.MoreVert, contentDescription = "Altre azioni")
                 }
-                if (onDelete != null) {
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Outlined.Delete, contentDescription = "Elimina")
+                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                    if (step.status == TrayStepStatus.PENDING) {
+                        DropdownMenuItem(
+                            text = { Text("Salta") },
+                            onClick = {
+                                menuExpanded = false
+                                onMarkSkipped()
+                            },
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text("Annulla completamento") },
+                            onClick = {
+                                menuExpanded = false
+                                onMarkPending()
+                            },
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = { Text("Modifica") },
+                        onClick = {
+                            menuExpanded = false
+                            onEdit()
+                        },
+                    )
+                    if (onDelete != null) {
+                        DropdownMenuItem(
+                            text = { Text("Elimina") },
+                            onClick = {
+                                menuExpanded = false
+                                onDelete()
+                            },
+                        )
                     }
                 }
             }
@@ -406,9 +506,9 @@ private fun StepTimelineCard(
 
 private fun dateRangeText(step: TrayStepEntity): String =
     if (step.plannedEndDate != step.plannedStartDate) {
-        "${step.plannedStartDate} → ${step.plannedEndDate} · "
+        "${step.plannedStartDate} → ${step.plannedEndDate}"
     } else {
-        "${step.plannedStartDate} · "
+        "${step.plannedStartDate}"
     }
 
 @Composable
@@ -417,13 +517,21 @@ private fun EventTimelineCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
     Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Spacing.sm),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                imageVector = Icons.Outlined.Notes,
+                contentDescription = "Evento registrato",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(Spacing.sm))
             Column(Modifier.weight(1f)) {
                 Text(event.title, style = MaterialTheme.typography.titleSmall)
                 val quantityInfo = event.quantityValue?.let { " · ${it}${event.quantityUnit}" } ?: ""
@@ -435,12 +543,25 @@ private fun EventTimelineCard(
                     Text(event.notes, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            Row {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Outlined.Edit, contentDescription = "Modifica")
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Outlined.MoreVert, contentDescription = "Altre azioni")
                 }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "Elimina")
+                DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Modifica") },
+                        onClick = {
+                            menuExpanded = false
+                            onEdit()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Elimina") },
+                        onClick = {
+                            menuExpanded = false
+                            onDelete()
+                        },
+                    )
                 }
             }
         }

@@ -10,6 +10,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.repository.StatsRepository
 import com.dedo94.microgreensapp.core.repository.TrayRepository
+import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.navigation.TrayDetailRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,6 +51,12 @@ class TrayDetailViewModel @Inject constructor(
             } else {
                 HarvestPrediction(seedQuantity * avgRatio, varietyStats.yieldSampleCount)
             }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Statistiche del vassoio corrente (aderenza al piano, resa, ecc.), null finché non calcolate. */
+    val trayStats: StateFlow<TrayStats?> =
+        combine(tray, statsRepository.observeOverview()) { currentTray, overview ->
+            currentTray?.let { t -> overview.trayStats.find { it.tray.id == t.id } }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val steps: StateFlow<List<TrayStepEntity>> = repository.stepsForTray(trayId)

@@ -4,6 +4,7 @@ import com.dedo94.microgreensapp.core.database.dao.EventDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
+import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.SubstrateType
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
@@ -162,7 +163,25 @@ class TrayRepository @Inject constructor(
                 quantityUnit = quantityUnit,
             )
         )
-        rescheduleReminders(step.trayId)
+        if (step.actionType == ActionType.HARVEST) {
+            markTrayHarvestedIfNeeded(step.trayId)
+        } else {
+            rescheduleReminders(step.trayId)
+        }
+    }
+
+    /**
+     * Registrare un raccolto (da uno step o da un evento libero) porta il
+     * vassoio automaticamente allo stato "Raccolto": è il segnale più forte
+     * che il ciclo è concluso, l'utente non dovrebbe doverlo cambiare a mano
+     * ogni volta. Riusa [updateTrayStatus] per cancellare anche i promemoria
+     * residui, coerente con quanto già succede scegliendo lo stato a mano.
+     */
+    private suspend fun markTrayHarvestedIfNeeded(trayId: Long) {
+        val tray = trayDao.observeById(trayId).firstOrNull() ?: return
+        if (tray.status != TrayStatus.HARVESTED) {
+            updateTrayStatus(tray, TrayStatus.HARVESTED)
+        }
     }
 
     suspend fun markStepSkipped(step: TrayStepEntity) {
@@ -197,9 +216,20 @@ class TrayRepository @Inject constructor(
 
     suspend fun getEvent(eventId: Long): EventEntity? = eventDao.getById(eventId)
 
-    suspend fun addEvent(event: EventEntity): Long = eventDao.insert(event)
+    suspend fun addEvent(event: EventEntity): Long {
+        val id = eventDao.insert(event)
+        if (event.eventType == ActionType.HARVEST) {
+            markTrayHarvestedIfNeeded(event.trayId)
+        }
+        return id
+    }
 
-    suspend fun updateEvent(event: EventEntity) = eventDao.update(event)
+    suspend fun updateEvent(event: EventEntity) {
+        eventDao.update(event)
+        if (event.eventType == ActionType.HARVEST) {
+            markTrayHarvestedIfNeeded(event.trayId)
+        }
+    }
 
     suspend fun deleteEvent(event: EventEntity) = eventDao.delete(event)
 }
