@@ -203,6 +203,16 @@ autoconclusiva:
   vale per le varietà: scorrere cambia la varietà selezionata come toccare
   i chip del filtro — il filtro non è più uno stato separato nel
   ViewModel, è direttamente la pagina corrente dello swipe.
+- **Piano di coltivazione dei piselli corretto**: ammollo portato da 12 a
+  10 ore; il trasferimento nel vassoio avviene subito il giorno 1 (non più
+  dopo la prevenzione muffa) con l'accortezza di non far sovrapporre i
+  semi e l'indicazione di un peso sopra per aiutare la crescita; la
+  prevenzione muffa (sciacquo 2 volte al giorno) copre i giorni 1-3 nel
+  vassoio stesso; la raccolta è una finestra di giorni 9-11, quando i
+  germogli raggiungono circa 20cm, non più un giorno fisso; la
+  conservazione resta identica a quella del girasole. La correzione si
+  applica anche a chi ha già il template "Piselli" installato (una tantum,
+  solo se non è stato modificato a mano), senza toccare i vassoi già creati.
 
 ## Build
 
