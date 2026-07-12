@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,10 +33,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +45,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.theme.Spacing
+import kotlinx.coroutines.launch
 
 @Composable
 fun TraysListScreen(
@@ -52,71 +53,84 @@ fun TraysListScreen(
     viewModel: TraysListViewModel = hiltViewModel(),
 ) {
     val trays by viewModel.trays.collectAsStateWithLifecycle()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
-    val visibleTrays = remember(trays, selectedTab) {
-        val status = if (selectedTab == 0) TrayStatus.IN_PROGRESS else TrayStatus.HARVESTED
-        trays.filter { it.tray.status == status }
-    }
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize()) {
         CompactHeader("Vassoi")
 
-        TabRow(selectedTabIndex = selectedTab) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
             Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
+                selected = pagerState.currentPage == 0,
+                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                 text = { Text("In corso") },
             )
             Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
+                selected = pagerState.currentPage == 1,
+                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                 text = { Text("Raccolti") },
             )
         }
 
-        if (visibleTrays.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(Spacing.xl),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Eco,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(Spacing.md))
-                Text(
-                    text = if (selectedTab == 0) {
-                        "Nessun vassoio in corso. Tocca + nella barra in basso per iniziare una coltivazione."
-                    } else {
-                        "Nessun vassoio raccolto finora."
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
-                contentPadding = PaddingValues(bottom = Spacing.md),
-            ) {
-                items(visibleTrays, key = { it.tray.id }) { item ->
-                    if (selectedTab == 0) {
-                        TrayDashboardCard(
-                            item = item,
-                            modifier = Modifier.animateItem(),
-                            onClick = { onOpenTray(item.tray.id) },
-                        )
-                    } else {
-                        TrayListItem(
-                            item = item,
-                            modifier = Modifier.animateItem(),
-                            onClick = { onOpenTray(item.tray.id) },
-                        )
-                    }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+        ) { page ->
+            val status = if (page == 0) TrayStatus.IN_PROGRESS else TrayStatus.HARVESTED
+            val visibleTrays = remember(trays, status) { trays.filter { it.tray.status == status } }
+            TrayListPage(page = page, trays = visibleTrays, onOpenTray = onOpenTray)
+        }
+    }
+}
+
+@Composable
+private fun TrayListPage(
+    page: Int,
+    trays: List<TrayListItemUiState>,
+    onOpenTray: (Long) -> Unit,
+) {
+    if (trays.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(Spacing.xl),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Eco,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.md))
+            Text(
+                text = if (page == 0) {
+                    "Nessun vassoio in corso. Tocca + nella barra in basso per iniziare una coltivazione."
+                } else {
+                    "Nessun vassoio raccolto finora."
+                },
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
+            contentPadding = PaddingValues(bottom = Spacing.md),
+        ) {
+            items(trays, key = { it.tray.id }) { item ->
+                if (page == 0) {
+                    TrayDashboardCard(
+                        item = item,
+                        modifier = Modifier.animateItem(),
+                        onClick = { onOpenTray(item.tray.id) },
+                    )
+                } else {
+                    TrayListItem(
+                        item = item,
+                        modifier = Modifier.animateItem(),
+                        onClick = { onOpenTray(item.tray.id) },
+                    )
                 }
             }
         }

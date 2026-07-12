@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -40,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,12 +67,12 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
     val overview by viewModel.overview.collectAsStateWithLifecycle()
-    val varietyFilter by viewModel.varietyFilter.collectAsStateWithLifecycle()
     val compareTrayAId by viewModel.compareTrayAId.collectAsStateWithLifecycle()
     val compareTrayBId by viewModel.compareTrayBId.collectAsStateWithLifecycle()
 
@@ -98,8 +102,6 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
         } else {
             StatsContent(
                 overview = currentOverview,
-                varietyFilter = varietyFilter,
-                onVarietyFilterChange = viewModel::onVarietyFilterChange,
                 compareTrayAId = compareTrayAId,
                 compareTrayBId = compareTrayBId,
                 onCompareTrayAChange = viewModel::onCompareTrayAChange,
@@ -113,13 +115,74 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
 @Composable
 private fun StatsContent(
     overview: StatsOverview,
-    varietyFilter: String?,
-    onVarietyFilterChange: (String?) -> Unit,
     compareTrayAId: Long?,
     compareTrayBId: Long?,
     onCompareTrayAChange: (Long?) -> Unit,
     onCompareTrayBChange: (Long?) -> Unit,
     modifier: Modifier = Modifier,
+) {
+    val varietyColor = remember(overview) {
+        overview.trayStats.associate { it.tray.varietyName to it.tray.displayColor() }
+    }
+    // pagina 0 = "Tutte le varietà", pagine successive una per varietà: lo
+    // swipe tra pagine sostituisce il filtro, non serve più tenerlo in un
+    // MutableStateFlow separato nel ViewModel.
+    val pagerState = rememberPagerState(pageCount = { 1 + overview.varietyStats.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(modifier.fillMaxSize()) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.md, vertical = Spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        ) {
+            item {
+                FilterChip(
+                    selected = pagerState.currentPage == 0,
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                    label = { Text("Tutte le varietà") },
+                )
+            }
+            itemsIndexed(overview.varietyStats, key = { _, stats -> stats.varietyName }) { index, stats ->
+                FilterChip(
+                    selected = pagerState.currentPage == index + 1,
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index + 1) } },
+                    label = { Text(stats.varietyName) },
+                )
+            }
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        ) { page ->
+            val varietyFilter = if (page == 0) null else overview.varietyStats.getOrNull(page - 1)?.varietyName
+            StatsPageContent(
+                overview = overview,
+                varietyFilter = varietyFilter,
+                varietyColor = varietyColor,
+                compareTrayAId = compareTrayAId,
+                compareTrayBId = compareTrayBId,
+                onCompareTrayAChange = onCompareTrayAChange,
+                onCompareTrayBChange = onCompareTrayBChange,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StatsPageContent(
+    overview: StatsOverview,
+    varietyFilter: String?,
+    varietyColor: Map<String, Color>,
+    compareTrayAId: Long?,
+    compareTrayBId: Long?,
+    onCompareTrayAChange: (Long?) -> Unit,
+    onCompareTrayBChange: (Long?) -> Unit,
 ) {
     val filteredTrayStats = remember(overview, varietyFilter) {
         if (varietyFilter == null) overview.trayStats else overview.trayStats.filter { it.tray.varietyName == varietyFilter }
@@ -137,40 +200,17 @@ private fun StatsContent(
                 .map { it.tray.sowingDate.format(shortDateFormatter) to it.harvestTotalGrams!! }
         }
     }
-    val varietyColor = remember(overview) {
-        overview.trayStats.associate { it.tray.varietyName to it.tray.displayColor() }
-    }
 
     var expandedTrayIds by remember { mutableStateOf(emptySet<Long>()) }
     var compareSectionExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = Spacing.md),
-        contentPadding = PaddingValues(vertical = Spacing.md),
+        contentPadding = PaddingValues(top = Spacing.sm, bottom = Spacing.md),
     ) {
         item { KpiHeroRow(overview) }
-
-        item {
-            Spacer(Modifier.height(Spacing.md))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                item {
-                    FilterChip(
-                        selected = varietyFilter == null,
-                        onClick = { onVarietyFilterChange(null) },
-                        label = { Text("Tutte le varietà") },
-                    )
-                }
-                items(overview.varietyStats, key = { it.varietyName }) { stats ->
-                    FilterChip(
-                        selected = varietyFilter == stats.varietyName,
-                        onClick = { onVarietyFilterChange(stats.varietyName) },
-                        label = { Text(stats.varietyName) },
-                    )
-                }
-            }
-        }
 
         if (overview.bestYieldTray != null || overview.bestYieldRatioTray != null || overview.shortestCycleTray != null) {
             item { SectionTitle("Record personali") }
