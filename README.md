@@ -182,6 +182,21 @@ autoconclusiva:
   badge di aderenza al piano (% step fatti vs saltati, dato già presente
   ma prima mai mostrato); confronto tra due vassoi reso una sezione
   richiudibile secondaria.
+- **Raccolto → stato automatico**: registrare un raccolto (da uno step
+  pianificato o da un evento libero) porta subito il vassoio a "Raccolto",
+  cancellando i promemoria residui — prima andava cambiato a mano dal menu
+  del dettaglio vassoio.
+- **Tab "Raccolti" con l'esito del ciclo**: mostra ora resa totale e durata
+  effettiva per ogni vassoio raccolto, non solo nome/varietà/data semina —
+  è l'informazione che conta per confrontare i cicli passati.
+- **Ridisegno timeline vassoio**: step pianificati ed eventi liberi hanno
+  ora un'icona diversa per distinguerli a colpo d'occhio; lo stato di uno
+  step è un badge colorato (Fatto/Saltato) invece di testo in fondo alla
+  riga; la timeline è raggruppata per data (Oggi/Ieri/Domani/data) invece
+  di essere un'unica lista piatta; le azioni secondarie (modifica, salta,
+  elimina, annulla) sono in un menu invece di icone sempre visibili,
+  lasciando in vista solo l'azione primaria. La card info del vassoio
+  mostra anche il badge di aderenza al piano.
 
 ## Build
 

@@ -19,6 +19,8 @@ data class TrayListItemUiState(
     val daysSinceSowing: Long,
     val plannedCycleDays: Long?,
     val progress: Float?,
+    val harvestTotalGrams: Double?,
+    val actualCycleDays: Long?,
 )
 
 @HiltViewModel
@@ -29,10 +31,11 @@ class TraysListViewModel @Inject constructor(
 
     val trays: StateFlow<List<TrayListItemUiState>> =
         combine(repository.observeTrays(), statsRepository.observeOverview()) { trays, overview ->
-            val plannedCycleDaysByTrayId = overview.trayStats.associate { it.tray.id to it.plannedCycleDays }
+            val statsByTrayId = overview.trayStats.associateBy { it.tray.id }
             trays.map { tray ->
                 val daysSinceSowing = ChronoUnit.DAYS.between(tray.sowingDate, LocalDate.now())
-                val plannedCycleDays = plannedCycleDaysByTrayId[tray.id]
+                val stats = statsByTrayId[tray.id]
+                val plannedCycleDays = stats?.plannedCycleDays
                 val progress = plannedCycleDays
                     ?.takeIf { it > 0 }
                     ?.let { (daysSinceSowing.toFloat() / it.toFloat()).coerceIn(0f, 1f) }
@@ -41,6 +44,8 @@ class TraysListViewModel @Inject constructor(
                     daysSinceSowing = daysSinceSowing,
                     plannedCycleDays = plannedCycleDays,
                     progress = progress,
+                    harvestTotalGrams = stats?.harvestTotalGrams,
+                    actualCycleDays = stats?.actualCycleDays,
                 )
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
