@@ -20,19 +20,11 @@ class StatsViewModel @Inject constructor(
     val overview: StateFlow<StatsOverview?> = repository.observeOverview()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    /** null = "tutte le varietà". */
-    private val _varietyFilter = MutableStateFlow<String?>(null)
-    val varietyFilter: StateFlow<String?> = _varietyFilter.asStateFlow()
-
     private val _compareTrayAId = MutableStateFlow<Long?>(null)
     val compareTrayAId: StateFlow<Long?> = _compareTrayAId.asStateFlow()
 
     private val _compareTrayBId = MutableStateFlow<Long?>(null)
     val compareTrayBId: StateFlow<Long?> = _compareTrayBId.asStateFlow()
-
-    fun onVarietyFilterChange(variety: String?) {
-        _varietyFilter.value = variety
-    }
 
     fun onCompareTrayAChange(trayId: Long?) {
         _compareTrayAId.value = trayId

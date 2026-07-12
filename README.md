@@ -197,6 +197,12 @@ autoconclusiva:
   elimina, annulla) sono in un menu invece di icone sempre visibili,
   lasciando in vista solo l'azione primaria. La card info del vassoio
   mostra anche il badge di aderenza al piano.
+- **Gesture di swipe**: in Vassoi si passa dalla tab "In corso" a
+  "Raccolti" anche scorrendo con il dito, non solo toccando la tab
+  (`TabRow` + `HorizontalPager` sincronizzati). In Statistiche lo stesso
+  vale per le varietà: scorrere cambia la varietà selezionata come toccare
+  i chip del filtro — il filtro non è più uno stato separato nel
+  ViewModel, è direttamente la pagina corrente dello swipe.
 
 ## Build
 
