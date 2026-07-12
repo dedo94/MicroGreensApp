@@ -220,7 +220,7 @@ private fun StatsContent(
             item {
                 VarietyComparisonCard(
                     stats = filteredVarietyStats,
-                    colorFor = { varietyColor[it] ?: MaterialTheme.colorScheme.outline },
+                    varietyColor = varietyColor,
                 )
             }
             item { Spacer(Modifier.height(Spacing.sm)) }
@@ -311,8 +311,9 @@ private fun KpiTile(value: String, label: String, modifier: Modifier = Modifier)
 @Composable
 private fun VarietyComparisonCard(
     stats: List<VarietyStats>,
-    colorFor: (String) -> Color,
+    varietyColor: Map<String, Color>,
 ) {
+    val fallbackColor = MaterialTheme.colorScheme.outline
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(Spacing.sm)) {
             Row(Modifier.fillMaxWidth()) {
@@ -334,7 +335,7 @@ private fun VarietyComparisonCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(CircleShape)
-                            .background(colorFor(variety.varietyName)),
+                            .background(varietyColor[variety.varietyName] ?: fallbackColor),
                     )
                     Spacer(Modifier.width(Spacing.xs))
                     Text(
