@@ -2,8 +2,8 @@
 
 App Android nativa (Kotlin + Jetpack Compose) per tenere traccia di tutto il
 processo di coltivazione dei microgreens, organizzato per vassoi: template di
-fasi personalizzabili, calendario unico degli eventi, notifiche, dati
-meteo/alba-tramonto e statistiche. Uso personale, dati 100% locali (Room), nessun account.
+fasi personalizzabili, calendario unico degli eventi, notifiche, dati meteo
+e statistiche. Uso personale, dati 100% locali (Room), nessun account.
 
 Sviluppato in 6 fasi iniziali, riassunte qui sotto, seguite da miglioramenti
 successivi e da un redesign completo dell'interfaccia.
@@ -159,6 +159,29 @@ autoconclusiva:
   promemoria in qualsiasi momento, indipendentemente dal permesso di
   sistema. Disattivandolo si cancellano subito tutti i promemoria già in
   coda; riattivandolo si ripianificano quelli dei vassoi in corso.
+- **Rimozione alba/tramonto**: il dato veniva recuperato da Open-Meteo e
+  salvato in cache ma non era mai stato mostrato in nessuna schermata.
+  Restano solo temperatura/umidità, effettivamente usate nel form evento e
+  nelle statistiche. La riga "Condizioni medie" in Statistiche è ora sempre
+  visibile (con "—" per i valori mancanti) invece di sparire quando
+  temperatura/umidità non sono registrate.
+- **Colore per varietà**: i pallini identificativi in calendario e lista
+  vassoi erano assegnati per vassoio (ordine di creazione), quindi due
+  vassoi della stessa varietà avevano colori diversi. Ora il colore è
+  derivato dalla varietà e resta lo stesso per tutti i vassoi che la
+  condividono.
+- **Bottone di conferma in basso**: nei 4 form principali (Nuovo/Modifica
+  vassoio, Gestisci varietà, Nuovo/Modifica evento) il salvataggio passa
+  dall'icona ✓ in alto, scomoda da raggiungere con le dita, a un bottone
+  largo quanto lo schermo fissato in basso.
+- **Ridisegno pagina Statistiche**: gerarchia visiva al posto del muro di
+  testo iniziale. Riga di KPI in alto (vassoi attivi, raccolto ultimi 30
+  giorni, resa media/seme) subito visibile aprendo la tab; confronto tra
+  varietà in un'unica tabella compatta invece di una card per varietà;
+  elenco vassoi collassato di default (dettaglio completo al tap) con un
+  badge di aderenza al piano (% step fatti vs saltati, dato già presente
+  ma prima mai mostrato); confronto tra due vassoi reso una sezione
+  richiudibile secondaria.
 
 ## Build
 
@@ -186,8 +209,9 @@ feature/tray       Vassoi: tab In corso (giorni dalla semina, progresso,
                    dettaglio/timeline/previsione raccolto
 feature/event      Form aggiungi/modifica evento (meteo pre-compilato)
 feature/calendar   Vista mensile con filtro per vassoio
-feature/stats      Dashboard: per vassoio, per varietà (con filtro), grafici
-                   andamento/produzione mensile, confronto vassoi, record
+feature/stats      Dashboard: KPI in alto, confronto varietà, grafici
+                   andamento/produzione mensile, elenco vassoi collassabile
+                   con aderenza al piano, confronto vassoi, record
 feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
 ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
