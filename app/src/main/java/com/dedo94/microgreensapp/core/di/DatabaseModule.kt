@@ -3,6 +3,7 @@ package com.dedo94.microgreensapp.core.di
 import android.content.Context
 import androidx.room.Room
 import com.dedo94.microgreensapp.core.database.AppDatabase
+import com.dedo94.microgreensapp.core.database.MIGRATION_5_6
 import com.dedo94.microgreensapp.core.database.dao.EventDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
@@ -32,10 +33,12 @@ object DatabaseModule {
             // questa riga, chiunque avesse ancora un DB locale a una di
             // quelle versioni otteneva un crash all'avvio (IllegalStateException:
             // migration mancante) invece del comportamento precedente.
-            // Da qui in avanti (6+) ogni cambio di schema richiede una
-            // Migration esplicita, per non perdere più i dati dell'utente.
+            // Da qui in avanti ogni cambio di schema ha una Migration
+            // esplicita (vedi MIGRATION_5_6), per non perdere più i dati
+            // dell'utente.
             .fallbackToDestructiveMigrationFrom(1, 2, 3, 4)
             .fallbackToDestructiveMigrationOnDowngrade()
+            .addMigrations(MIGRATION_5_6)
             .build()
 
     @Provides

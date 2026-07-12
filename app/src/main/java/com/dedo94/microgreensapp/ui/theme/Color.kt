@@ -84,10 +84,10 @@ val DarkInversePrimary = Color(0xFF4C956C)
 
 val Scrim = Color(0xFF000000)
 
-// Colore identificativo per vassoio (pallino in lista/calendario), in
-// rotazione quando il vassoio non ha un colorTag esplicito. Tonalità
-// attenuate (S~50%, L~56%) per restare in armonia con le superfici verdi
-// dominanti invece di stonare come tinte pure/sature.
+// Colore identificativo per varietà (pallino in lista/calendario): stesso
+// colore per tutti i vassoi della stessa varietà. Tonalità attenuate
+// (S~50%, L~56%) per restare in armonia con le superfici verdi dominanti
+// invece di stonare come tinte pure/sature.
 val TrayPalette = listOf(
     Color(0xFFC77357), // terracotta
     Color(0xFFC7C757), // oliva-oro

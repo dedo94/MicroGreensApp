@@ -17,8 +17,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -76,7 +74,6 @@ class WeatherRepository @Inject constructor(
                     .addQueryParameter("latitude", location.latitude.toString())
                     .addQueryParameter("longitude", location.longitude.toString())
                     .addQueryParameter("current", "temperature_2m,relative_humidity_2m")
-                    .addQueryParameter("daily", "sunrise,sunset")
                     .addQueryParameter("timezone", "auto")
                     .build()
                 val body = execute(url) ?: return@runCatching null
@@ -85,8 +82,6 @@ class WeatherRepository @Inject constructor(
                     date = today,
                     fetchedTemperature = response.current?.temperature,
                     fetchedHumidity = response.current?.relativeHumidity,
-                    fetchedSunrise = response.daily?.sunrise?.firstOrNull()?.let(::parseIsoLocalTime),
-                    fetchedSunset = response.daily?.sunset?.firstOrNull()?.let(::parseIsoLocalTime),
                     fetchedAt = Instant.now(),
                     locationNameSnapshot = location.name,
                 ).also { weatherDailyDao.insert(it) }
@@ -101,7 +96,4 @@ class WeatherRepository @Inject constructor(
             response.body?.string()
         }
     }
-
-    private fun parseIsoLocalTime(value: String): LocalTime? =
-        runCatching { LocalDateTime.parse(value).toLocalTime() }.getOrNull()
 }
