@@ -25,4 +25,14 @@ fun SubstrateType.displayLabel(): String = when (this) {
 }
 
 fun TrayEntity.displayColor(): Color =
-    colorTag?.let(::Color) ?: TrayPalette[(id % TrayPalette.size).toInt()]
+    colorTag?.let(::Color) ?: TrayPalette[varietyColorIndex(varietyTemplateId, varietyName)]
+
+/**
+ * Il template può essere stato eliminato (varietyTemplateId → null via
+ * SET_NULL): in quel caso si ricade sul nome varietà, sempre presente
+ * come snapshot immutabile sul vassoio, per restare comunque stabile.
+ */
+private fun varietyColorIndex(varietyTemplateId: Long?, varietyName: String): Int {
+    val key = varietyTemplateId?.toString() ?: varietyName
+    return Math.floorMod(key.hashCode(), TrayPalette.size)
+}
