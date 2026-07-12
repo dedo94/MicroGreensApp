@@ -1,6 +1,8 @@
 package com.dedo94.microgreensapp.feature.stats
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +18,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -37,6 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,6 +56,7 @@ import com.dedo94.microgreensapp.core.repository.VarietyStats
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.charts.MonthlyBarChart
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
+import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.YearMonth
@@ -126,6 +137,12 @@ private fun StatsContent(
                 .map { it.tray.sowingDate.format(shortDateFormatter) to it.harvestTotalGrams!! }
         }
     }
+    val varietyColor = remember(overview) {
+        overview.trayStats.associate { it.tray.varietyName to it.tray.displayColor() }
+    }
+
+    var expandedTrayIds by remember { mutableStateOf(emptySet<Long>()) }
+    var compareSectionExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -133,7 +150,10 @@ private fun StatsContent(
             .padding(horizontal = Spacing.md),
         contentPadding = PaddingValues(vertical = Spacing.md),
     ) {
+        item { KpiHeroRow(overview) }
+
         item {
+            Spacer(Modifier.height(Spacing.md))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 item {
                     FilterChip(
@@ -150,21 +170,22 @@ private fun StatsContent(
                     )
                 }
             }
-            Spacer(Modifier.height(Spacing.xs))
         }
 
         if (overview.bestYieldTray != null || overview.bestYieldRatioTray != null || overview.shortestCycleTray != null) {
             item { SectionTitle("Record personali") }
             item {
-                Column {
-                    overview.bestYieldTray?.let {
-                        RecordRow("Raccolto più abbondante", "${it.tray.name} · ${formatGrams(it.harvestTotalGrams)}")
-                    }
-                    overview.bestYieldRatioTray?.let {
-                        RecordRow("Miglior resa per grammo di seme", "${it.tray.name} · ${formatRatio(it.yieldPerSeedGram)}")
-                    }
-                    overview.shortestCycleTray?.let {
-                        RecordRow("Ciclo più breve", "${it.tray.name} · ${formatDays(it.actualCycleDays)}")
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(Spacing.sm)) {
+                        overview.bestYieldTray?.let {
+                            RecordRow("Raccolto più abbondante", "${it.tray.name} · ${formatGrams(it.harvestTotalGrams)}")
+                        }
+                        overview.bestYieldRatioTray?.let {
+                            RecordRow("Miglior resa per grammo di seme", "${it.tray.name} · ${formatRatio(it.yieldPerSeedGram)}")
+                        }
+                        overview.shortestCycleTray?.let {
+                            RecordRow("Ciclo più breve", "${it.tray.name} · ${formatDays(it.actualCycleDays)}")
+                        }
                     }
                 }
             }
@@ -174,42 +195,303 @@ private fun StatsContent(
         if (overview.monthlyHarvestGrams.isNotEmpty()) {
             item { SectionTitle("Produzione mensile") }
             item {
-                MonthlyBarChart(
-                    points = overview.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
-                )
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    MonthlyBarChart(
+                        points = overview.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
+                        modifier = Modifier.padding(Spacing.sm),
+                    )
+                }
             }
             item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
         if (trendPoints.isNotEmpty()) {
             item { SectionTitle("Andamento resa · $varietyFilter") }
-            item { TrendLineChart(points = trendPoints) }
-            item { Spacer(Modifier.height(Spacing.sm)) }
-        }
-
-        if (filteredVarietyStats.isNotEmpty()) {
-            item { SectionTitle("Per varietà") }
-            items(items = filteredVarietyStats, key = { it.varietyName }) { stats ->
-                VarietyStatsCard(stats, modifier = Modifier.animateItem())
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    TrendLineChart(points = trendPoints, modifier = Modifier.padding(Spacing.sm))
+                }
             }
             item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
-        item { SectionTitle("Per vassoio") }
+        if (filteredVarietyStats.isNotEmpty()) {
+            item { SectionTitle("Confronto varietà") }
+            item {
+                VarietyComparisonCard(
+                    stats = filteredVarietyStats,
+                    varietyColor = varietyColor,
+                )
+            }
+            item { Spacer(Modifier.height(Spacing.sm)) }
+        }
+
+        item { SectionTitle("Vassoi") }
         items(items = filteredTrayStats, key = { it.tray.id }) { stats ->
-            TrayStatsCard(stats, modifier = Modifier.animateItem())
+            TrayRow(
+                stats = stats,
+                expanded = stats.tray.id in expandedTrayIds,
+                onToggle = {
+                    expandedTrayIds = if (stats.tray.id in expandedTrayIds) {
+                        expandedTrayIds - stats.tray.id
+                    } else {
+                        expandedTrayIds + stats.tray.id
+                    }
+                },
+                modifier = Modifier.animateItem(),
+            )
         }
 
         item { Spacer(Modifier.height(Spacing.sm)) }
-        item { SectionTitle("Confronta due vassoi") }
         item {
-            CompareSection(
+            CompareToggleSection(
+                expanded = compareSectionExpanded,
+                onToggle = { compareSectionExpanded = !compareSectionExpanded },
                 trayStats = overview.trayStats,
                 trayAId = compareTrayAId,
                 trayBId = compareTrayBId,
                 onTrayAChange = onCompareTrayAChange,
                 onTrayBChange = onCompareTrayBChange,
             )
+        }
+    }
+}
+
+@Composable
+private fun KpiHeroRow(overview: StatsOverview) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        KpiTile(
+            value = overview.activeTrayCount.toString(),
+            label = "Vassoi attivi",
+            modifier = Modifier.weight(1f),
+        )
+        KpiTile(
+            value = formatGrams(overview.last30DaysHarvestGrams),
+            label = "Raccolto (30gg)",
+            modifier = Modifier.weight(1f),
+        )
+        KpiTile(
+            value = formatRatio(overview.avgYieldPerSeedGram),
+            label = "Resa media/seme",
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun KpiTile(value: String, label: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+}
+
+@Composable
+private fun VarietyComparisonCard(
+    stats: List<VarietyStats>,
+    varietyColor: Map<String, Color>,
+) {
+    val fallbackColor = MaterialTheme.colorScheme.outline
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(Spacing.sm)) {
+            Row(Modifier.fillMaxWidth()) {
+                Spacer(Modifier.size(12.dp))
+                Text("", modifier = Modifier.weight(1.4f))
+                Text("Resa media", style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+                Text("Durata media", style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+                Text("Resa/seme", style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+            }
+            stats.forEachIndexed { index, variety ->
+                if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.xs))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(varietyColor[variety.varietyName] ?: fallbackColor),
+                    )
+                    Spacer(Modifier.width(Spacing.xs))
+                    Text(
+                        text = variety.varietyName,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1.4f),
+                    )
+                    Text(formatGrams(variety.avgHarvestGrams), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                    Text(formatDays(variety.avgCycleDays?.toLong()), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                    Text(formatRatio(variety.avgYieldPerSeedGram), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrayRow(
+    stats: TrayStats,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier = modifier.padding(vertical = Spacing.xs)) {
+        Column(
+            modifier = Modifier
+                .clickable(onClick = onToggle)
+                .animateContentSize(),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(stats.tray.displayColor()),
+                )
+                Spacer(Modifier.width(Spacing.sm))
+                Column(Modifier.weight(1f)) {
+                    Text(stats.tray.name, style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        text = "${stats.tray.varietyName} · ${stats.tray.status.displayLabel()} · semina ${stats.tray.sowingDate.format(shortDateFormatter)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                stats.adherencePercent?.let { AdherenceBadge(it) }
+                Spacer(Modifier.width(Spacing.xs))
+                Icon(
+                    imageVector = if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Comprimi" else "Espandi",
+                )
+            }
+            if (expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = Spacing.sm, end = Spacing.sm, bottom = Spacing.sm),
+                ) {
+                    HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
+                    val seedInfo = stats.tray.initialSeedQuantityGrams?.let { formatGrams(it) } ?: "—"
+                    Text(
+                        text = "Semi: $seedInfo · Acqua: ${"%.0f".format(stats.waterTotalMl)}ml · Raccolto: ${formatGrams(stats.harvestTotalGrams)}",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Text(
+                        text = "Resa/seme: ${formatRatio(stats.yieldPerSeedGram)} · Acqua/g raccolto: ${formatRatio(stats.waterPerHarvestGram)}",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    val durationInfo = "Durata: ${formatDays(stats.actualCycleDays)}" +
+                        (stats.plannedCycleDays?.let { " (pianificata: ${formatDays(it)})" } ?: "")
+                    Text(text = durationInfo, style = MaterialTheme.typography.bodySmall)
+                    val tempInfo = stats.avgTemperature?.let { "${"%.1f".format(it)}°C" } ?: "—"
+                    val humidityInfo = stats.avgHumidity?.let { "${"%.0f".format(it)}%" } ?: "—"
+                    Text(
+                        text = "Condizioni medie: $tempInfo · $humidityInfo umidità",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (stats.adherencePercent != null) {
+                        Text(
+                            text = "Aderenza al piano: ${stats.stepsDone} fatti, ${stats.stepsSkipped} saltati",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdherenceBadge(percent: Double) {
+    val containerColor = when {
+        percent >= 80 -> MaterialTheme.colorScheme.primaryContainer
+        percent >= 50 -> MaterialTheme.colorScheme.tertiaryContainer
+        else -> MaterialTheme.colorScheme.errorContainer
+    }
+    val onContainerColor = when {
+        percent >= 80 -> MaterialTheme.colorScheme.onPrimaryContainer
+        percent >= 50 -> MaterialTheme.colorScheme.onTertiaryContainer
+        else -> MaterialTheme.colorScheme.onErrorContainer
+    }
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(containerColor)
+            .padding(horizontal = Spacing.xs, vertical = 2.dp),
+    ) {
+        Text(
+            text = "${percent.toInt()}%",
+            style = MaterialTheme.typography.labelSmall,
+            color = onContainerColor,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompareToggleSection(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    trayStats: List<TrayStats>,
+    trayAId: Long?,
+    trayBId: Long?,
+    onTrayAChange: (Long?) -> Unit,
+    onTrayBChange: (Long?) -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(vertical = Spacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Confronta due vassoi", style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                contentDescription = if (expanded) "Comprimi" else "Espandi",
+            )
+        }
+        Box(Modifier.animateContentSize()) {
+            if (expanded) {
+                CompareSection(
+                    trayStats = trayStats,
+                    trayAId = trayAId,
+                    trayBId = trayBId,
+                    onTrayAChange = onTrayAChange,
+                    onTrayBChange = onTrayBChange,
+                )
+            }
         }
     }
 }
@@ -226,42 +508,44 @@ private fun CompareSection(
     val trayA = trayStats.find { it.tray.id == trayAId }
     val trayB = trayStats.find { it.tray.id == trayBId }
 
-    Row(Modifier.fillMaxWidth()) {
-        TrayPickerDropdown(
-            label = "Vassoio A",
-            trayStats = trayStats,
-            selectedTrayId = trayAId,
-            onSelect = onTrayAChange,
-            modifier = Modifier.weight(1f),
-        )
-        Spacer(Modifier.width(Spacing.sm))
-        TrayPickerDropdown(
-            label = "Vassoio B",
-            trayStats = trayStats,
-            selectedTrayId = trayBId,
-            onSelect = onTrayBChange,
-            modifier = Modifier.weight(1f),
-        )
-    }
+    Column {
+        Row(Modifier.fillMaxWidth()) {
+            TrayPickerDropdown(
+                label = "Vassoio A",
+                trayStats = trayStats,
+                selectedTrayId = trayAId,
+                onSelect = onTrayAChange,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(Spacing.sm))
+            TrayPickerDropdown(
+                label = "Vassoio B",
+                trayStats = trayStats,
+                selectedTrayId = trayBId,
+                onSelect = onTrayBChange,
+                modifier = Modifier.weight(1f),
+            )
+        }
 
-    Box(Modifier.animateContentSize()) {
-        if (trayA != null && trayB != null) {
-            Column {
-                Spacer(Modifier.height(Spacing.sm))
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(Spacing.sm)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("", modifier = Modifier.weight(1f))
-                            Text(trayA.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                            Text(trayB.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        Box(Modifier.animateContentSize()) {
+            if (trayA != null && trayB != null) {
+                Column {
+                    Spacer(Modifier.height(Spacing.sm))
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(Spacing.sm)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("", modifier = Modifier.weight(1f))
+                                Text(trayA.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                                Text(trayB.tray.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                            }
+                            HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
+                            ComparisonRow("Semi", formatGrams(trayA.tray.initialSeedQuantityGrams), formatGrams(trayB.tray.initialSeedQuantityGrams))
+                            ComparisonRow("Acqua", "${"%.0f".format(trayA.waterTotalMl)}ml", "${"%.0f".format(trayB.waterTotalMl)}ml")
+                            ComparisonRow("Raccolto", formatGrams(trayA.harvestTotalGrams), formatGrams(trayB.harvestTotalGrams))
+                            ComparisonRow("Resa/seme", formatRatio(trayA.yieldPerSeedGram), formatRatio(trayB.yieldPerSeedGram))
+                            ComparisonRow("Efficienza idrica", formatRatio(trayA.waterPerHarvestGram), formatRatio(trayB.waterPerHarvestGram))
+                            ComparisonRow("Durata", formatDays(trayA.actualCycleDays), formatDays(trayB.actualCycleDays))
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
-                        ComparisonRow("Semi", formatGrams(trayA.tray.initialSeedQuantityGrams), formatGrams(trayB.tray.initialSeedQuantityGrams))
-                        ComparisonRow("Acqua", "${"%.0f".format(trayA.waterTotalMl)}ml", "${"%.0f".format(trayB.waterTotalMl)}ml")
-                        ComparisonRow("Raccolto", formatGrams(trayA.harvestTotalGrams), formatGrams(trayB.harvestTotalGrams))
-                        ComparisonRow("Resa/seme", formatRatio(trayA.yieldPerSeedGram), formatRatio(trayB.yieldPerSeedGram))
-                        ComparisonRow("Efficienza idrica", formatRatio(trayA.waterPerHarvestGram), formatRatio(trayB.waterPerHarvestGram))
-                        ComparisonRow("Durata", formatDays(trayA.actualCycleDays), formatDays(trayB.actualCycleDays))
                     }
                 }
             }
@@ -343,53 +627,6 @@ private fun RecordRow(label: String, value: String) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(value, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-@Composable
-private fun VarietyStatsCard(stats: VarietyStats, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.padding(vertical = Spacing.xs)) {
-        Column(Modifier.padding(Spacing.sm)) {
-            Text(stats.varietyName, style = MaterialTheme.typography.titleSmall)
-            Text(
-                text = "${stats.cycleCount} cicli · ${stats.harvestedCount} raccolti",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                text = "Resa media: ${formatGrams(stats.avgHarvestGrams)} · Durata media: ${formatDays(stats.avgCycleDays?.toLong())}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-    }
-}
-
-@Composable
-private fun TrayStatsCard(stats: TrayStats, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.padding(vertical = Spacing.xs)) {
-        Column(Modifier.padding(Spacing.sm)) {
-            Text(
-                text = "${stats.tray.name} · ${stats.tray.varietyName} · ${stats.tray.status.displayLabel()}",
-                style = MaterialTheme.typography.titleSmall,
-            )
-            val seedInfo = stats.tray.initialSeedQuantityGrams?.let { formatGrams(it) } ?: "—"
-            Text(
-                text = "Semi: $seedInfo · Acqua: ${"%.0f".format(stats.waterTotalMl)}ml · Raccolto: ${formatGrams(stats.harvestTotalGrams)}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                text = "Resa/seme: ${formatRatio(stats.yieldPerSeedGram)} · Acqua/g raccolto: ${formatRatio(stats.waterPerHarvestGram)}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            val durationInfo = "Durata: ${formatDays(stats.actualCycleDays)}" +
-                (stats.plannedCycleDays?.let { " (pianificata: ${formatDays(it)})" } ?: "")
-            Text(text = durationInfo, style = MaterialTheme.typography.bodySmall)
-            val tempInfo = stats.avgTemperature?.let { "${"%.1f".format(it)}°C" } ?: "—"
-            val humidityInfo = stats.avgHumidity?.let { "${"%.0f".format(it)}%" } ?: "—"
-            Text(
-                text = "Condizioni medie: $tempInfo · $humidityInfo umidità",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
     }
 }
 

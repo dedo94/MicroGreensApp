@@ -6,8 +6,10 @@ import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
+import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -23,6 +25,10 @@ data class TrayStats(
     val plannedCycleDays: Long?,
     val avgTemperature: Double?,
     val avgHumidity: Double?,
+    val stepsDone: Int,
+    val stepsSkipped: Int,
+    /** % di step non più pendenti fatti come da piano; null se nessuno step è stato ancora fatto/saltato. */
+    val adherencePercent: Double?,
 )
 
 data class VarietyStats(
@@ -42,6 +48,9 @@ data class StatsOverview(
     val bestYieldTray: TrayStats?,
     val bestYieldRatioTray: TrayStats?,
     val shortestCycleTray: TrayStats?,
+    val activeTrayCount: Int,
+    val last30DaysHarvestGrams: Double,
+    val avgYieldPerSeedGram: Double?,
 )
 
 /**
@@ -88,6 +97,12 @@ class StatsRepository @Inject constructor(
                 val temperatures = trayEvents.mapNotNull { it.actualTemperature }
                 val humidities = trayEvents.mapNotNull { it.actualHumidity }
 
+                val traySteps = stepsByTray[tray.id].orEmpty()
+                val stepsDone = traySteps.count { it.status == TrayStepStatus.DONE }
+                val stepsSkipped = traySteps.count { it.status == TrayStepStatus.SKIPPED }
+                val adherencePercent = (stepsDone + stepsSkipped).takeIf { it > 0 }
+                    ?.let { stepsDone.toDouble() / it * 100 }
+
                 TrayStats(
                     tray = tray,
                     waterTotalMl = waterTotal,
@@ -98,6 +113,9 @@ class StatsRepository @Inject constructor(
                     plannedCycleDays = plannedCycleDays,
                     avgTemperature = temperatures.takeIf { it.isNotEmpty() }?.average(),
                     avgHumidity = humidities.takeIf { it.isNotEmpty() }?.average(),
+                    stepsDone = stepsDone,
+                    stepsSkipped = stepsSkipped,
+                    adherencePercent = adherencePercent,
                 )
             }
 
@@ -132,6 +150,13 @@ class StatsRepository @Inject constructor(
                 .toSortedMap()
                 .map { it.key to it.value }
 
+            val last30DaysStart = LocalDate.now().minusDays(30)
+            val last30DaysHarvest = events
+                .filter { it.eventType == ActionType.HARVEST && !it.eventDate.isBefore(last30DaysStart) }
+                .sumOf { it.quantityValue ?: 0.0 }
+
+            val yieldRatios = trayStats.mapNotNull { it.yieldPerSeedGram }
+
             StatsOverview(
                 trayStats = trayStats.sortedByDescending { it.tray.sowingDate },
                 varietyStats = varietyStats,
@@ -142,6 +167,9 @@ class StatsRepository @Inject constructor(
                     .maxByOrNull { it.yieldPerSeedGram!! },
                 shortestCycleTray = trayStats.filter { it.actualCycleDays != null }
                     .minByOrNull { it.actualCycleDays!! },
+                activeTrayCount = trayStats.count { it.tray.status == TrayStatus.IN_PROGRESS },
+                last30DaysHarvestGrams = last30DaysHarvest,
+                avgYieldPerSeedGram = yieldRatios.takeIf { it.isNotEmpty() }?.average(),
             )
         }
 }
