@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -75,17 +76,26 @@ fun SettingsScreen(
         ) {
             Text("Varietà", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(Spacing.xs))
-            ListItem(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onManageVarieties),
-                leadingContent = { Icon(Icons.Outlined.Eco, contentDescription = null) },
-                headlineContent = { Text("Gestisci varietà") },
-                supportingContent = { Text("Crea e modifica le varietà e i loro piani di coltivazione") },
-                trailingContent = {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
-                },
-            )
+                    .clickable(onClick = onManageVarieties)
+                    .padding(vertical = Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Eco, contentDescription = null)
+                Spacer(Modifier.width(Spacing.md))
+                Column(Modifier.weight(1f)) {
+                    Text("Gestisci varietà")
+                    Text(
+                        text = "Crea e modifica le varietà e i loro piani di coltivazione",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.width(Spacing.sm))
+                Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null)
+            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.lg))
 
@@ -127,7 +137,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(Spacing.sm))
             Text(
                 location?.let { "Posizione attuale: ${it.name}" }
-                    ?: "Nessuna posizione impostata: temperatura/umidità/alba-tramonto non verranno pre-compilate negli eventi.",
+                    ?: "Nessuna posizione impostata: temperatura/umidità non verranno pre-compilate negli eventi.",
             )
             Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(

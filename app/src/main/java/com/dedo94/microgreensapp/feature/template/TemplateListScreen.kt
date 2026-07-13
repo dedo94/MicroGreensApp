@@ -56,7 +56,8 @@ fun TemplateListScreen(
         if (templates.isEmpty()) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .padding(Spacing.xl),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -72,12 +73,13 @@ fun TemplateListScreen(
                     text = "Nessuna varietà ancora. Tocca + qui sotto per crearne una.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                Spacer(Modifier.height(Spacing.md))
-                AddTemplateCard(onClick = onCreateTemplate)
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.md),
                 contentPadding = PaddingValues(bottom = Spacing.md),
             ) {
                 items(templates, key = { it.id }) { template ->
@@ -95,11 +97,12 @@ fun TemplateListScreen(
                         },
                     )
                 }
-                item(key = "add-template") {
-                    AddTemplateCard(onClick = onCreateTemplate)
-                }
             }
         }
+        AddTemplateCard(
+            onClick = onCreateTemplate,
+            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm),
+        )
     }
 
     templateToDelete?.let { template ->
@@ -121,12 +124,10 @@ fun TemplateListScreen(
 }
 
 @Composable
-private fun AddTemplateCard(onClick: () -> Unit) {
+private fun AddTemplateCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier

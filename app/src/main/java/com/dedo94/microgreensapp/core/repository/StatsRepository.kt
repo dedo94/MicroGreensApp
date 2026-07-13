@@ -4,6 +4,7 @@ import com.dedo94.microgreensapp.core.database.dao.EventDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
 import com.dedo94.microgreensapp.core.database.entity.ActionType
+import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
@@ -41,9 +42,8 @@ data class VarietyStats(
     val yieldSampleCount: Int,
 )
 
-data class StatsOverview(
-    val trayStats: List<TrayStats>,
-    val varietyStats: List<VarietyStats>,
+/** KPI/record/produzione calcolati su un insieme di vassoi: globale, oppure ristretto a una singola varietà. */
+data class StatsSummary(
     val monthlyHarvestGrams: List<Pair<YearMonth, Double>>,
     val bestYieldTray: TrayStats?,
     val bestYieldRatioTray: TrayStats?,
@@ -51,6 +51,14 @@ data class StatsOverview(
     val activeTrayCount: Int,
     val last30DaysHarvestGrams: Double,
     val avgYieldPerSeedGram: Double?,
+)
+
+data class StatsOverview(
+    val trayStats: List<TrayStats>,
+    val varietyStats: List<VarietyStats>,
+    val overallSummary: StatsSummary,
+    /** Stesso calcolo di [overallSummary], ristretto ai soli vassoi di ciascuna varietà. */
+    val summaryByVariety: Map<String, StatsSummary>,
 )
 
 /**
@@ -119,8 +127,9 @@ class StatsRepository @Inject constructor(
                 )
             }
 
-            val varietyStats = trayStats
-                .groupBy { it.tray.varietyName }
+            val trayStatsByVariety = trayStats.groupBy { it.tray.varietyName }
+
+            val varietyStats = trayStatsByVariety
                 .map { (varietyName, statsForVariety) ->
                     val harvestValues = statsForVariety.mapNotNull { it.harvestTotalGrams }
                     val cycleValues = statsForVariety.mapNotNull { it.actualCycleDays }
@@ -139,37 +148,47 @@ class StatsRepository @Inject constructor(
                 }
                 .sortedBy { it.varietyName }
 
-            val monthlyHarvest = trayStats
-                .flatMap { stats ->
-                    eventsByTray[stats.tray.id].orEmpty()
-                        .filter { it.eventType == ActionType.HARVEST }
-                        .mapNotNull { event -> event.quantityValue?.let { YearMonth.from(event.eventDate) to it } }
-                }
-                .groupBy({ it.first }, { it.second })
-                .mapValues { (_, values) -> values.sum() }
-                .toSortedMap()
-                .map { it.key to it.value }
-
-            val last30DaysStart = LocalDate.now().minusDays(30)
-            val last30DaysHarvest = events
-                .filter { it.eventType == ActionType.HARVEST && !it.eventDate.isBefore(last30DaysStart) }
-                .sumOf { it.quantityValue ?: 0.0 }
-
-            val yieldRatios = trayStats.mapNotNull { it.yieldPerSeedGram }
-
             StatsOverview(
                 trayStats = trayStats.sortedByDescending { it.tray.sowingDate },
                 varietyStats = varietyStats,
-                monthlyHarvestGrams = monthlyHarvest,
-                bestYieldTray = trayStats.filter { it.harvestTotalGrams != null }
-                    .maxByOrNull { it.harvestTotalGrams!! },
-                bestYieldRatioTray = trayStats.filter { it.yieldPerSeedGram != null }
-                    .maxByOrNull { it.yieldPerSeedGram!! },
-                shortestCycleTray = trayStats.filter { it.actualCycleDays != null }
-                    .minByOrNull { it.actualCycleDays!! },
-                activeTrayCount = trayStats.count { it.tray.status == TrayStatus.IN_PROGRESS },
-                last30DaysHarvestGrams = last30DaysHarvest,
-                avgYieldPerSeedGram = yieldRatios.takeIf { it.isNotEmpty() }?.average(),
+                overallSummary = buildSummary(trayStats, eventsByTray),
+                summaryByVariety = trayStatsByVariety
+                    .mapValues { (_, statsForVariety) -> buildSummary(statsForVariety, eventsByTray) },
             )
         }
+
+    private fun buildSummary(
+        trayStats: List<TrayStats>,
+        eventsByTray: Map<Long, List<EventEntity>>,
+    ): StatsSummary {
+        val harvestEvents = trayStats.flatMap { eventsByTray[it.tray.id].orEmpty() }
+            .filter { it.eventType == ActionType.HARVEST }
+
+        val monthlyHarvest = harvestEvents
+            .mapNotNull { event -> event.quantityValue?.let { YearMonth.from(event.eventDate) to it } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, values) -> values.sum() }
+            .toSortedMap()
+            .map { it.key to it.value }
+
+        val last30DaysStart = LocalDate.now().minusDays(30)
+        val last30DaysHarvest = harvestEvents
+            .filter { !it.eventDate.isBefore(last30DaysStart) }
+            .sumOf { it.quantityValue ?: 0.0 }
+
+        val yieldRatios = trayStats.mapNotNull { it.yieldPerSeedGram }
+
+        return StatsSummary(
+            monthlyHarvestGrams = monthlyHarvest,
+            bestYieldTray = trayStats.filter { it.harvestTotalGrams != null }
+                .maxByOrNull { it.harvestTotalGrams!! },
+            bestYieldRatioTray = trayStats.filter { it.yieldPerSeedGram != null }
+                .maxByOrNull { it.yieldPerSeedGram!! },
+            shortestCycleTray = trayStats.filter { it.actualCycleDays != null }
+                .minByOrNull { it.actualCycleDays!! },
+            activeTrayCount = trayStats.count { it.tray.status == TrayStatus.IN_PROGRESS },
+            last30DaysHarvestGrams = last30DaysHarvest,
+            avgYieldPerSeedGram = yieldRatios.takeIf { it.isNotEmpty() }?.average(),
+        )
+    }
 }
