@@ -137,7 +137,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(Spacing.sm))
             Text(
                 location?.let { "Posizione attuale: ${it.name}" }
-                    ?: "Nessuna posizione impostata: temperatura/umidità/alba-tramonto non verranno pre-compilate negli eventi.",
+                    ?: "Nessuna posizione impostata: temperatura/umidità non verranno pre-compilate negli eventi.",
             )
             Spacer(Modifier.height(Spacing.sm))
             OutlinedTextField(
