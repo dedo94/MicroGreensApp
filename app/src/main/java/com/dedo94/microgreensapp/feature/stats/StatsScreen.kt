@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.repository.StatsOverview
+import com.dedo94.microgreensapp.core.repository.StatsSummary
 import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.core.repository.VarietyStats
 import com.dedo94.microgreensapp.ui.AdherenceBadge
@@ -190,6 +191,9 @@ private fun StatsPageContent(
     val filteredVarietyStats = remember(overview, varietyFilter) {
         if (varietyFilter == null) overview.varietyStats else overview.varietyStats.filter { it.varietyName == varietyFilter }
     }
+    val summary = remember(overview, varietyFilter) {
+        if (varietyFilter == null) overview.overallSummary else overview.summaryByVariety[varietyFilter] ?: overview.overallSummary
+    }
     val trendPoints = remember(overview, varietyFilter) {
         if (varietyFilter == null) {
             emptyList()
@@ -210,20 +214,20 @@ private fun StatsPageContent(
             .padding(horizontal = Spacing.md),
         contentPadding = PaddingValues(top = Spacing.sm, bottom = Spacing.md),
     ) {
-        item { KpiHeroRow(overview) }
+        item { KpiHeroRow(summary) }
 
-        if (overview.bestYieldTray != null || overview.bestYieldRatioTray != null || overview.shortestCycleTray != null) {
+        if (summary.bestYieldTray != null || summary.bestYieldRatioTray != null || summary.shortestCycleTray != null) {
             item { SectionTitle("Record personali") }
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(Spacing.sm)) {
-                        overview.bestYieldTray?.let {
+                        summary.bestYieldTray?.let {
                             RecordRow("Raccolto più abbondante", "${it.tray.name} · ${formatGrams(it.harvestTotalGrams)}")
                         }
-                        overview.bestYieldRatioTray?.let {
+                        summary.bestYieldRatioTray?.let {
                             RecordRow("Miglior resa per grammo di seme", "${it.tray.name} · ${formatRatio(it.yieldPerSeedGram)}")
                         }
-                        overview.shortestCycleTray?.let {
+                        summary.shortestCycleTray?.let {
                             RecordRow("Ciclo più breve", "${it.tray.name} · ${formatDays(it.actualCycleDays)}")
                         }
                     }
@@ -232,12 +236,12 @@ private fun StatsPageContent(
             item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
-        if (overview.monthlyHarvestGrams.isNotEmpty()) {
-            item { SectionTitle("Produzione mensile") }
+        if (summary.monthlyHarvestGrams.isNotEmpty()) {
+            item { SectionTitle(if (varietyFilter == null) "Produzione mensile" else "Produzione mensile · $varietyFilter") }
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     MonthlyBarChart(
-                        points = overview.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
+                        points = summary.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
                         modifier = Modifier.padding(Spacing.sm),
                     )
                 }
@@ -298,23 +302,23 @@ private fun StatsPageContent(
 }
 
 @Composable
-private fun KpiHeroRow(overview: StatsOverview) {
+private fun KpiHeroRow(summary: StatsSummary) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         KpiTile(
-            value = overview.activeTrayCount.toString(),
+            value = summary.activeTrayCount.toString(),
             label = "Vassoi attivi",
             modifier = Modifier.weight(1f),
         )
         KpiTile(
-            value = formatGrams(overview.last30DaysHarvestGrams),
+            value = formatGrams(summary.last30DaysHarvestGrams),
             label = "Raccolto (30gg)",
             modifier = Modifier.weight(1f),
         )
         KpiTile(
-            value = formatRatio(overview.avgYieldPerSeedGram),
+            value = formatRatio(summary.avgYieldPerSeedGram),
             label = "Resa media/seme",
             modifier = Modifier.weight(1f),
         )

@@ -213,6 +213,21 @@ autoconclusiva:
   conservazione resta identica a quella del girasole. La correzione si
   applica anche a chi ha già il template "Piselli" installato (una tantum,
   solo se non è stato modificato a mano), senza toccare i vassoi già creati.
+- **Statistiche filtrate per varietà anche in alto**: KPI, record personali
+  e produzione mensile restavano sempre gli stessi scorrendo tra le
+  varietà (mostravano solo i dati globali). Ora ogni pagina dello swipe
+  mostra i KPI/record/produzione calcolati sui soli vassoi di quella
+  varietà (calcolo estratto in `StatsRepository` e riusato sia per il
+  totale sia per ogni varietà).
+- **Allineamento riga "Gestisci varietà" in Opzioni**: icona e freccia
+  erano allineate in alto rispetto al testo su due righe (comportamento
+  di default del componente `ListItem` di Material 3 con testo
+  secondario); ora sono centrate verticalmente rispetto all'intero blocco
+  di testo.
+- **Bottone "+" fisso in "Gestisci varietà"**: prima appariva subito sotto
+  l'ultima varietà in elenco, quindi in alto nello schermo se le varietà
+  erano poche. Ora è sempre in fondo alla schermata, sia con elenco vuoto
+  che pieno.
 
 ## Build
 
