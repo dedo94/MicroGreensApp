@@ -1,7 +1,6 @@
 package com.dedo94.microgreensapp.feature.tray
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -41,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,6 +50,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.LocalDate
@@ -398,32 +396,6 @@ private fun AddEventCard(onClick: () -> Unit) {
 }
 
 @Composable
-private fun StepStatusBadge(status: TrayStepStatus) {
-    val (label, containerColor, onContainerColor) = when (status) {
-        TrayStepStatus.DONE -> Triple(
-            "Fatto",
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-        TrayStepStatus.SKIPPED -> Triple(
-            "Saltato",
-            MaterialTheme.colorScheme.tertiaryContainer,
-            MaterialTheme.colorScheme.onTertiaryContainer,
-        )
-        TrayStepStatus.PENDING -> return
-    }
-    Box(
-        modifier = Modifier
-            .padding(end = Spacing.xs)
-            .clip(RoundedCornerShape(50))
-            .background(containerColor)
-            .padding(horizontal = Spacing.xs, vertical = 2.dp),
-    ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = onContainerColor)
-    }
-}
-
-@Composable
 private fun StepTimelineCard(
     step: TrayStepEntity,
     onMarkDone: () -> Unit,
@@ -454,7 +426,7 @@ private fun StepTimelineCard(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
-            StepStatusBadge(step.status)
+            StepStatusBadge(step.status, modifier = Modifier.padding(end = Spacing.xs))
             if (step.status == TrayStepStatus.PENDING) {
                 IconButton(onClick = onMarkDone) {
                     Icon(Icons.Outlined.Check, contentDescription = "Segna come fatto")

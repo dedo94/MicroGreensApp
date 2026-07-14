@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
@@ -43,6 +44,27 @@ class CalendarViewModel @Inject constructor(
     val events: StateFlow<List<EventEntity>> = _currentMonth
         .flatMapLatest { month -> repository.eventsInRange(month.atDay(1), month.atEndOfMonth()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * Step ed eventi di oggi, indipendenti dal mese sfogliato nella griglia:
+     * senza questi, spostandosi su un mese diverso la sezione "Oggi"
+     * sparirebbe perché [steps]/[events] sono scoped al mese corrente.
+     */
+    val todaySteps: StateFlow<List<TrayStepEntity>> = repository
+        .stepsOverlappingRange(LocalDate.now(), LocalDate.now())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val todayEvents: StateFlow<List<EventEntity>> = repository
+        .eventsInRange(LocalDate.now(), LocalDate.now())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun markStepDone(step: TrayStepEntity, quantityValue: Double? = null, quantityUnit: String = "") {
+        viewModelScope.launch { repository.markStepDone(step, quantityValue, quantityUnit) }
+    }
+
+    fun markStepSkipped(step: TrayStepEntity) {
+        viewModelScope.launch { repository.markStepSkipped(step) }
+    }
 
     fun goToPreviousMonth() {
         _currentMonth.value = _currentMonth.value.minusMonths(1)

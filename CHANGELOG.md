@@ -229,3 +229,13 @@ autoconclusiva:
   l'ultima varietà in elenco, quindi in alto nello schermo se le varietà
   erano poche. Ora è sempre in fondo alla schermata, sia con elenco vuoto
   che pieno.
+- **Ristrutturazione Calendario, sezione "Oggi"**: prima la prima cosa
+  visibile aprendo l'app (Calendario è la tab di partenza) era la griglia
+  del mese intero, con gli eventi di oggi in fondo dopo uno scroll e senza
+  poterli segnare fatti direttamente. Ora "Oggi" è la prima sezione,
+  azionabile (spunta diretta per gli step, con il dialogo quantità per
+  raccolta/irrigazione), aggregata su tutti i vassoi; la griglia del mese
+  è dietro un toggle "Mese", per quando si vuole sfogliare il calendario
+  invece di agire su oggi. `StepStatusBadge`, prima privato di
+  `TrayDetailScreen`, è stato estratto in un componente condiviso
+  (`ui/StepStatusBadge.kt`) e riusato qui.

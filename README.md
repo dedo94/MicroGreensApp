@@ -37,9 +37,13 @@ da quel momento è indipendente.
 
 ### Calendario
 
-Vista mensile con un pallino colorato per varietà su ogni giorno con
-eventi, filtrabile per vassoio; tap su un giorno per vedere gli eventi di
-quella data.
+Prima cosa che si vede aprendo l'app: una sezione "Oggi" con tutte le
+azioni pianificate per la giornata su tutti i vassoi, filtrabile per
+vassoio, con spunta diretta per segnare fatto uno step (quantità richiesta
+per raccolta/irrigazione) senza dover entrare nel dettaglio del vassoio.
+Sotto, dietro un toggle "Mese", la vista mensile classica con un pallino
+colorato per varietà su ogni giorno con eventi; tap su un giorno diverso
+da oggi per vederne gli eventi.
 
 ### Notifiche
 
