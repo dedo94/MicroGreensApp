@@ -260,10 +260,12 @@ autoconclusiva:
   (`archive-api.open-meteo.com`) e li allega. Innescato manualmente
   invece che in automatico all'avvio, per tenere una chiamata di rete non
   banale visibile e controllabile invece che silenziosa in background.
-  **Non verificato contro l'API reale**: l'ambiente di sviluppo usato non
-  ha accesso di rete a Open-Meteo, quindi i nomi dei parametri/campi
-  (`start_date`/`end_date`, `daily=temperature_2m_mean,
-  relative_humidity_2m_mean`) sono basati sulla documentazione e vanno
-  confermati sul dispositivo prima di fidarsene appieno — se l'API
-  risponde con nomi diversi, la chiamata fallisce silenziosamente (nessun
-  evento aggiornato) senza rompere nient'altro.
+  Verificato funzionante su dispositivo reale.
+- **Layout del blocco Meteo in Opzioni più compatto**: posizione,
+  ricerca città e recupero meteo storico erano tutti sempre visibili,
+  con testo esplicativo su più righe — troppo ingombrante per
+  un'impostazione usata di rado. Ora la posizione è una riga compatta
+  (icona + nome + sottotitolo) che si espande solo toccandola per
+  cercare/cambiare città; il recupero meteo storico è un'altra riga
+  compatta con lo stato (in corso/risultato) come sottotitolo invece che
+  paragrafi separati.
