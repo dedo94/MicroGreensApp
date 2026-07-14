@@ -35,4 +35,7 @@ interface EventDao {
 
     @Query("SELECT * FROM events WHERE eventDate BETWEEN :start AND :end")
     fun getEventsInRange(start: LocalDate, end: LocalDate): Flow<List<EventEntity>>
+
+    @Query("SELECT * FROM events WHERE actualTemperature IS NULL AND actualHumidity IS NULL")
+    suspend fun getEventsMissingWeather(): List<EventEntity>
 }

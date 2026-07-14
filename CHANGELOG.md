@@ -252,3 +252,18 @@ autoconclusiva:
   cui nasce la maggior parte degli eventi nell'uso quotidiano (ancora di
   più dopo la sezione "Oggi"). `TrayRepository.markStepDone()` ora
   recupera anche lui il meteo del giorno e lo allega all'evento.
+- **Recupero meteo storico mancante**: gli eventi passati creati prima del
+  fix precedente sono rimasti senza temperatura/umidità. Un bottone
+  "Recupera meteo mancante" in Opzioni (visibile solo con una posizione
+  impostata) cerca tutti gli eventi senza meteo, recupera i dati storici
+  di quelle date in un'unica chiamata all'archivio Open-Meteo
+  (`archive-api.open-meteo.com`) e li allega. Innescato manualmente
+  invece che in automatico all'avvio, per tenere una chiamata di rete non
+  banale visibile e controllabile invece che silenziosa in background.
+  **Non verificato contro l'API reale**: l'ambiente di sviluppo usato non
+  ha accesso di rete a Open-Meteo, quindi i nomi dei parametri/campi
+  (`start_date`/`end_date`, `daily=temperature_2m_mean,
+  relative_humidity_2m_mean`) sono basati sulla documentazione e vanno
+  confermati sul dispositivo prima di fidarsene appieno — se l'API
+  risponde con nomi diversi, la chiamata fallisce silenziosamente (nessun
+  evento aggiornato) senza rompere nient'altro.

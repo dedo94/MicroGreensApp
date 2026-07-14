@@ -242,4 +242,30 @@ class TrayRepository @Inject constructor(
     }
 
     suspend fun deleteEvent(event: EventEntity) = eventDao.delete(event)
+
+    /**
+     * Recupera il meteo mancante sugli eventi passati (creati prima del fix
+     * che ha aggiunto il meteo a [markStepDone], o comunque senza dati
+     * salvati). Esclude oggi: quello si autoripara da solo ad ogni nuovo
+     * evento tramite [WeatherRepository.fetchTodayIfNeeded]. Ritorna il
+     * numero di eventi effettivamente aggiornati.
+     */
+    suspend fun backfillMissingWeather(): Int {
+        val today = LocalDate.now()
+        val missingEvents = eventDao.getEventsMissingWeather().filter { it.eventDate != today }
+        if (missingEvents.isEmpty()) return 0
+        val weatherByDate = weatherRepository.fetchHistorical(missingEvents.map { it.eventDate }.distinct())
+        var updated = 0
+        missingEvents.forEach { event ->
+            val weather = weatherByDate[event.eventDate] ?: return@forEach
+            eventDao.update(
+                event.copy(
+                    actualTemperature = weather.fetchedTemperature,
+                    actualHumidity = weather.fetchedHumidity,
+                )
+            )
+            updated++
+        }
+        return updated
+    }
 }

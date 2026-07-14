@@ -57,7 +57,10 @@ indipendentemente dal permesso di sistema.
 Temperatura e umidità del giorno, recuperate da Open-Meteo in base alla
 posizione impostata in Opzioni, pre-compilate (ma sempre modificabili) su
 ogni evento registrato — sia segnando fatto uno step pianificato, sia
-aggiungendo un evento libero.
+aggiungendo un evento libero. In Opzioni, un bottone "Recupera meteo
+mancante" permette di recuperare a posteriori temperatura/umidità sugli
+eventi passati che ne sono privi (es. registrati prima che questa
+pre-compilazione esistesse), usando l'archivio storico di Open-Meteo.
 
 ### Statistiche
 
