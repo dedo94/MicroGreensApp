@@ -5,6 +5,7 @@ import com.dedo94.microgreensapp.core.database.entity.WeatherDailyEntity
 import com.dedo94.microgreensapp.core.network.dto.ForecastResponseDto
 import com.dedo94.microgreensapp.core.network.dto.GeocodingResponseDto
 import com.dedo94.microgreensapp.core.network.dto.GeocodingResultDto
+import com.dedo94.microgreensapp.core.network.dto.HistoricalWeatherResponseDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -86,6 +87,55 @@ class WeatherRepository @Inject constructor(
                     locationNameSnapshot = location.name,
                 ).also { weatherDailyDao.insert(it) }
             }.getOrNull()
+        }
+    }
+
+    /**
+     * Recupera il meteo storico per una lista di date passate (non oggi: per
+     * quello c'è [fetchTodayIfNeeded]), in un'unica chiamata all'archivio
+     * storico di Open-Meteo che copre l'intero intervallo min-max, salvando
+     * ogni giorno trovato in cache. Usa la posizione attuale come
+     * approssimazione anche per date in cui la posizione avrebbe potuto
+     * essere diversa: l'app non tiene uno storico delle posizioni passate.
+     *
+     * Non verificabile da questo ambiente di sviluppo (rete verso
+     * api.open-meteo.com bloccata): nomi dei parametri e dei campi
+     * daily (`temperature_2m_mean`, `relative_humidity_2m_mean`) basati
+     * sulla documentazione Open-Meteo, da confermare su dispositivo reale.
+     */
+    suspend fun fetchHistorical(dates: List<LocalDate>): Map<LocalDate, WeatherDailyEntity> {
+        if (dates.isEmpty()) return emptyMap()
+        val location = locationRepository.location.firstOrNull() ?: return emptyMap()
+        val wantedDates = dates.toSet()
+        val start = dates.min()
+        val end = dates.max()
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val url = "https://archive-api.open-meteo.com/v1/archive".toHttpUrl().newBuilder()
+                    .addQueryParameter("latitude", location.latitude.toString())
+                    .addQueryParameter("longitude", location.longitude.toString())
+                    .addQueryParameter("start_date", start.toString())
+                    .addQueryParameter("end_date", end.toString())
+                    .addQueryParameter("daily", "temperature_2m_mean,relative_humidity_2m_mean")
+                    .addQueryParameter("timezone", "auto")
+                    .build()
+                val body = execute(url) ?: return@runCatching emptyMap()
+                val daily = json.decodeFromString<HistoricalWeatherResponseDto>(body).daily
+                    ?: return@runCatching emptyMap()
+                daily.time.indices.mapNotNull { i ->
+                    val date = runCatching { LocalDate.parse(daily.time[i]) }.getOrNull()
+                        ?.takeIf { it in wantedDates } ?: return@mapNotNull null
+                    val entity = WeatherDailyEntity(
+                        date = date,
+                        fetchedTemperature = daily.temperatureMean.getOrNull(i),
+                        fetchedHumidity = daily.relativeHumidityMean.getOrNull(i),
+                        fetchedAt = Instant.now(),
+                        locationNameSnapshot = location.name,
+                    )
+                    weatherDailyDao.insert(entity)
+                    date to entity
+                }.toMap()
+            }.getOrElse { emptyMap() }
         }
     }
 

@@ -18,7 +18,8 @@ import javax.inject.Singleton
 
 data class TrayStats(
     val tray: TrayEntity,
-    val waterTotalMl: Double,
+    /** Null se nessun evento di irrigazione ha una quantità: in pratica quasi sempre, essendo l'acqua difficile da misurare (nebulizzazione/sotto-vassoio). */
+    val waterTotalMl: Double?,
     val harvestTotalGrams: Double?,
     val yieldPerSeedGram: Double?,
     val waterPerHarvestGram: Double?,
@@ -81,9 +82,10 @@ class StatsRepository @Inject constructor(
             val trayStats = trays.map { tray ->
                 val trayEvents = eventsByTray[tray.id].orEmpty()
 
-                val waterTotal = trayEvents
+                val waterValues = trayEvents
                     .filter { it.eventType == ActionType.WATERING }
-                    .sumOf { it.quantityValue ?: 0.0 }
+                    .mapNotNull { it.quantityValue }
+                val waterTotal = waterValues.takeIf { it.isNotEmpty() }?.sum()
 
                 val harvestEvents = trayEvents.filter { it.eventType == ActionType.HARVEST }
                 val harvestTotal = harvestEvents.sumOf { it.quantityValue ?: 0.0 }
@@ -98,7 +100,7 @@ class StatsRepository @Inject constructor(
                 val yieldPerSeedGram = if (seedQty != null && seedQty > 0 && harvestTotal != null) {
                     harvestTotal / seedQty
                 } else null
-                val waterPerHarvestGram = if (harvestTotal != null && harvestTotal > 0) {
+                val waterPerHarvestGram = if (waterTotal != null && harvestTotal != null && harvestTotal > 0) {
                     waterTotal / harvestTotal
                 } else null
 

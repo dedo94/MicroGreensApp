@@ -70,4 +70,26 @@ class SettingsViewModel @Inject constructor(
             query = ""
         }
     }
+
+    var isBackfillingWeather by mutableStateOf(false)
+        private set
+    var weatherBackfillResult by mutableStateOf<Int?>(null)
+        private set
+
+    /**
+     * Recupera il meteo storico sugli eventi passati che ne sono privi (es.
+     * creati prima del fix che pre-compila il meteo su "segna fatto").
+     * Innescato manualmente dall'utente invece che in automatico all'avvio:
+     * è una chiamata di rete non banale (un intervallo di date), meglio
+     * visibile e controllabile che silenziosa in background.
+     */
+    fun backfillMissingWeather() {
+        if (isBackfillingWeather) return
+        viewModelScope.launch {
+            isBackfillingWeather = true
+            weatherBackfillResult = null
+            weatherBackfillResult = trayRepository.backfillMissingWeather()
+            isBackfillingWeather = false
+        }
+    }
 }

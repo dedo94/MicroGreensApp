@@ -25,6 +25,7 @@ class TrayRepository @Inject constructor(
     private val eventDao: EventDao,
     private val templateStepDao: TemplateStepDao,
     private val notificationScheduler: NotificationScheduler,
+    private val weatherRepository: WeatherRepository,
 ) {
     fun observeTrays(): Flow<List<TrayEntity>> = trayDao.getAll()
 
@@ -149,9 +150,16 @@ class TrayRepository @Inject constructor(
         rescheduleReminders(step.trayId)
     }
 
-    /** Segna uno step pianificato come fatto e registra l'evento corrispondente nel diario. */
+    /**
+     * Segna uno step pianificato come fatto e registra l'evento corrispondente
+     * nel diario, con temperatura/umidità precompilate dal meteo del giorno
+     * (se la posizione è impostata) — altrimenti solo il form "Nuovo evento"
+     * libero le avrebbe mai valorizzate, mentre nell'uso quotidiano la
+     * maggior parte degli eventi nasce da qui.
+     */
     suspend fun markStepDone(step: TrayStepEntity, quantityValue: Double? = null, quantityUnit: String = "") {
         trayStepDao.update(step.copy(status = TrayStepStatus.DONE))
+        val weather = weatherRepository.fetchTodayIfNeeded()
         eventDao.insert(
             EventEntity(
                 trayId = step.trayId,
@@ -161,6 +169,8 @@ class TrayRepository @Inject constructor(
                 title = step.name,
                 quantityValue = quantityValue,
                 quantityUnit = quantityUnit,
+                actualTemperature = weather?.fetchedTemperature,
+                actualHumidity = weather?.fetchedHumidity,
             )
         )
         if (step.actionType == ActionType.HARVEST) {
@@ -232,4 +242,30 @@ class TrayRepository @Inject constructor(
     }
 
     suspend fun deleteEvent(event: EventEntity) = eventDao.delete(event)
+
+    /**
+     * Recupera il meteo mancante sugli eventi passati (creati prima del fix
+     * che ha aggiunto il meteo a [markStepDone], o comunque senza dati
+     * salvati). Esclude oggi: quello si autoripara da solo ad ogni nuovo
+     * evento tramite [WeatherRepository.fetchTodayIfNeeded]. Ritorna il
+     * numero di eventi effettivamente aggiornati.
+     */
+    suspend fun backfillMissingWeather(): Int {
+        val today = LocalDate.now()
+        val missingEvents = eventDao.getEventsMissingWeather().filter { it.eventDate != today }
+        if (missingEvents.isEmpty()) return 0
+        val weatherByDate = weatherRepository.fetchHistorical(missingEvents.map { it.eventDate }.distinct())
+        var updated = 0
+        missingEvents.forEach { event ->
+            val weather = weatherByDate[event.eventDate] ?: return@forEach
+            eventDao.update(
+                event.copy(
+                    actualTemperature = weather.fetchedTemperature,
+                    actualHumidity = weather.fetchedHumidity,
+                )
+            )
+            updated++
+        }
+        return updated
+    }
 }

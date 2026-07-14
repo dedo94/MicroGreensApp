@@ -166,6 +166,32 @@ fun SettingsScreen(
                     supportingContent = { Text(subtitle) },
                 )
             }
+            if (location != null) {
+                Spacer(Modifier.height(Spacing.md))
+                Text(
+                    text = "Se hai eventi passati senza temperatura/umidità (es. registrati prima di questa versione), puoi provare a recuperarli.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(Spacing.sm))
+                Button(
+                    onClick = viewModel::backfillMissingWeather,
+                    enabled = !viewModel.isBackfillingWeather,
+                ) {
+                    Text(if (viewModel.isBackfillingWeather) "Recupero in corso…" else "Recupera meteo mancante")
+                }
+                viewModel.weatherBackfillResult?.let { updated ->
+                    Spacer(Modifier.height(Spacing.sm))
+                    Text(
+                        text = if (updated > 0) {
+                            "Meteo recuperato per $updated event${if (updated == 1) "o" else "i"}."
+                        } else {
+                            "Nessun evento aggiornato: dati non disponibili o nessun evento senza meteo."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
         }
     }
 }

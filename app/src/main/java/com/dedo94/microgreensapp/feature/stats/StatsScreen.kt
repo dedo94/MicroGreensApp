@@ -446,7 +446,7 @@ private fun TrayRow(
                     HorizontalDivider(modifier = Modifier.padding(bottom = Spacing.sm))
                     val seedInfo = stats.tray.initialSeedQuantityGrams?.let { formatGrams(it) } ?: "—"
                     Text(
-                        text = "Semi: $seedInfo · Acqua: ${"%.0f".format(stats.waterTotalMl)}ml · Raccolto: ${formatGrams(stats.harvestTotalGrams)}",
+                        text = "Semi: $seedInfo · Acqua: ${formatMl(stats.waterTotalMl)} · Raccolto: ${formatGrams(stats.harvestTotalGrams)}",
                         style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
@@ -558,7 +558,7 @@ private fun CompareSection(
                             }
                             HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
                             ComparisonRow("Semi", formatGrams(trayA.tray.initialSeedQuantityGrams), formatGrams(trayB.tray.initialSeedQuantityGrams))
-                            ComparisonRow("Acqua", "${"%.0f".format(trayA.waterTotalMl)}ml", "${"%.0f".format(trayB.waterTotalMl)}ml")
+                            ComparisonRow("Acqua", formatMl(trayA.waterTotalMl), formatMl(trayB.waterTotalMl))
                             ComparisonRow("Raccolto", formatGrams(trayA.harvestTotalGrams), formatGrams(trayB.harvestTotalGrams))
                             ComparisonRow("Resa/seme", formatRatio(trayA.yieldPerSeedGram), formatRatio(trayB.yieldPerSeedGram))
                             ComparisonRow("Efficienza idrica", formatRatio(trayA.waterPerHarvestGram), formatRatio(trayB.waterPerHarvestGram))
@@ -656,6 +656,8 @@ private fun YearMonth.shortLabel(): String {
 }
 
 private fun formatGrams(value: Double?): String = value?.let { "${"%.1f".format(it)}g" } ?: "—"
+
+private fun formatMl(value: Double?): String = value?.let { "${"%.0f".format(it)}ml" } ?: "—"
 
 private fun formatRatio(value: Double?): String = value?.let { "%.2f".format(it) } ?: "—"
 
