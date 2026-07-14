@@ -40,7 +40,7 @@ da quel momento è indipendente.
 Prima cosa che si vede aprendo l'app: una sezione "Oggi" con tutte le
 azioni pianificate per la giornata su tutti i vassoi, filtrabile per
 vassoio, con spunta diretta per segnare fatto uno step (quantità richiesta
-per raccolta/irrigazione) senza dover entrare nel dettaglio del vassoio.
+solo per la raccolta) senza dover entrare nel dettaglio del vassoio.
 Sotto, dietro un toggle "Mese", la vista mensile classica con un pallino
 colorato per varietà su ogni giorno con eventi; tap su un giorno diverso
 da oggi per vederne gli eventi.
@@ -55,8 +55,9 @@ indipendentemente dal permesso di sistema.
 ### Meteo
 
 Temperatura e umidità del giorno, recuperate da Open-Meteo in base alla
-posizione impostata in Opzioni, pre-compilate (ma sempre modificabili) nel
-form di un nuovo evento.
+posizione impostata in Opzioni, pre-compilate (ma sempre modificabili) su
+ogni evento registrato — sia segnando fatto uno step pianificato, sia
+aggiungendo un evento libero.
 
 ### Statistiche
 

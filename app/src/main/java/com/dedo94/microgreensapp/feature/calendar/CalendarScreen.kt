@@ -113,7 +113,7 @@ fun CalendarScreen(
     var stepPendingQuantityInput by remember { mutableStateOf<TrayStepEntity?>(null) }
 
     fun proceedMarkDone(step: TrayStepEntity) {
-        if (step.actionType == ActionType.HARVEST || step.actionType == ActionType.WATERING) {
+        if (step.actionType == ActionType.HARVEST) {
             stepPendingQuantityInput = step
         } else {
             viewModel.markStepDone(step)
@@ -291,16 +291,15 @@ fun CalendarScreen(
     }
 
     stepPendingQuantityInput?.let { step ->
-        val isHarvest = step.actionType == ActionType.HARVEST
         var quantityText by remember(step.id) { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text(if (isHarvest) "Registra il raccolto" else "Registra l'irrigazione") },
+            title = { Text("Registra il raccolto") },
             text = {
                 OutlinedTextField(
                     value = quantityText,
                     onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text(if (isHarvest) "Quantità raccolta (g)" else "Acqua data (ml)") },
+                    label = { Text("Quantità raccolta (g)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -310,7 +309,7 @@ fun CalendarScreen(
                     viewModel.markStepDone(
                         step = step,
                         quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = if (isHarvest) "g" else "ml",
+                        quantityUnit = "g",
                     )
                     stepPendingQuantityInput = null
                 }) { Text("Conferma") }

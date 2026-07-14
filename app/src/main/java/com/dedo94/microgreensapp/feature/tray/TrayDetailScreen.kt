@@ -82,11 +82,12 @@ fun TrayDetailScreen(
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteTrayDialog by remember { mutableStateOf(false) }
 
-    // Per gli step di raccolta/irrigazione, prima di segnarli fatti chiediamo
-    // la quantità (grammi raccolti o ml d'acqua): altrimenti non ci sarebbe
-    // mai un punto in cui inserirla.
+    // Per lo step di raccolta, prima di segnarlo fatto chiediamo la quantità
+    // (grammi), altrimenti non ci sarebbe mai un punto in cui inserirla.
+    // L'irrigazione non chiede più una quantità: in pratica è impossibile
+    // da misurare (nebulizzazione sui semi, poi acqua nel sotto-vassoio).
     fun proceedMarkDone(step: TrayStepEntity) {
-        if (step.actionType == ActionType.HARVEST || step.actionType == ActionType.WATERING) {
+        if (step.actionType == ActionType.HARVEST) {
             stepPendingQuantityInput = step
         } else {
             viewModel.markDone(step)
@@ -285,16 +286,15 @@ fun TrayDetailScreen(
     }
 
     stepPendingQuantityInput?.let { step ->
-        val isHarvest = step.actionType == ActionType.HARVEST
         var quantityText by remember(step.id) { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text(if (isHarvest) "Registra il raccolto" else "Registra l'irrigazione") },
+            title = { Text("Registra il raccolto") },
             text = {
                 OutlinedTextField(
                     value = quantityText,
                     onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text(if (isHarvest) "Quantità raccolta (g)" else "Acqua data (ml)") },
+                    label = { Text("Quantità raccolta (g)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -304,7 +304,7 @@ fun TrayDetailScreen(
                     viewModel.markDone(
                         step = step,
                         quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = if (isHarvest) "g" else "ml",
+                        quantityUnit = "g",
                     )
                     stepPendingQuantityInput = null
                 }) { Text("Conferma") }

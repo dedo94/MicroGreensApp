@@ -233,9 +233,22 @@ autoconclusiva:
   visibile aprendo l'app (Calendario è la tab di partenza) era la griglia
   del mese intero, con gli eventi di oggi in fondo dopo uno scroll e senza
   poterli segnare fatti direttamente. Ora "Oggi" è la prima sezione,
-  azionabile (spunta diretta per gli step, con il dialogo quantità per
-  raccolta/irrigazione), aggregata su tutti i vassoi; la griglia del mese
-  è dietro un toggle "Mese", per quando si vuole sfogliare il calendario
-  invece di agire su oggi. `StepStatusBadge`, prima privato di
-  `TrayDetailScreen`, è stato estratto in un componente condiviso
-  (`ui/StepStatusBadge.kt`) e riusato qui.
+  azionabile (spunta diretta per gli step, con il dialogo quantità per la
+  raccolta), aggregata su tutti i vassoi; la griglia del mese è dietro un
+  toggle "Mese", per quando si vuole sfogliare il calendario invece di
+  agire su oggi. `StepStatusBadge`, prima privato di `TrayDetailScreen`,
+  è stato estratto in un componente condiviso (`ui/StepStatusBadge.kt`) e
+  riusato qui.
+- **Rimossa la quantità obbligatoria per l'irrigazione**: in pratica
+  impossibile da misurare (nebulizzazione sui semi nelle prime fasi, poi
+  acqua versata nel sotto-vassoio), quindi segnare fatto uno step di
+  irrigazione non chiede più una quantità — resta richiesta solo per la
+  raccolta, l'unica effettivamente misurabile. L'"acqua totale"/
+  "efficienza idrica" nelle statistiche mostrano "—" invece di un
+  fuorviante 0 quando non c'è nessuna quantità registrata.
+- **Fix: temperatura/umidità mancanti anche con la posizione impostata**:
+  il meteo veniva pre-compilato solo aggiungendo un evento libero dal form
+  dedicato — mai segnando fatto uno step pianificato, che è il modo con
+  cui nasce la maggior parte degli eventi nell'uso quotidiano (ancora di
+  più dopo la sezione "Oggi"). `TrayRepository.markStepDone()` ora
+  recupera anche lui il meteo del giorno e lo allega all'evento.
