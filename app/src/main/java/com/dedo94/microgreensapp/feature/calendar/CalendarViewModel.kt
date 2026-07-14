@@ -22,7 +22,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    repository: TrayRepository,
+    private val repository: TrayRepository,
 ) : ViewModel() {
 
     private val _currentMonth = MutableStateFlow(YearMonth.now())
