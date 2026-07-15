@@ -65,11 +65,13 @@ pre-compilazione esistesse), usando l'archivio storico di Open-Meteo.
 ### Statistiche
 
 KPI in alto (vassoi attivi, raccolto ultimi 30 giorni, resa media/seme),
-record personali, produzione mensile, confronto compatto tra varietà,
-elenco vassoi con dettaglio a comparsa, confronto affiancato tra due
-vassoi. Tutta la pagina è filtrabile per varietà scorrendo con swipe (o
-toccando i chip del filtro): KPI, record e produzione mensile si
-ricalcolano sulla varietà selezionata.
+record personali, grafico di produzione (grammi raccolti e semi usati
+affiancati per periodo, di default per anno con un interruttore per
+passare al mensile), confronto compatto tra varietà, elenco vassoi con
+dettaglio a comparsa, confronto affiancato tra due vassoi. Tutta la
+pagina è filtrabile per varietà scorrendo con swipe (o toccando i chip
+del filtro): KPI, record e grafico di produzione si ricalcolano sulla
+varietà selezionata.
 
 ## Stack tecnico
 

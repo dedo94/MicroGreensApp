@@ -269,3 +269,12 @@ autoconclusiva:
   cercare/cambiare città; il recupero meteo storico è un'altra riga
   compatta con lo stato (in corso/risultato) come sottotitolo invece che
   paragrafi separati.
+- **Grafico di produzione con semi usati, e vista annuale**: il grafico
+  "Produzione mensile" nelle Statistiche mostrava solo i grammi raccolti.
+  Ora mostra anche i semi usati come seconda serie di barre affiancate
+  (i semi sono attribuiti al periodo dell'ultimo raccolto del vassoio, non
+  alla semina: seminare e raccogliere avvengono quasi sempre in periodi
+  diversi, questo tiene raccolto e semi riferiti allo stesso ciclo). Il
+  grafico mostra di default i totali per anno invece che per mese —
+  molto più leggibile su più cicli di coltivazione — con un interruttore
+  "Anno"/"Mese" per passare alla vista mensile quando serve.

@@ -38,6 +38,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,7 +62,8 @@ import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.core.repository.VarietyStats
 import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.CompactHeader
-import com.dedo94.microgreensapp.ui.charts.MonthlyBarChart
+import com.dedo94.microgreensapp.ui.charts.ProductionBarChart
+import com.dedo94.microgreensapp.ui.charts.ProductionChartPoint
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.displayLabel
@@ -130,6 +134,9 @@ private fun StatsContent(
     // MutableStateFlow separato nel ViewModel.
     val pagerState = rememberPagerState(pageCount = { 1 + overview.varietyStats.size })
     val coroutineScope = rememberCoroutineScope()
+    // Condivisa tra tutte le pagine dello swipe, non per-varietà: se l'utente
+    // passa a "Mese" se lo ritrova anche scorrendo su un'altra varietà.
+    var showYearlyProduction by remember { mutableStateOf(true) }
 
     Column(modifier.fillMaxSize()) {
         LazyRow(
@@ -169,6 +176,8 @@ private fun StatsContent(
                 compareTrayBId = compareTrayBId,
                 onCompareTrayAChange = onCompareTrayAChange,
                 onCompareTrayBChange = onCompareTrayBChange,
+                showYearlyProduction = showYearlyProduction,
+                onShowYearlyProductionChange = { showYearlyProduction = it },
             )
         }
     }
@@ -184,6 +193,8 @@ private fun StatsPageContent(
     compareTrayBId: Long?,
     onCompareTrayAChange: (Long?) -> Unit,
     onCompareTrayBChange: (Long?) -> Unit,
+    showYearlyProduction: Boolean,
+    onShowYearlyProductionChange: (Boolean) -> Unit,
 ) {
     val filteredTrayStats = remember(overview, varietyFilter) {
         if (varietyFilter == null) overview.trayStats else overview.trayStats.filter { it.tray.varietyName == varietyFilter }
@@ -236,12 +247,43 @@ private fun StatsPageContent(
             item { Spacer(Modifier.height(Spacing.sm)) }
         }
 
-        if (summary.monthlyHarvestGrams.isNotEmpty()) {
-            item { SectionTitle(if (varietyFilter == null) "Produzione mensile" else "Produzione mensile · $varietyFilter") }
+        val productionPoints = if (showYearlyProduction) {
+            summary.yearlyProduction.map { ProductionChartPoint(it.year.toString(), it.harvestGrams, it.seedGrams) }
+        } else {
+            summary.monthlyProduction.map { ProductionChartPoint(it.month.shortLabel(), it.harvestGrams, it.seedGrams) }
+        }
+        if (productionPoints.isNotEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Spacing.md, bottom = Spacing.sm),
+                ) {
+                    Text(
+                        text = if (varietyFilter == null) "Produzione" else "Produzione · $varietyFilter",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(Spacing.xs))
+                    SingleChoiceSegmentedButtonRow {
+                        SegmentedButton(
+                            selected = showYearlyProduction,
+                            onClick = { onShowYearlyProductionChange(true) },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            label = { Text("Anno") },
+                        )
+                        SegmentedButton(
+                            selected = !showYearlyProduction,
+                            onClick = { onShowYearlyProductionChange(false) },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            label = { Text("Mese") },
+                        )
+                    }
+                }
+            }
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    MonthlyBarChart(
-                        points = summary.monthlyHarvestGrams.map { (month, grams) -> month.shortLabel() to grams },
+                    ProductionBarChart(
+                        points = productionPoints,
                         modifier = Modifier.padding(Spacing.sm),
                     )
                 }
