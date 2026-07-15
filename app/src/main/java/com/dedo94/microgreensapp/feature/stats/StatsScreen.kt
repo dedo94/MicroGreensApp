@@ -38,9 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -254,28 +251,33 @@ private fun StatsPageContent(
         }
         if (productionPoints.isNotEmpty()) {
             item {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = Spacing.md, bottom = Spacing.sm),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = if (varietyFilter == null) "Produzione" else "Produzione · $varietyFilter",
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    Spacer(Modifier.height(Spacing.xs))
-                    SingleChoiceSegmentedButtonRow {
-                        SegmentedButton(
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ProductionPeriodLabel(
+                            text = "Anno",
                             selected = showYearlyProduction,
                             onClick = { onShowYearlyProductionChange(true) },
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                            label = { Text("Anno") },
                         )
-                        SegmentedButton(
+                        Text(
+                            text = "·",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = Spacing.xs),
+                        )
+                        ProductionPeriodLabel(
+                            text = "Mese",
                             selected = !showYearlyProduction,
                             onClick = { onShowYearlyProductionChange(false) },
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                            label = { Text("Mese") },
                         )
                     }
                 }
@@ -674,6 +676,19 @@ private fun SectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm),
+    )
+}
+
+@Composable
+private fun ProductionPeriodLabel(text: String, selected: Boolean, onClick: () -> Unit) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = Spacing.xs, vertical = Spacing.xs),
     )
 }
 

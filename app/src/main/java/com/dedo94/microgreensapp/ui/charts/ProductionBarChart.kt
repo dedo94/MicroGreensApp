@@ -27,28 +27,29 @@ data class ProductionChartPoint(
 )
 
 /**
- * Due barre affiancate per periodo (raccolto e semi, stessa scala in
+ * Due barre affiancate per periodo (semi e raccolto, stessa scala in
  * grammi), disegnate con altezze in Dp proporzionali al massimo tra
  * entrambe le serie: la differenza di scala (i semi sono in genere una
- * piccola frazione del raccolto) è parte del punto del grafico.
+ * piccola frazione del raccolto) è parte del punto del grafico. Il valore
+ * in grammi è etichettato sopra ogni barra.
  */
 @Composable
 fun ProductionBarChart(points: List<ProductionChartPoint>, modifier: Modifier = Modifier) {
     if (points.isEmpty()) return
     val maxValue = points.maxOf { maxOf(it.harvestGrams, it.seedGrams) }.coerceAtLeast(0.0001)
     val maxBarHeight = 100.dp
-    val harvestColor = MaterialTheme.colorScheme.primary
     val seedColor = MaterialTheme.colorScheme.tertiary
+    val harvestColor = MaterialTheme.colorScheme.primary
 
     Column(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            LegendDot(harvestColor)
-            Spacer(Modifier.width(4.dp))
-            Text("Raccolto", style = MaterialTheme.typography.labelSmall)
-            Spacer(Modifier.width(12.dp))
             LegendDot(seedColor)
             Spacer(Modifier.width(4.dp))
             Text("Semi", style = MaterialTheme.typography.labelSmall)
+            Spacer(Modifier.width(12.dp))
+            LegendDot(harvestColor)
+            Spacer(Modifier.width(4.dp))
+            Text("Raccolto", style = MaterialTheme.typography.labelSmall)
         }
         Spacer(Modifier.height(8.dp))
         Row(
@@ -57,16 +58,15 @@ fun ProductionBarChart(points: List<ProductionChartPoint>, modifier: Modifier = 
             verticalAlignment = Alignment.Bottom,
         ) {
             points.forEach { point ->
-                val harvestHeight = maxBarHeight * (point.harvestGrams / maxValue).toFloat().coerceIn(0f, 1f)
                 val seedHeight = maxBarHeight * (point.seedGrams / maxValue).toFloat().coerceIn(0f, 1f)
+                val harvestHeight = maxBarHeight * (point.harvestGrams / maxValue).toFloat().coerceIn(0f, 1f)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(
-                        modifier = Modifier.height(maxBarHeight),
-                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.Bottom,
                     ) {
-                        Bar(height = harvestHeight, color = harvestColor)
-                        Bar(height = seedHeight, color = seedColor)
+                        LabeledBar(valueGrams = point.seedGrams, height = seedHeight, maxHeight = maxBarHeight, color = seedColor)
+                        LabeledBar(valueGrams = point.harvestGrams, height = harvestHeight, maxHeight = maxBarHeight, color = harvestColor)
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(point.label, style = MaterialTheme.typography.labelSmall)
@@ -77,13 +77,22 @@ fun ProductionBarChart(points: List<ProductionChartPoint>, modifier: Modifier = 
 }
 
 @Composable
-private fun Bar(height: Dp, color: Color) {
-    Spacer(
-        modifier = Modifier
-            .width(14.dp)
-            .height(height)
-            .background(color, RoundedCornerShape(6.dp)),
-    )
+private fun LabeledBar(valueGrams: Double, height: Dp, maxHeight: Dp, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("${"%.0f".format(valueGrams)}g", style = MaterialTheme.typography.labelSmall)
+        Spacer(Modifier.height(4.dp))
+        Column(
+            modifier = Modifier.height(maxHeight),
+            verticalArrangement = Arrangement.Bottom,
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .width(14.dp)
+                    .height(height)
+                    .background(color, RoundedCornerShape(6.dp)),
+            )
+        }
+    }
 }
 
 @Composable
