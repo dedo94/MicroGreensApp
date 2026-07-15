@@ -43,9 +43,28 @@ data class VarietyStats(
     val yieldSampleCount: Int,
 )
 
+/**
+ * Un punto della produzione per periodo: grammi raccolti nel periodo e semi
+ * usati dai vassoi il cui ultimo raccolto cade in quel periodo (non i semi
+ * seminati nel periodo: seminare e raccogliere avvengono quasi sempre in
+ * momenti diversi, questo tiene i due numeri riferiti allo stesso ciclo).
+ */
+data class MonthlyProductionPoint(
+    val month: YearMonth,
+    val harvestGrams: Double,
+    val seedGrams: Double,
+)
+
+data class YearlyProductionPoint(
+    val year: Int,
+    val harvestGrams: Double,
+    val seedGrams: Double,
+)
+
 /** KPI/record/produzione calcolati su un insieme di vassoi: globale, oppure ristretto a una singola varietà. */
 data class StatsSummary(
-    val monthlyHarvestGrams: List<Pair<YearMonth, Double>>,
+    val monthlyProduction: List<MonthlyProductionPoint>,
+    val yearlyProduction: List<YearlyProductionPoint>,
     val bestYieldTray: TrayStats?,
     val bestYieldRatioTray: TrayStats?,
     val shortestCycleTray: TrayStats?,
@@ -166,12 +185,51 @@ class StatsRepository @Inject constructor(
         val harvestEvents = trayStats.flatMap { eventsByTray[it.tray.id].orEmpty() }
             .filter { it.eventType == ActionType.HARVEST }
 
-        val monthlyHarvest = harvestEvents
+        val harvestGramsByMonth = harvestEvents
             .mapNotNull { event -> event.quantityValue?.let { YearMonth.from(event.eventDate) to it } }
             .groupBy({ it.first }, { it.second })
             .mapValues { (_, values) -> values.sum() }
-            .toSortedMap()
-            .map { it.key to it.value }
+        val harvestGramsByYear = harvestEvents
+            .mapNotNull { event -> event.quantityValue?.let { event.eventDate.year to it } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, values) -> values.sum() }
+
+        // Semi del vassoio attribuiti alla data del suo ultimo raccolto (non
+        // alla semina): tiene lo stesso ciclo di raccolto+semi nello stesso periodo.
+        val seedGramsByTrayHarvestDate = trayStats.mapNotNull { stat ->
+            val seedGrams = stat.tray.initialSeedQuantityGrams ?: return@mapNotNull null
+            val lastHarvestDate = eventsByTray[stat.tray.id].orEmpty()
+                .filter { it.eventType == ActionType.HARVEST }
+                .maxOfOrNull { it.eventDate } ?: return@mapNotNull null
+            lastHarvestDate to seedGrams
+        }
+        val seedGramsByMonth = seedGramsByTrayHarvestDate
+            .groupBy({ YearMonth.from(it.first) }, { it.second })
+            .mapValues { (_, values) -> values.sum() }
+        val seedGramsByYear = seedGramsByTrayHarvestDate
+            .groupBy({ it.first.year }, { it.second })
+            .mapValues { (_, values) -> values.sum() }
+
+        val monthlyProduction = (harvestGramsByMonth.keys + seedGramsByMonth.keys)
+            .distinct()
+            .sorted()
+            .map { month ->
+                MonthlyProductionPoint(
+                    month = month,
+                    harvestGrams = harvestGramsByMonth[month] ?: 0.0,
+                    seedGrams = seedGramsByMonth[month] ?: 0.0,
+                )
+            }
+        val yearlyProduction = (harvestGramsByYear.keys + seedGramsByYear.keys)
+            .distinct()
+            .sorted()
+            .map { year ->
+                YearlyProductionPoint(
+                    year = year,
+                    harvestGrams = harvestGramsByYear[year] ?: 0.0,
+                    seedGrams = seedGramsByYear[year] ?: 0.0,
+                )
+            }
 
         val last30DaysStart = LocalDate.now().minusDays(30)
         val last30DaysHarvest = harvestEvents
@@ -181,7 +239,8 @@ class StatsRepository @Inject constructor(
         val yieldRatios = trayStats.mapNotNull { it.yieldPerSeedGram }
 
         return StatsSummary(
-            monthlyHarvestGrams = monthlyHarvest,
+            monthlyProduction = monthlyProduction,
+            yearlyProduction = yearlyProduction,
             bestYieldTray = trayStats.filter { it.harvestTotalGrams != null }
                 .maxByOrNull { it.harvestTotalGrams!! },
             bestYieldRatioTray = trayStats.filter { it.yieldPerSeedGram != null }
