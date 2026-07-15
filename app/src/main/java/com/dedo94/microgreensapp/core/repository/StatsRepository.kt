@@ -44,10 +44,11 @@ data class VarietyStats(
 )
 
 /**
- * Un punto della produzione per periodo: grammi raccolti nel periodo e semi
- * usati dai vassoi il cui ultimo raccolto cade in quel periodo (non i semi
- * seminati nel periodo: seminare e raccogliere avvengono quasi sempre in
- * momenti diversi, questo tiene i due numeri riferiti allo stesso ciclo).
+ * Un punto della produzione per periodo: grammi raccolti nel periodo (per
+ * data di raccolto) e semi usati nel periodo (per data di semina). Le due
+ * date sono quasi sempre diverse per uno stesso vassoio (si semina e si
+ * raccoglie in momenti diversi): ogni serie usa semplicemente la propria
+ * data naturale, senza cercare di allineare i due numeri allo stesso ciclo.
  */
 data class MonthlyProductionPoint(
     val month: YearMonth,
@@ -194,20 +195,15 @@ class StatsRepository @Inject constructor(
             .groupBy({ it.first }, { it.second })
             .mapValues { (_, values) -> values.sum() }
 
-        // Semi del vassoio attribuiti alla data del suo ultimo raccolto (non
-        // alla semina): tiene lo stesso ciclo di raccolto+semi nello stesso periodo.
-        val seedGramsByTrayHarvestDate = trayStats.mapNotNull { stat ->
-            val seedGrams = stat.tray.initialSeedQuantityGrams ?: return@mapNotNull null
-            val lastHarvestDate = eventsByTray[stat.tray.id].orEmpty()
-                .filter { it.eventType == ActionType.HARVEST }
-                .maxOfOrNull { it.eventDate } ?: return@mapNotNull null
-            lastHarvestDate to seedGrams
-        }
-        val seedGramsByMonth = seedGramsByTrayHarvestDate
-            .groupBy({ YearMonth.from(it.first) }, { it.second })
+        // Semi attribuiti al mese/anno di semina del vassoio (data naturale
+        // dei semi, indipendente da quando/se il vassoio è stato raccolto).
+        val seedGramsByMonth = trayStats
+            .mapNotNull { stat -> stat.tray.initialSeedQuantityGrams?.let { YearMonth.from(stat.tray.sowingDate) to it } }
+            .groupBy({ it.first }, { it.second })
             .mapValues { (_, values) -> values.sum() }
-        val seedGramsByYear = seedGramsByTrayHarvestDate
-            .groupBy({ it.first.year }, { it.second })
+        val seedGramsByYear = trayStats
+            .mapNotNull { stat -> stat.tray.initialSeedQuantityGrams?.let { stat.tray.sowingDate.year to it } }
+            .groupBy({ it.first }, { it.second })
             .mapValues { (_, values) -> values.sum() }
 
         val monthlyProduction = (harvestGramsByMonth.keys + seedGramsByMonth.keys)
