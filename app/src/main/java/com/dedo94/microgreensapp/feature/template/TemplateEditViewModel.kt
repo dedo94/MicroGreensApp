@@ -109,12 +109,16 @@ class TemplateEditViewModel @Inject constructor(
         viewModelScope.launch { repository.deleteStep(step) }
     }
 
-    fun moveStep(from: Int, to: Int) {
-        val current = steps.value.toMutableList()
-        if (from !in current.indices || to !in current.indices) return
-        val item = current.removeAt(from)
-        current.add(to, item)
-        viewModelScope.launch { repository.reorderSteps(current) }
+    /**
+     * L'ordine finale è già calcolato dalla UI (stato locale ottimistico
+     * aggiornato durante il trascinamento): qui si persiste soltanto, una
+     * volta sola a fine gesto invece che ad ogni singolo spostamento —
+     * altrimenti scritture asincrone sovrapposte su [steps] (che riflette
+     * il DB solo dopo il round-trip di Room) possono operare su un ordine
+     * ormai superato durante un trascinamento veloce.
+     */
+    fun reorderSteps(newOrder: List<TemplateStepEntity>) {
+        viewModelScope.launch { repository.reorderSteps(newOrder) }
     }
 
     fun deleteTemplate(onDeleted: () -> Unit) {

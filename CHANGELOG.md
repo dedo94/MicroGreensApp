@@ -279,3 +279,12 @@ autoconclusiva:
   anno invece che per mese — molto più leggibile su più cicli di
   coltivazione — con un interruttore testuale "Anno"/"Mese" in linea col
   titolo della sezione per passare alla vista mensile quando serve.
+- **Fix: riordino step per drag-and-drop inaffidabile**: trascinando
+  velocemente uno step nell'editor di una varietà, l'ordine finale a
+  volte risultava sbagliato. Causa: ogni piccolo spostamento durante il
+  trascinamento scriveva subito su Room in modo asincrono, leggendo però
+  l'ordine da uno stato che rifletteva il DB solo dopo il giro completo
+  di lettura/scrittura — con trascinamenti veloci, scritture sovrapposte
+  potevano operare su un ordine ormai superato. Ora l'ordine durante il
+  trascinamento è tenuto in uno stato locale (aggiornato subito, nessun
+  I/O) e viene scritto su Room una sola volta al rilascio del dito.

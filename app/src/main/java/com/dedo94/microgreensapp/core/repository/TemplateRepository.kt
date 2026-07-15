@@ -55,6 +55,7 @@ class TemplateRepository @Inject constructor(
 
     suspend fun deleteStep(step: TemplateStepEntity) = stepDao.delete(step)
 
+    /** [steps] deve già essere nell'ordine finale desiderato: qui si assegnano solo gli orderIndex. */
     suspend fun reorderSteps(steps: List<TemplateStepEntity>) {
         val reindexed = steps.mapIndexed { index, step -> step.copy(orderIndex = index) }
         stepDao.updateAll(reindexed)

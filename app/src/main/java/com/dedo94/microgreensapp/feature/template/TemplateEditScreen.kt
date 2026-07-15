@@ -30,7 +30,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,9 +61,20 @@ fun TemplateEditScreen(
     var showDeleteTemplateDialog by remember { mutableStateOf(false) }
     var stepPendingDeletion by remember { mutableStateOf<TemplateStepEntity?>(null) }
 
+    // Stato locale ottimistico: aggiornato subito ad ogni spostamento durante
+    // il trascinamento (nessun I/O), persistito una sola volta a fine gesto
+    // in onDragStopped. Scrivere su DB ad ogni onMove causerebbe scritture
+    // asincrone sovrapposte su un ordine che [steps] riflette solo dopo il
+    // round-trip di Room, con il rischio di riordini persi durante un
+    // trascinamento veloce.
+    val localSteps = remember { mutableStateListOf<TemplateStepEntity>() }
+    LaunchedEffect(steps) {
+        localSteps.clear()
+        localSteps.addAll(steps)
+    }
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        viewModel.moveStep(from.index, to.index)
+        localSteps.add(to.index, localSteps.removeAt(from.index))
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -130,7 +143,7 @@ fun TemplateEditScreen(
                 }
             }
 
-            items(steps, key = { it.id }) { step ->
+            items(localSteps, key = { it.id }) { step ->
                 ReorderableItem(reorderableState, key = step.id) { _ ->
                     Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
                         Row(
@@ -145,7 +158,9 @@ fun TemplateEditScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 IconButton(
-                                    modifier = Modifier.draggableHandle(),
+                                    modifier = Modifier.draggableHandle(
+                                        onDragStopped = { viewModel.reorderSteps(localSteps.toList()) },
+                                    ),
                                     onClick = {},
                                 ) {
                                     Icon(Icons.Outlined.DragHandle, contentDescription = "Riordina")
