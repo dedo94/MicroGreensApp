@@ -87,6 +87,31 @@ livello), Navigation-Compose con rotte type-safe. Font Manrope bundlato
 localmente (nessuna dipendenza di rete/Google Play Services). Grafici
 disegnati con Canvas/Compose, nessuna libreria di charting.
 
+## Installazione
+
+App per uso personale, non pubblicata su Play Store: si installa
+manualmente (sideload) scaricando l'APK generato automaticamente da
+GitHub Actions ad ogni push.
+
+1. Vai alla scheda **Actions** del repository e apri l'esecuzione più
+   recente del workflow "Android Build" sul branch che ti interessa (di
+   solito `main`).
+2. In fondo alla pagina dell'esecuzione, sotto "Artifacts", scarica
+   `microgreens-debug-apk` (uno zip che contiene l'APK).
+3. Trasferisci l'APK sul telefono (email, cloud, o scaricalo
+   direttamente dal telefono aprendo la pagina da lì) ed estrailo dallo
+   zip.
+4. Apri il file `.apk` dal telefono. Se è la prima volta, Android chiede
+   di abilitare "Installa app sconosciute" per l'app che stai usando per
+   aprirlo (es. file manager o browser) — concedi il permesso solo per
+   quella.
+5. Conferma l'installazione.
+
+Il keystore di debug è fisso e committato nel repository (uso personale,
+nessun segreto da proteggere): installare una nuova build **aggiorna**
+quella già presente senza doverla disinstallare prima, e senza perdere i
+dati salvati nel database locale.
+
 ## Build
 
 Il progetto richiede l'Android SDK (compileSdk 35, minSdk 26). Per compilare:
