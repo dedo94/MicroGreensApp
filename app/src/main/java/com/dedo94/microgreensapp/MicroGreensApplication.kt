@@ -1,6 +1,7 @@
 package com.dedo94.microgreensapp
 
 import android.app.Application
+import com.dedo94.microgreensapp.core.database.dao.TemplatePhaseDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
 import com.dedo94.microgreensapp.core.database.seed.PeaTemplateSeed
@@ -19,6 +20,9 @@ class MicroGreensApplication : Application() {
     lateinit var varietyTemplateDao: VarietyTemplateDao
 
     @Inject
+    lateinit var templatePhaseDao: TemplatePhaseDao
+
+    @Inject
     lateinit var templateStepDao: TemplateStepDao
 
     @Inject
@@ -33,8 +37,8 @@ class MicroGreensApplication : Application() {
         // varietà precaricata torna disponibile anche se il DB viene
         // ricreato da zero per qualunque motivo.
         applicationScope.launch {
-            SunflowerTemplateSeed.seedIfNeeded(varietyTemplateDao, templateStepDao)
-            PeaTemplateSeed.seedIfNeeded(varietyTemplateDao, templateStepDao)
+            SunflowerTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
+            PeaTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
         }
     }
 }

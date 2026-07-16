@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
+import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
 import com.dedo94.microgreensapp.core.repository.TemplateRepository
 import com.dedo94.microgreensapp.navigation.TemplateEditRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,8 +45,8 @@ class TemplateEditViewModel @Inject constructor(
     var isInfoSaved by mutableStateOf(!isNew)
         private set
 
-    val steps: StateFlow<List<TemplateStepEntity>> = _templateId
-        .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else repository.stepsForTemplate(id) }
+    val phases: StateFlow<List<TemplatePhaseEntity>> = _templateId
+        .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else repository.phasesForTemplate(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
@@ -84,41 +84,33 @@ class TemplateEditViewModel @Inject constructor(
                 _templateId.value = repository.createTemplate(name, plantType, notes)
             } else {
                 repository.observeTemplate(id).firstOrNull()?.let { existing ->
-                    repository.updateTemplate(
-                        existing.copy(name = name, plantType = plantType, notes = notes)
-                    )
+                    repository.updateTemplate(existing.copy(name = name, plantType = plantType, notes = notes))
                 }
             }
             isInfoSaved = true
         }
     }
 
-    fun addStep(step: TemplateStepEntity) {
+    fun addPhase(name: String) {
         val id = _templateId.value ?: return
+        if (name.isBlank()) return
         viewModelScope.launch {
-            val orderIndex = repository.nextOrderIndex(id)
-            repository.addStep(step.copy(templateId = id, orderIndex = orderIndex))
+            val orderIndex = repository.nextPhaseOrderIndex(id)
+            repository.addPhase(TemplatePhaseEntity(templateId = id, orderIndex = orderIndex, name = name))
         }
     }
 
-    fun updateStep(step: TemplateStepEntity) {
-        viewModelScope.launch { repository.updateStep(step) }
-    }
-
-    fun deleteStep(step: TemplateStepEntity) {
-        viewModelScope.launch { repository.deleteStep(step) }
+    fun deletePhase(phase: TemplatePhaseEntity) {
+        viewModelScope.launch { repository.deletePhase(phase) }
     }
 
     /**
      * L'ordine finale è già calcolato dalla UI (stato locale ottimistico
      * aggiornato durante il trascinamento): qui si persiste soltanto, una
-     * volta sola a fine gesto invece che ad ogni singolo spostamento —
-     * altrimenti scritture asincrone sovrapposte su [steps] (che riflette
-     * il DB solo dopo il round-trip di Room) possono operare su un ordine
-     * ormai superato durante un trascinamento veloce.
+     * volta sola a fine gesto invece che ad ogni singolo spostamento.
      */
-    fun reorderSteps(newOrder: List<TemplateStepEntity>) {
-        viewModelScope.launch { repository.reorderSteps(newOrder) }
+    fun reorderPhases(newOrder: List<TemplatePhaseEntity>) {
+        viewModelScope.launch { repository.reorderPhases(newOrder) }
     }
 
     fun deleteTemplate(onDeleted: () -> Unit) {

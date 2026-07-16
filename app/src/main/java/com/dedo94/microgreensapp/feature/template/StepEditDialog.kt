@@ -15,6 +15,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -49,7 +50,6 @@ fun StepEditDialog(
     }
     var hasDuration by remember { mutableStateOf(initialStep?.durationHours != null) }
     var durationHoursText by remember { mutableStateOf((initialStep?.durationHours ?: 1).toString()) }
-    var repeatPerDayText by remember { mutableStateOf((initialStep?.repeatPerDay ?: 1).toString()) }
     var reminderTimesText by remember {
         mutableStateOf(initialStep?.reminderTimes?.joinToString(", ") { it.toString() } ?: "")
     }
@@ -100,6 +100,10 @@ fun StepEditDialog(
                     }
                 }
                 Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Giorno relativo all'inizio della fase (0 = primo giorno della fase)",
+                    style = MaterialTheme.typography.bodySmall,
+                )
                 Row(Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = offsetStartDaysText,
@@ -137,17 +141,14 @@ fun StepEditDialog(
                     )
                 }
                 OutlinedTextField(
-                    value = repeatPerDayText,
-                    onValueChange = { repeatPerDayText = it.filter(Char::isDigit) },
-                    label = { Text("Ripetizioni al giorno") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                OutlinedTextField(
                     value = reminderTimesText,
                     onValueChange = { reminderTimesText = it },
                     label = { Text("Orari promemoria (es. 08:00, 20:00)") },
                     modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = "Un orario = un promemoria e un'occorrenza segnabile a parte (es. due orari = mattina e sera separate). Vuoto = una volta al giorno senza promemoria.",
+                    style = MaterialTheme.typography.bodySmall,
                 )
                 OutlinedTextField(
                     value = instructions,
@@ -167,7 +168,7 @@ fun StepEditDialog(
                         .filter { it.isNotEmpty() }
                         .mapNotNull { runCatching { LocalTime.parse(it) }.getOrNull() }
                     val base = initialStep ?: TemplateStepEntity(
-                        templateId = 0L,
+                        phaseId = 0L,
                         orderIndex = 0,
                         name = "",
                         actionType = ActionType.CUSTOM,
@@ -179,7 +180,6 @@ fun StepEditDialog(
                         offsetStartDays = offsetStartDaysText.toIntOrNull() ?: 0,
                         offsetEndDays = if (hasRange) offsetEndDaysText.toIntOrNull() else null,
                         durationHours = if (hasDuration) durationHoursText.toIntOrNull() else null,
-                        repeatPerDay = (repeatPerDayText.toIntOrNull() ?: 1).coerceAtLeast(1),
                         reminderTimes = times,
                         instructions = instructions,
                     )

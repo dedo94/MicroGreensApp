@@ -8,11 +8,19 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 /**
- * Snapshot di uno step per un vassoio specifico, con date assolute calcolate
- * dalla data di semina. Copiato una volta da [TemplateStepEntity] alla
- * creazione del vassoio: da quel momento è completamente indipendente dal
- * template (può essere modificato, saltato, o il vassoio può avere step
- * aggiuntivi con isAdHoc = true) senza mai più leggere il template.
+ * Snapshot di una singola occorrenza di uno step per un vassoio specifico:
+ * un giorno preciso, e un orario preciso se lo step ne prevede uno (null se
+ * lo step non ha promemoria, es. Conservazione). Uno step con più orari al
+ * giorno (es. sciacquo mattina/sera) produce più righe, una per occorrenza,
+ * completabili indipendentemente l'una dall'altra.
+ *
+ * Copiato una volta da [TemplateStepEntity] alla creazione del vassoio: da
+ * quel momento è completamente indipendente dal template (può essere
+ * modificato, saltato, o il vassoio può avere step aggiuntivi con
+ * isAdHoc = true) senza mai più leggere il template. [phaseName] e
+ * [phaseOrderIndex] sono denormalizzati dalla fase di provenienza allo
+ * stesso modo: un vassoio non ha una propria tabella di fasi, il
+ * raggruppamento per fase si ottiene raggruppando le righe per phaseName.
  */
 @Entity(
     tableName = "tray_steps",
@@ -34,11 +42,11 @@ data class TrayStepEntity(
     val orderIndex: Int,
     val name: String,
     val actionType: ActionType,
-    val plannedStartDate: LocalDate,
-    val plannedEndDate: LocalDate,
+    val plannedDate: LocalDate,
+    val plannedTime: LocalTime?,
     val durationHours: Int? = null,
-    val repeatPerDay: Int = 1,
-    val reminderTimes: List<LocalTime> = emptyList(),
+    val phaseName: String,
+    val phaseOrderIndex: Int,
     val instructions: String = "",
     val status: TrayStepStatus = TrayStepStatus.PENDING,
     val isAdHoc: Boolean = false,

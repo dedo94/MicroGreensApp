@@ -8,12 +8,16 @@ dati 100% locali (Room), nessun account, nessun cloud.
 
 ### Varietà e piani di coltivazione
 
-Ogni varietà è un template con una sequenza di step (ammollo, prevenzione
-muffa, trasferimento nel vassoio, crescita, raccolta, conservazione),
-ciascuno con offset in giorni dalla semina, orari di promemoria e
-istruzioni. Gli step sono riordinabili via drag-and-drop. Due varietà sono
-precaricate al primo avvio (Girasole, Piselli) con piani realistici,
-completamente modificabili.
+Ogni varietà è un template organizzato in **fasi** (es. Ammollo,
+Germinazione, Crescita e raccolto), ciascuna con un nome libero e una
+durata in giorni. Ogni fase contiene una sequenza di step (nome, tipo
+azione, offset in giorni **dall'inizio della fase**, orari di promemoria,
+istruzioni) — un orario di promemoria corrisponde a un'occorrenza
+segnabile "fatta" a sé, così uno step con più interventi al giorno (es.
+sciacquo mattina e sera) si può completare uno alla volta invece che
+tutti insieme. Fasi e step sono entrambi riordinabili via drag-and-drop.
+Due varietà sono precaricate al primo avvio (Girasole, Piselli) con piani
+realistici, completamente modificabili.
 
 Modificare un template **non tocca** i vassoi già creati da quel
 template: alla creazione il piano viene copiato (snapshot) sul vassoio, che
@@ -103,7 +107,8 @@ core/di            Moduli Hilt
 core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
-feature/template   CRUD template di varietà e step
+feature/template   CRUD template di varietà: fasi (con durata) e step al
+                   loro interno, entrambi riordinabili
 feature/tray       Vassoi: tab In corso (giorni dalla semina, progresso,
                    stima raccolto)/Raccolti, creazione, modifica,
                    dettaglio/timeline/previsione raccolto
@@ -114,7 +119,7 @@ feature/stats      Dashboard: KPI in alto, confronto varietà, grafici
                    con aderenza al piano, confronto vassoi, record
 feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
+ui, ui/theme       Componenti condivisi (date/time picker, header compatto, colori/
                    etichette), grafici Canvas (ui/charts) e tema Material 3
                    (colori, tipografia con font Manrope, forme, spaziatura)
 ```

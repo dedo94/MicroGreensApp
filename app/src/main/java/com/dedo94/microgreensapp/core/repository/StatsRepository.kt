@@ -113,7 +113,7 @@ class StatsRepository @Inject constructor(
 
                 val actualCycleDays = harvestEvents.maxOfOrNull { it.eventDate }
                     ?.let { ChronoUnit.DAYS.between(tray.sowingDate, it) }
-                val plannedCycleDays = stepsByTray[tray.id].orEmpty().maxOfOrNull { it.plannedEndDate }
+                val plannedCycleDays = stepsByTray[tray.id].orEmpty().maxOfOrNull { it.plannedDate }
                     ?.let { ChronoUnit.DAYS.between(tray.sowingDate, it) }
 
                 val seedQty = tray.initialSeedQuantityGrams

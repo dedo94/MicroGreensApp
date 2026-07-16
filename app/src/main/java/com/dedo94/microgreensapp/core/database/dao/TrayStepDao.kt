@@ -24,17 +24,18 @@ interface TrayStepDao {
     @Delete
     suspend fun delete(step: TrayStepEntity)
 
-    @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedStartDate, orderIndex")
+    @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedDate, orderIndex, plannedTime")
     fun getStepsForTray(trayId: Long): Flow<List<TrayStepEntity>>
 
     @Query("SELECT * FROM tray_steps")
     fun getAll(): Flow<List<TrayStepEntity>>
 
-    @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedStartDate, orderIndex")
+    @Query("SELECT * FROM tray_steps WHERE trayId = :trayId ORDER BY plannedDate, orderIndex, plannedTime")
     suspend fun getStepsForTrayOnce(trayId: Long): List<TrayStepEntity>
 
     @Query(
-        "SELECT * FROM tray_steps WHERE plannedStartDate <= :end AND plannedEndDate >= :start"
+        "SELECT * FROM tray_steps WHERE plannedDate BETWEEN :start AND :end " +
+            "ORDER BY plannedDate, orderIndex, plannedTime"
     )
-    fun getStepsOverlappingRange(start: LocalDate, end: LocalDate): Flow<List<TrayStepEntity>>
+    fun getStepsInRange(start: LocalDate, end: LocalDate): Flow<List<TrayStepEntity>>
 }

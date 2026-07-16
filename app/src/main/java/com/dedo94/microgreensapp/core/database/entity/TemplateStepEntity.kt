@@ -7,33 +7,35 @@ import androidx.room.PrimaryKey
 import java.time.LocalTime
 
 /**
- * Uno step della "ricetta" di una varietà: definisce quando e cosa fare,
- * espresso come offset in giorni dalla data di semina (non date assolute,
- * perché il template non è legato a nessuna semina specifica).
+ * Uno step della "ricetta" di una fase: definisce quando e cosa fare,
+ * espresso come offset in giorni dall'inizio della fase che lo contiene
+ * (non dalla semina, e non date assolute: il template non è legato a
+ * nessuna semina specifica). Il numero di occorrenze giornaliere è
+ * implicito nella dimensione di [reminderTimes] (vuota = una volta al
+ * giorno senza orario specifico).
  */
 @Entity(
     tableName = "template_steps",
     foreignKeys = [
         ForeignKey(
-            entity = VarietyTemplateEntity::class,
+            entity = TemplatePhaseEntity::class,
             parentColumns = ["id"],
-            childColumns = ["templateId"],
+            childColumns = ["phaseId"],
             onDelete = ForeignKey.CASCADE,
         )
     ],
-    indices = [Index("templateId")],
+    indices = [Index("phaseId")],
 )
 data class TemplateStepEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
-    val templateId: Long,
+    val phaseId: Long,
     val orderIndex: Int,
     val name: String,
     val actionType: ActionType,
     val offsetStartDays: Int,
     val offsetEndDays: Int? = null,
     val durationHours: Int? = null,
-    val repeatPerDay: Int = 1,
     val reminderTimes: List<LocalTime> = emptyList(),
     val instructions: String = "",
 )

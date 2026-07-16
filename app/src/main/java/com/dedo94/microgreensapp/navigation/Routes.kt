@@ -21,6 +21,9 @@ object TemplateListRoute
 data class TemplateEditRoute(val templateId: Long = 0L)
 
 @Serializable
+data class TemplatePhaseEditRoute(val templateId: Long, val phaseId: Long)
+
+@Serializable
 object TrayCreateRoute
 
 @Serializable

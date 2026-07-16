@@ -1,6 +1,7 @@
 package com.dedo94.microgreensapp.core.repository
 
 import com.dedo94.microgreensapp.core.database.dao.EventDao
+import com.dedo94.microgreensapp.core.database.dao.TemplatePhaseDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
@@ -15,6 +16,7 @@ import com.dedo94.microgreensapp.core.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +25,7 @@ class TrayRepository @Inject constructor(
     private val trayDao: TrayDao,
     private val trayStepDao: TrayStepDao,
     private val eventDao: EventDao,
+    private val templatePhaseDao: TemplatePhaseDao,
     private val templateStepDao: TemplateStepDao,
     private val notificationScheduler: NotificationScheduler,
     private val weatherRepository: WeatherRepository,
@@ -36,21 +39,25 @@ class TrayRepository @Inject constructor(
     fun eventsForTray(trayId: Long): Flow<List<EventEntity>> = eventDao.getEventsForTray(trayId)
 
     fun stepsOverlappingRange(start: LocalDate, end: LocalDate): Flow<List<TrayStepEntity>> =
-        trayStepDao.getStepsOverlappingRange(start, end)
+        trayStepDao.getStepsInRange(start, end)
 
     fun eventsInRange(start: LocalDate, end: LocalDate): Flow<List<EventEntity>> =
         eventDao.getEventsInRange(start, end)
 
     /**
-     * Crea un vassoio e copia (snapshot) gli step del template scelto in
+     * Crea un vassoio e copia (snapshot) le fasi/step del template scelto in
      * righe [TrayStepEntity] con date assolute. Da questo momento il
      * vassoio non legge più il template: modificarlo in seguito non ha
      * alcun effetto su questo vassoio.
      *
-     * Uno step del template che copre più giorni (es. "Crescita/Luce" nei
-     * giorni 5-10) viene qui espanso in una riga per ciascun giorno, così
-     * ogni vassoio ha un task giornaliero confermabile singolarmente invece
-     * di un unico step con un'unica spunta per l'intero intervallo.
+     * Le fasi sono espanse in sequenza (l'inizio di una fase è la fine
+     * della precedente: [sowingDate] + somma di [TemplatePhaseEntity.durationDays]
+     * delle fasi che la precedono). Una fase senza durata (aperta, es.
+     * Conservazione) non fa avanzare la data: è ammessa solo come ultima
+     * fase, vincolo imposto in UI. Dentro una fase, uno step che copre più
+     * giorni viene espanso in una riga per ciascun giorno, e uno step con
+     * più orari (`reminderTimes`) in una riga per occorrenza — ogni
+     * occorrenza è confermabile indipendentemente dalle altre.
      */
     suspend fun createTray(
         name: String,
@@ -72,27 +79,37 @@ class TrayRepository @Inject constructor(
                 substrateNotes = substrateNotes,
             )
         )
-        val templateSteps = templateStepDao.getStepsForTemplateOnce(templateId)
-        val traySteps = templateSteps.flatMap { step ->
-            val start = sowingDate.plusDays(step.offsetStartDays.toLong())
-            val end = sowingDate.plusDays((step.offsetEndDays ?: step.offsetStartDays).toLong())
-            generateSequence(start) { it.plusDays(1) }
-                .takeWhile { !it.isAfter(end) }
-                .map { day ->
-                    TrayStepEntity(
-                        trayId = trayId,
-                        sourceTemplateStepId = step.id,
-                        orderIndex = step.orderIndex,
-                        name = step.name,
-                        actionType = step.actionType,
-                        plannedStartDate = day,
-                        plannedEndDate = day,
-                        durationHours = step.durationHours,
-                        repeatPerDay = step.repeatPerDay,
-                        reminderTimes = step.reminderTimes,
-                        instructions = step.instructions,
-                    )
-                }
+        val phases = templatePhaseDao.getPhasesForTemplateOnce(templateId)
+        val traySteps = mutableListOf<TrayStepEntity>()
+        var phaseStart = sowingDate
+        for (phase in phases) {
+            val phaseSteps = templateStepDao.getStepsForPhaseOnce(phase.id)
+            phaseSteps.forEach { step ->
+                val start = phaseStart.plusDays(step.offsetStartDays.toLong())
+                val end = phaseStart.plusDays((step.offsetEndDays ?: step.offsetStartDays).toLong())
+                val occurrenceTimes: List<LocalTime?> =
+                    if (step.reminderTimes.isEmpty()) listOf(null) else step.reminderTimes
+                generateSequence(start) { it.plusDays(1) }
+                    .takeWhile { !it.isAfter(end) }
+                    .forEach { day ->
+                        occurrenceTimes.forEach { time ->
+                            traySteps += TrayStepEntity(
+                                trayId = trayId,
+                                sourceTemplateStepId = step.id,
+                                orderIndex = step.orderIndex,
+                                name = step.name,
+                                actionType = step.actionType,
+                                plannedDate = day,
+                                plannedTime = time,
+                                durationHours = step.durationHours,
+                                phaseName = phase.name,
+                                phaseOrderIndex = phase.orderIndex,
+                                instructions = step.instructions,
+                            )
+                        }
+                    }
+            }
+            phase.durationDays?.let { phaseStart = phaseStart.plusDays(it.toLong()) }
         }
         if (traySteps.isNotEmpty()) {
             trayStepDao.insertAll(traySteps)
@@ -164,7 +181,7 @@ class TrayRepository @Inject constructor(
             EventEntity(
                 trayId = step.trayId,
                 trayStepId = step.id,
-                eventDate = step.plannedStartDate,
+                eventDate = step.plannedDate,
                 eventType = step.actionType,
                 title = step.name,
                 quantityValue = quantityValue,
