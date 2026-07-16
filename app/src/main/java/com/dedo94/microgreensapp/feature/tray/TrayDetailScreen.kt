@@ -207,7 +207,7 @@ fun TrayDetailScreen(
                             is TrayTimelineEntry.StepEntry -> StepTimelineCard(
                                 step = entry.step,
                                 onMarkDone = {
-                                    if (entry.step.plannedStartDate.isAfter(LocalDate.now())) {
+                                    if (entry.step.plannedDate.isAfter(LocalDate.now())) {
                                         stepPendingFutureConfirmation = entry.step
                                     } else {
                                         proceedMarkDone(entry.step)
@@ -269,7 +269,7 @@ fun TrayDetailScreen(
             title = { Text("Confermare in anticipo?") },
             text = {
                 Text(
-                    "\"${step.name}\" è previsto per il ${step.plannedStartDate}, una data futura. " +
+                    "\"${step.name}\" è previsto per il ${step.plannedDate}, una data futura. " +
                         "Vuoi segnarlo comunque come fatto?"
                 )
             },
@@ -422,7 +422,7 @@ private fun StepTimelineCard(
             Column(Modifier.weight(1f)) {
                 Text(step.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = "${step.actionType.displayLabel()} · ${dateRangeText(step)}",
+                    text = "${step.actionType.displayLabel()} · ${stepDateText(step)}",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -476,12 +476,10 @@ private fun StepTimelineCard(
     }
 }
 
-private fun dateRangeText(step: TrayStepEntity): String =
-    if (step.plannedEndDate != step.plannedStartDate) {
-        "${step.plannedStartDate} → ${step.plannedEndDate}"
-    } else {
-        "${step.plannedStartDate}"
-    }
+private val stepTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+private fun stepDateText(step: TrayStepEntity): String =
+    step.plannedTime?.let { "${step.plannedDate} · ${it.format(stepTimeFormatter)}" } ?: "${step.plannedDate}"
 
 @Composable
 private fun EventTimelineCard(

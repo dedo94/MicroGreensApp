@@ -63,6 +63,7 @@ import com.dedo94.microgreensapp.ui.theme.Spacing
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -99,9 +100,7 @@ fun CalendarScreen(
     val dayEntries = remember(steps, events, selectedDate, selectedTrayId) {
         buildTimeline(
             steps.filter {
-                (selectedTrayId == null || it.trayId == selectedTrayId) &&
-                    !selectedDate.isBefore(it.plannedStartDate) &&
-                    !selectedDate.isAfter(it.plannedEndDate)
+                (selectedTrayId == null || it.trayId == selectedTrayId) && it.plannedDate == selectedDate
             },
             events.filter {
                 (selectedTrayId == null || it.trayId == selectedTrayId) && it.eventDate == selectedDate
@@ -271,9 +270,7 @@ fun CalendarScreen(
                                 Column(Modifier.padding(Spacing.sm)) {
                                     Text(trayName, style = MaterialTheme.typography.labelMedium)
                                     when (entry) {
-                                        is TrayTimelineEntry.StepEntry -> Text(
-                                            "${entry.step.name} · ${entry.step.actionType.displayLabel()}"
-                                        )
+                                        is TrayTimelineEntry.StepEntry -> Text(stepLabel(entry.step))
 
                                         is TrayTimelineEntry.EventEntry -> Text(
                                             "${entry.event.title} · ${entry.event.eventType.displayLabel()}"
@@ -352,7 +349,7 @@ private fun TodayEntryCard(
                 )
                 when (entry) {
                     is TrayTimelineEntry.StepEntry -> Text(
-                        text = "${entry.step.name} · ${entry.step.actionType.displayLabel()}",
+                        text = stepLabel(entry.step),
                         style = MaterialTheme.typography.bodyMedium,
                     )
 
@@ -382,16 +379,20 @@ private fun buildDotsByDate(
 ): Map<LocalDate, Set<Long>> {
     val map = mutableMapOf<LocalDate, MutableSet<Long>>()
     steps.filter { selectedTrayId == null || it.trayId == selectedTrayId }.forEach { step ->
-        var day = step.plannedStartDate
-        while (!day.isAfter(step.plannedEndDate)) {
-            map.getOrPut(day) { mutableSetOf() }.add(step.trayId)
-            day = day.plusDays(1)
-        }
+        map.getOrPut(step.plannedDate) { mutableSetOf() }.add(step.trayId)
     }
     events.filter { selectedTrayId == null || it.trayId == selectedTrayId }.forEach { event ->
         map.getOrPut(event.eventDate) { mutableSetOf() }.add(event.trayId)
     }
     return map
+}
+
+private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+/** Include l'orario quando presente: distingue due occorrenze dello stesso step nello stesso giorno (es. sciacquo mattina/sera). */
+private fun stepLabel(step: TrayStepEntity): String {
+    val time = step.plannedTime?.format(timeFormatter)?.let { " · $it" } ?: ""
+    return "${step.name} · ${step.actionType.displayLabel()}$time"
 }
 
 private fun monthLabel(month: YearMonth): String {

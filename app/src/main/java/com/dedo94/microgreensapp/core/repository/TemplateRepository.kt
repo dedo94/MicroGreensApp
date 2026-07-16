@@ -1,8 +1,10 @@
 package com.dedo94.microgreensapp.core.repository
 
+import com.dedo94.microgreensapp.core.database.dao.TemplatePhaseDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
+import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.core.database.entity.VarietyTemplateEntity
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class TemplateRepository @Inject constructor(
     private val templateDao: VarietyTemplateDao,
+    private val phaseDao: TemplatePhaseDao,
     private val stepDao: TemplateStepDao,
     private val trayDao: TrayDao,
 ) {
@@ -21,8 +24,13 @@ class TemplateRepository @Inject constructor(
     fun observeTemplate(templateId: Long): Flow<VarietyTemplateEntity?> =
         templateDao.observeById(templateId)
 
-    fun stepsForTemplate(templateId: Long): Flow<List<TemplateStepEntity>> =
-        stepDao.getStepsForTemplate(templateId)
+    fun phasesForTemplate(templateId: Long): Flow<List<TemplatePhaseEntity>> =
+        phaseDao.getPhasesForTemplate(templateId)
+
+    fun observePhase(phaseId: Long): Flow<TemplatePhaseEntity?> = phaseDao.observeById(phaseId)
+
+    fun stepsForPhase(phaseId: Long): Flow<List<TemplateStepEntity>> =
+        stepDao.getStepsForPhase(phaseId)
 
     suspend fun createTemplate(name: String, plantType: String, notes: String): Long =
         templateDao.insert(
@@ -49,16 +57,31 @@ class TemplateRepository @Inject constructor(
     suspend fun archiveTemplate(template: VarietyTemplateEntity) =
         templateDao.update(template.copy(isArchived = true, updatedAt = Instant.now()))
 
+    suspend fun addPhase(phase: TemplatePhaseEntity): Long = phaseDao.insert(phase)
+
+    suspend fun updatePhase(phase: TemplatePhaseEntity) = phaseDao.update(phase)
+
+    suspend fun deletePhase(phase: TemplatePhaseEntity) = phaseDao.delete(phase)
+
+    suspend fun nextPhaseOrderIndex(templateId: Long): Int = phaseDao.countForTemplate(templateId)
+
+    /** [phases] deve già essere nell'ordine finale desiderato: qui si assegnano solo gli orderIndex. */
+    suspend fun reorderPhases(phases: List<TemplatePhaseEntity>) {
+        val reindexed = phases.mapIndexed { index, phase -> phase.copy(orderIndex = index) }
+        phaseDao.updateAll(reindexed)
+    }
+
     suspend fun addStep(step: TemplateStepEntity): Long = stepDao.insert(step)
 
     suspend fun updateStep(step: TemplateStepEntity) = stepDao.update(step)
 
     suspend fun deleteStep(step: TemplateStepEntity) = stepDao.delete(step)
 
+    suspend fun nextStepOrderIndex(phaseId: Long): Int = stepDao.countForPhase(phaseId)
+
+    /** [steps] deve già essere nell'ordine finale desiderato: qui si assegnano solo gli orderIndex. */
     suspend fun reorderSteps(steps: List<TemplateStepEntity>) {
         val reindexed = steps.mapIndexed { index, step -> step.copy(orderIndex = index) }
         stepDao.updateAll(reindexed)
     }
-
-    suspend fun nextOrderIndex(templateId: Long): Int = stepDao.countForTemplate(templateId)
 }

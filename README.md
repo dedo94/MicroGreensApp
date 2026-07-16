@@ -8,12 +8,16 @@ dati 100% locali (Room), nessun account, nessun cloud.
 
 ### Varietà e piani di coltivazione
 
-Ogni varietà è un template con una sequenza di step (ammollo, prevenzione
-muffa, trasferimento nel vassoio, crescita, raccolta, conservazione),
-ciascuno con offset in giorni dalla semina, orari di promemoria e
-istruzioni. Gli step sono riordinabili via drag-and-drop. Due varietà sono
-precaricate al primo avvio (Girasole, Piselli) con piani realistici,
-completamente modificabili.
+Ogni varietà è un template organizzato in **fasi** (es. Ammollo,
+Germinazione, Crescita e raccolto), ciascuna con un nome libero e una
+durata in giorni. Ogni fase contiene una sequenza di step (nome, tipo
+azione, offset in giorni **dall'inizio della fase**, orari di promemoria,
+istruzioni) — un orario di promemoria corrisponde a un'occorrenza
+segnabile "fatta" a sé, così uno step con più interventi al giorno (es.
+sciacquo mattina e sera) si può completare uno alla volta invece che
+tutti insieme. Fasi e step sono entrambi riordinabili via drag-and-drop.
+Due varietà sono precaricate al primo avvio (Girasole, Piselli) con piani
+realistici, completamente modificabili.
 
 Modificare un template **non tocca** i vassoi già creati da quel
 template: alla creazione il piano viene copiato (snapshot) sul vassoio, che
@@ -83,6 +87,31 @@ livello), Navigation-Compose con rotte type-safe. Font Manrope bundlato
 localmente (nessuna dipendenza di rete/Google Play Services). Grafici
 disegnati con Canvas/Compose, nessuna libreria di charting.
 
+## Installazione
+
+App per uso personale, non pubblicata su Play Store: si installa
+manualmente (sideload) scaricando l'APK generato automaticamente da
+GitHub Actions ad ogni push.
+
+1. Vai alla scheda **Actions** del repository e apri l'esecuzione più
+   recente del workflow "Android Build" sul branch che ti interessa (di
+   solito `main`).
+2. In fondo alla pagina dell'esecuzione, sotto "Artifacts", scarica
+   `microgreens-debug-apk` (uno zip che contiene l'APK).
+3. Trasferisci l'APK sul telefono (email, cloud, o scaricalo
+   direttamente dal telefono aprendo la pagina da lì) ed estrailo dallo
+   zip.
+4. Apri il file `.apk` dal telefono. Se è la prima volta, Android chiede
+   di abilitare "Installa app sconosciute" per l'app che stai usando per
+   aprirlo (es. file manager o browser) — concedi il permesso solo per
+   quella.
+5. Conferma l'installazione.
+
+Il keystore di debug è fisso e committato nel repository (uso personale,
+nessun segreto da proteggere): installare una nuova build **aggiorna**
+quella già presente senza doverla disinstallare prima, e senza perdere i
+dati salvati nel database locale.
+
 ## Build
 
 Il progetto richiede l'Android SDK (compileSdk 35, minSdk 26). Per compilare:
@@ -103,7 +132,8 @@ core/di            Moduli Hilt
 core/network       Client OkHttp Open-Meteo (geocoding + forecast) e DTO
 core/notifications Canale, scheduler WorkManager e worker dei promemoria
 core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewModel
-feature/template   CRUD template di varietà e step
+feature/template   CRUD template di varietà: fasi (con durata) e step al
+                   loro interno, entrambi riordinabili
 feature/tray       Vassoi: tab In corso (giorni dalla semina, progresso,
                    stima raccolto)/Raccolti, creazione, modifica,
                    dettaglio/timeline/previsione raccolto
@@ -114,7 +144,7 @@ feature/stats      Dashboard: KPI in alto, confronto varietà, grafici
                    con aderenza al piano, confronto vassoi, record
 feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date picker, header compatto, colori/
+ui, ui/theme       Componenti condivisi (date/time picker, header compatto, colori/
                    etichette), grafici Canvas (ui/charts) e tema Material 3
                    (colori, tipografia con font Manrope, forme, spaziatura)
 ```

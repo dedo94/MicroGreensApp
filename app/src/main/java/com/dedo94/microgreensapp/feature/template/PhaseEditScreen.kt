@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,51 +40,46 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
+import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TemplateEditScreen(
+fun PhaseEditScreen(
     onBack: () -> Unit,
-    onOpenPhase: (Long, Long) -> Unit,
-    viewModel: TemplateEditViewModel = hiltViewModel(),
+    viewModel: PhaseEditViewModel = hiltViewModel(),
 ) {
-    val phases by viewModel.phases.collectAsStateWithLifecycle()
-    val templateId by viewModel.templateId.collectAsStateWithLifecycle()
+    val steps by viewModel.steps.collectAsStateWithLifecycle()
 
-    var showNewPhaseDialog by remember { mutableStateOf(false) }
-    var showDeleteTemplateDialog by remember { mutableStateOf(false) }
-    var phasePendingDeletion by remember { mutableStateOf<TemplatePhaseEntity?>(null) }
+    var stepBeingEdited by remember { mutableStateOf<TemplateStepEntity?>(null) }
+    var showNewStepDialog by remember { mutableStateOf(false) }
+    var showDeletePhaseDialog by remember { mutableStateOf(false) }
+    var stepPendingDeletion by remember { mutableStateOf<TemplateStepEntity?>(null) }
 
-    // Stato locale ottimistico: aggiornato subito ad ogni spostamento durante
-    // il trascinamento (nessun I/O), persistito una sola volta a fine gesto
-    // in onDragStopped — vedi la stessa soluzione già applicata al riordino
-    // degli step, per evitare la race condition di scritture Room sovrapposte.
-    val localPhases = remember { mutableStateListOf<TemplatePhaseEntity>() }
-    LaunchedEffect(phases) {
-        localPhases.clear()
-        localPhases.addAll(phases)
+    val localSteps = remember { mutableStateListOf<TemplateStepEntity>() }
+    LaunchedEffect(steps) {
+        localSteps.clear()
+        localSteps.addAll(steps)
     }
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        localPhases.add(to.index, localPhases.removeAt(from.index))
+        localSteps.add(to.index, localSteps.removeAt(from.index))
     }
 
     Column(Modifier.fillMaxSize()) {
         CompactHeader(
-            title = if (viewModel.isNew) "Nuova varietà" else "Modifica varietà",
+            title = if (viewModel.name.isBlank()) "Fase" else viewModel.name,
             onBack = onBack,
             actions = {
-                if (templateId != null) {
-                    IconButton(onClick = { showDeleteTemplateDialog = true }) {
-                        Icon(Icons.Outlined.Delete, contentDescription = "Elimina varietà")
-                    }
+                IconButton(onClick = { showDeletePhaseDialog = true }) {
+                    Icon(Icons.Outlined.Delete, contentDescription = "Elimina fase")
                 }
             },
         )
@@ -99,49 +96,48 @@ fun TemplateEditScreen(
                     OutlinedTextField(
                         value = viewModel.name,
                         onValueChange = viewModel::onNameChange,
-                        label = { Text("Nome varietà") },
+                        label = { Text("Nome fase") },
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(Spacing.sm))
-                    OutlinedTextField(
-                        value = viewModel.plantType,
-                        onValueChange = viewModel::onPlantTypeChange,
-                        label = { Text("Tipo pianta") },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(Modifier.height(Spacing.sm))
-                    OutlinedTextField(
-                        value = viewModel.notes,
-                        onValueChange = viewModel::onNotesChange,
-                        label = { Text("Note") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 2,
-                    )
-                    if (viewModel.isNew && templateId == null) {
-                        Spacer(Modifier.height(Spacing.sm))
-                        Text(
-                            text = "Salva le informazioni base per poter aggiungere le fasi.",
-                            style = MaterialTheme.typography.bodySmall,
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = viewModel.hasDuration, onCheckedChange = viewModel::onHasDurationChange)
+                        Text("Durata fissa")
+                    }
+                    if (viewModel.hasDuration) {
+                        OutlinedTextField(
+                            value = viewModel.durationDaysText,
+                            onValueChange = viewModel::onDurationDaysTextChange,
+                            label = { Text("Durata (giorni)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth(),
                         )
-                    } else if (!viewModel.isInfoSaved) {
+                    } else {
+                        Text(
+                            text = "Fase aperta, senza fine: ammessa solo come ultima fase (es. Conservazione), altrimenti le fasi successive non avrebbero una data di inizio definita.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (!viewModel.isInfoSaved) {
                         Spacer(Modifier.height(Spacing.sm))
                         Text(
-                            text = "Modifiche non salvate. Tocca ✓ per salvare.",
+                            text = "Modifiche non salvate. Tocca Salva per confermare.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                     HorizontalDivider(modifier = Modifier.padding(top = Spacing.md))
                     Text(
-                        text = "Fasi del ciclo di coltivazione",
+                        text = "Step di questa fase",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(vertical = Spacing.sm),
                     )
                 }
             }
 
-            items(localPhases, key = { it.id }) { phase ->
-                ReorderableItem(reorderableState, key = phase.id) { _ ->
+            items(localSteps, key = { it.id }) { step ->
+                ReorderableItem(reorderableState, key = step.id) { _ ->
                     Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
                         Row(
                             modifier = Modifier
@@ -156,7 +152,7 @@ fun TemplateEditScreen(
                             ) {
                                 IconButton(
                                     modifier = Modifier.draggableHandle(
-                                        onDragStopped = { viewModel.reorderPhases(localPhases.toList()) },
+                                        onDragStopped = { viewModel.reorderSteps(localSteps.toList()) },
                                     ),
                                     onClick = {},
                                 ) {
@@ -166,33 +162,29 @@ fun TemplateEditScreen(
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clickable {
-                                            templateId?.let { onOpenPhase(it, phase.id) }
-                                        },
+                                        .clickable { stepBeingEdited = step },
                                 ) {
-                                    Text(phase.name, style = MaterialTheme.typography.titleSmall)
+                                    Text(step.name, style = MaterialTheme.typography.titleSmall)
                                     Text(
-                                        text = phaseSubtitle(phase),
+                                        text = stepSubtitle(step),
                                         style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
                             }
-                            IconButton(onClick = { phasePendingDeletion = phase }) {
-                                Icon(Icons.Outlined.Delete, contentDescription = "Elimina fase")
+                            IconButton(onClick = { stepPendingDeletion = step }) {
+                                Icon(Icons.Outlined.Delete, contentDescription = "Elimina step")
                             }
                         }
                     }
                 }
             }
 
-            if (templateId != null) {
-                item(key = "add-phase") {
-                    AddPhaseCard(onClick = { showNewPhaseDialog = true })
-                }
+            item(key = "add-step") {
+                AddStepCard(onClick = { showNewStepDialog = true })
             }
         }
         Button(
-            onClick = { viewModel.saveTemplateInfo() },
+            onClick = { viewModel.savePhaseInfo() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Spacing.md),
@@ -201,54 +193,64 @@ fun TemplateEditScreen(
         }
     }
 
-    if (showNewPhaseDialog) {
-        PhaseNameDialog(
-            initialName = "",
-            onDismiss = { showNewPhaseDialog = false },
-            onConfirm = { name ->
-                viewModel.addPhase(name)
-                showNewPhaseDialog = false
+    if (showNewStepDialog) {
+        StepEditDialog(
+            initialStep = null,
+            onDismiss = { showNewStepDialog = false },
+            onConfirm = { step ->
+                viewModel.addStep(step)
+                showNewStepDialog = false
             },
         )
     }
 
-    phasePendingDeletion?.let { phase ->
+    stepBeingEdited?.let { step ->
+        StepEditDialog(
+            initialStep = step,
+            onDismiss = { stepBeingEdited = null },
+            onConfirm = { updated ->
+                viewModel.updateStep(updated)
+                stepBeingEdited = null
+            },
+        )
+    }
+
+    stepPendingDeletion?.let { step ->
         AlertDialog(
-            onDismissRequest = { phasePendingDeletion = null },
-            title = { Text("Eliminare la fase \"${phase.name}\"?") },
+            onDismissRequest = { stepPendingDeletion = null },
+            title = { Text("Eliminare lo step \"${step.name}\"?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteStep(step)
+                    stepPendingDeletion = null
+                }) { Text("Elimina") }
+            },
+            dismissButton = {
+                TextButton(onClick = { stepPendingDeletion = null }) { Text("Annulla") }
+            },
+        )
+    }
+
+    if (showDeletePhaseDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeletePhaseDialog = false },
+            title = { Text("Eliminare questa fase?") },
             text = { Text("Tutti gli step contenuti in questa fase verranno eliminati.") },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.deletePhase(phase)
-                    phasePendingDeletion = null
+                    showDeletePhaseDialog = false
+                    viewModel.deletePhase(onDeleted = onBack)
                 }) { Text("Elimina") }
             },
             dismissButton = {
-                TextButton(onClick = { phasePendingDeletion = null }) { Text("Annulla") }
-            },
-        )
-    }
-
-    if (showDeleteTemplateDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteTemplateDialog = false },
-            title = { Text("Eliminare questa varietà?") },
-            text = { Text("Se non è mai stato usato per un vassoio verrà eliminato definitivamente insieme alle sue fasi; altrimenti verrà solo archiviato e non comparirà più tra le varietà disponibili per nuovi vassoi.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDeleteTemplateDialog = false
-                    viewModel.deleteTemplate(onDeleted = onBack)
-                }) { Text("Elimina") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteTemplateDialog = false }) { Text("Annulla") }
+                TextButton(onClick = { showDeletePhaseDialog = false }) { Text("Annulla") }
             },
         )
     }
 }
 
 @Composable
-private fun AddPhaseCard(onClick: () -> Unit) {
+private fun AddStepCard(onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -262,36 +264,17 @@ private fun AddPhaseCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi fase")
+            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi step")
         }
     }
 }
 
-private fun phaseSubtitle(phase: TemplatePhaseEntity): String =
-    phase.durationDays?.let { "${it} giorn${if (it == 1) "o" else "i"}" } ?: "Durata aperta"
-
-/** Solo il nome: durata e step si impostano entrando nel dettaglio della fase appena creata. */
-@Composable
-private fun PhaseNameDialog(
-    initialName: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
-) {
-    var name by remember { mutableStateOf(initialName) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nuova fase") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome fase (es. Germinazione)") },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
-        confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onConfirm(name) }) { Text("Crea") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
-    )
+private fun stepSubtitle(step: TemplateStepEntity): String {
+    val dayRange = if (step.offsetEndDays != null && step.offsetEndDays != step.offsetStartDays) {
+        "Giorni ${step.offsetStartDays}-${step.offsetEndDays}"
+    } else {
+        "Giorno ${step.offsetStartDays}"
+    }
+    val duration = step.durationHours?.let { " · ${it}h" } ?: ""
+    return "${step.actionType.displayLabel()} · $dayRange$duration"
 }

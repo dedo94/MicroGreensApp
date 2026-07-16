@@ -33,6 +33,7 @@ import com.dedo94.microgreensapp.feature.calendar.CalendarScreen
 import com.dedo94.microgreensapp.feature.event.EventEditScreen
 import com.dedo94.microgreensapp.feature.settings.SettingsScreen
 import com.dedo94.microgreensapp.feature.stats.StatsScreen
+import com.dedo94.microgreensapp.feature.template.PhaseEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateListScreen
 import com.dedo94.microgreensapp.feature.tray.TrayCreateScreen
@@ -158,7 +159,15 @@ fun MicroGreensNavHost(
                 )
             }
             composable<TemplateEditRoute> {
-                TemplateEditScreen(onBack = { navController.popBackStack() })
+                TemplateEditScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenPhase = { templateId, phaseId ->
+                        navController.navigate(TemplatePhaseEditRoute(templateId, phaseId))
+                    },
+                )
+            }
+            composable<TemplatePhaseEditRoute> {
+                PhaseEditScreen(onBack = { navController.popBackStack() })
             }
         }
     }

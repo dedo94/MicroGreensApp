@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.ui.DatePickerField
+import com.dedo94.microgreensapp.ui.TimePickerField
 import com.dedo94.microgreensapp.ui.displayLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,8 +41,8 @@ fun TrayStepEditDialog(
 ) {
     var name by remember { mutableStateOf(step.name) }
     var actionType by remember { mutableStateOf(step.actionType) }
-    var plannedStartDate by remember { mutableStateOf(step.plannedStartDate) }
-    var plannedEndDate by remember { mutableStateOf(step.plannedEndDate) }
+    var plannedDate by remember { mutableStateOf(step.plannedDate) }
+    var plannedTime by remember { mutableStateOf(step.plannedTime) }
     var durationHoursText by remember { mutableStateOf(step.durationHours?.toString() ?: "") }
     var instructions by remember { mutableStateOf(step.instructions) }
     var actionTypeMenuExpanded by remember { mutableStateOf(false) }
@@ -92,19 +93,16 @@ fun TrayStepEditDialog(
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth()) {
                     DatePickerField(
-                        label = "Dal",
-                        date = plannedStartDate,
-                        onDateChange = {
-                            plannedStartDate = it
-                            if (plannedEndDate.isBefore(it)) plannedEndDate = it
-                        },
+                        label = "Data",
+                        date = plannedDate,
+                        onDateChange = { plannedDate = it },
                         modifier = Modifier.weight(1f),
                     )
                     Spacer(Modifier.width(8.dp))
-                    DatePickerField(
-                        label = "Al",
-                        date = plannedEndDate,
-                        onDateChange = { if (!it.isBefore(plannedStartDate)) plannedEndDate = it },
+                    TimePickerField(
+                        label = "Orario",
+                        time = plannedTime,
+                        onTimeChange = { plannedTime = it },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -134,8 +132,8 @@ fun TrayStepEditDialog(
                         step.copy(
                             name = name,
                             actionType = actionType,
-                            plannedStartDate = plannedStartDate,
-                            plannedEndDate = plannedEndDate,
+                            plannedDate = plannedDate,
+                            plannedTime = plannedTime,
                             durationHours = durationHoursText.toIntOrNull(),
                             instructions = instructions,
                         )

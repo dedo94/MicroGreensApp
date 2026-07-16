@@ -26,12 +26,12 @@ interface TemplateStepDao {
     @Delete
     suspend fun delete(step: TemplateStepEntity)
 
-    @Query("SELECT * FROM template_steps WHERE templateId = :templateId ORDER BY orderIndex")
-    fun getStepsForTemplate(templateId: Long): Flow<List<TemplateStepEntity>>
+    @Query("SELECT * FROM template_steps WHERE phaseId = :phaseId ORDER BY orderIndex")
+    fun getStepsForPhase(phaseId: Long): Flow<List<TemplateStepEntity>>
 
-    @Query("SELECT * FROM template_steps WHERE templateId = :templateId ORDER BY orderIndex")
-    suspend fun getStepsForTemplateOnce(templateId: Long): List<TemplateStepEntity>
+    @Query("SELECT * FROM template_steps WHERE phaseId = :phaseId ORDER BY orderIndex")
+    suspend fun getStepsForPhaseOnce(phaseId: Long): List<TemplateStepEntity>
 
-    @Query("SELECT COUNT(*) FROM template_steps WHERE templateId = :templateId")
-    suspend fun countForTemplate(templateId: Long): Int
+    @Query("SELECT COUNT(*) FROM template_steps WHERE phaseId = :phaseId")
+    suspend fun countForPhase(phaseId: Long): Int
 }

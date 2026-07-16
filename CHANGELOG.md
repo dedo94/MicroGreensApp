@@ -279,3 +279,50 @@ autoconclusiva:
   anno invece che per mese — molto più leggibile su più cicli di
   coltivazione — con un interruttore testuale "Anno"/"Mese" in linea col
   titolo della sezione per passare alla vista mensile quando serve.
+- **Fix: riordino step per drag-and-drop inaffidabile**: trascinando
+  velocemente uno step nell'editor di una varietà, l'ordine finale a
+  volte risultava sbagliato. Causa: ogni piccolo spostamento durante il
+  trascinamento scriveva subito su Room in modo asincrono, leggendo però
+  l'ordine da uno stato che rifletteva il DB solo dopo il giro completo
+  di lettura/scrittura — con trascinamenti veloci, scritture sovrapposte
+  potevano operare su un ordine ormai superato. Ora l'ordine durante il
+  trascinamento è tenuto in uno stato locale (aggiornato subito, nessun
+  I/O) e viene scritto su Room una sola volta al rilascio del dito.
+- **Ristrutturazione completa del sistema di step: fasi + occorrenze**:
+  la lista piatta di step (offset dalla semina, `repeatPerDay` mai
+  realmente usato, una riga per giorno indipendentemente da quanti orari
+  di promemoria avesse) è stata rifatta da zero su richiesta dell'utente,
+  per due problemi reali segnalati insieme: (1) uno step con più
+  interventi al giorno (es. sciacquo mattina/sera) non si poteva segnare
+  fatto un'occorrenza alla volta — l'intera riga-giorno si completava in
+  un colpo solo; (2) la lista piatta di step non comunicava le fasi del
+  ciclo di coltivazione, rendendo macchinosa la creazione di una varietà.
+
+  Nuovo modello: un template è una sequenza di **fasi** (`TemplatePhaseEntity`,
+  nome libero + durata in giorni; una fase senza durata è ammessa solo
+  come ultima, es. Conservazione), ciascuna con i propri step i cui
+  offset sono relativi all'inizio della fase invece che alla semina. Un
+  vassoio creato da un template ha ora **una riga di step per occorrenza**
+  (un giorno + un orario specifico, o senza orario se lo step non ha
+  promemoria) invece che una riga per giorno — `repeatPerDay` è stato
+  rimosso, il numero di occorrenze è semplicemente la lunghezza della
+  lista di orari. Editor a due livelli in "Gestisci varietà": la lista
+  fasi (stesso drag-and-drop di prima) apre il dettaglio di una fase con
+  i suoi step (stesso editor di prima, riusato). I due template
+  precaricati (Girasole, Piselli) sono stati riorganizzati in fasi
+  coerenti con i loro tempi reali.
+
+  **Migrazione dati**: `MIGRATION_6_7` converte anche i vassoi e le
+  varietà già esistenti (non solo quelli creati dopo l'aggiornamento) —
+  ogni template esistente riceve una fase automatica "Piano" che
+  incapsula i suoi step invariati; ogni riga di step di un vassoio con
+  più orari viene sdoppiata in più righe (una per occorrenza), che
+  ereditano tutte lo stesso stato fatto/saltato della riga originale
+  (non essendo mai stato registrato, sotto la vecchia granularità, quale
+  occorrenza specifica fosse stata completata); i collegamenti tra
+  eventi del diario e i rispettivi step vengono ripuntati alle nuove
+  righe. **Non verificabile in questo ambiente di sviluppo** (nessun
+  SDK/emulatore Android disponibile per eseguire realmente la
+  migrazione): fare un backup di `microgreens.db` prima di installare
+  questa versione, e verificare che vassoi/eventi/step esistenti restino
+  intatti al primo avvio.

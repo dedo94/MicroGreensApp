@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.dedo94.microgreensapp.core.database.AppDatabase
 import com.dedo94.microgreensapp.core.database.MIGRATION_5_6
+import com.dedo94.microgreensapp.core.database.MIGRATION_6_7
 import com.dedo94.microgreensapp.core.database.dao.EventDao
+import com.dedo94.microgreensapp.core.database.dao.TemplatePhaseDao
 import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.TrayDao
 import com.dedo94.microgreensapp.core.database.dao.TrayStepDao
@@ -38,12 +40,16 @@ object DatabaseModule {
             // dell'utente.
             .fallbackToDestructiveMigrationFrom(1, 2, 3, 4)
             .fallbackToDestructiveMigrationOnDowngrade()
-            .addMigrations(MIGRATION_5_6)
+            .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
             .build()
 
     @Provides
     fun provideVarietyTemplateDao(database: AppDatabase): VarietyTemplateDao =
         database.varietyTemplateDao()
+
+    @Provides
+    fun provideTemplatePhaseDao(database: AppDatabase): TemplatePhaseDao =
+        database.templatePhaseDao()
 
     @Provides
     fun provideTemplateStepDao(database: AppDatabase): TemplateStepDao =

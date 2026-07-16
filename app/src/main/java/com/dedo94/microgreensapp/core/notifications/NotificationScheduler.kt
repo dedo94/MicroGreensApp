@@ -35,8 +35,13 @@ class NotificationScheduler @Inject constructor(
         if (!preferenceRepository.enabled.first()) return
         val now = LocalDateTime.now()
         steps
-            .filter { it.status == TrayStepStatus.PENDING && it.reminderTimes.isNotEmpty() }
-            .forEach { step -> enqueueOccurrences(trayId, trayName, step, now) }
+            .filter { it.status == TrayStepStatus.PENDING && it.plannedTime != null }
+            .forEach { step ->
+                val fireAt = LocalDateTime.of(step.plannedDate, step.plannedTime)
+                if (fireAt.isAfter(now)) {
+                    enqueue(trayId, trayName, step, fireAt, now)
+                }
+            }
     }
 
     fun cancelForTray(trayId: Long) {
@@ -46,19 +51,6 @@ class NotificationScheduler @Inject constructor(
     /** Cancella tutti i promemoria di tutti i vassoi, es. quando l'utente disattiva il toggle. */
     fun cancelAllReminders() {
         workManager.cancelAllWorkByTag(REMINDER_TAG)
-    }
-
-    private fun enqueueOccurrences(trayId: Long, trayName: String, step: TrayStepEntity, now: LocalDateTime) {
-        var date = step.plannedStartDate
-        while (!date.isAfter(step.plannedEndDate)) {
-            step.reminderTimes.forEach { time ->
-                val fireAt = LocalDateTime.of(date, time)
-                if (fireAt.isAfter(now)) {
-                    enqueue(trayId, trayName, step, fireAt, now)
-                }
-            }
-            date = date.plusDays(1)
-        }
     }
 
     private fun enqueue(
