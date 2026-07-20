@@ -3,8 +3,6 @@ package com.dedo94.microgreensapp.core.notifications
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.dedo94.microgreensapp.core.database.entity.ActionType
-import com.dedo94.microgreensapp.ui.displayLabel
 
 /**
  * Costruisce e mostra un singolo promemoria. Non ha dipendenze iniettate:
@@ -21,15 +19,21 @@ class ReminderWorker(context: Context, params: WorkerParameters) : Worker(contex
         val stepName = inputData.getString(KEY_STEP_NAME) ?: ""
         if (trayId == -1L || trayName == null) return Result.failure()
 
-        val actionType = inputData.getString(KEY_ACTION_TYPE)
-            ?.let { runCatching { ActionType.valueOf(it) }.getOrNull() }
-            ?: ActionType.CUSTOM
+        val phaseName = inputData.getString(KEY_PHASE_NAME)
+        // La fase si mostra solo se aggiunge un'informazione, non se
+        // ripeterebbe lo stesso testo del nome step (es. fase "Ammollo"
+        // con l'unico step al suo interno chiamato anch'esso "Ammollo").
+        val text = if (phaseName != null && !phaseName.equals(stepName, ignoreCase = true)) {
+            "$phaseName · $stepName"
+        } else {
+            stepName
+        }
 
         NotificationHelper.showReminder(
             context = applicationContext,
             trayId = trayId,
             title = trayName,
-            text = "${actionType.displayLabel()}: $stepName",
+            text = text,
         )
         return Result.success()
     }
@@ -38,6 +42,6 @@ class ReminderWorker(context: Context, params: WorkerParameters) : Worker(contex
         const val KEY_TRAY_ID = "trayId"
         const val KEY_TRAY_NAME = "trayName"
         const val KEY_STEP_NAME = "stepName"
-        const val KEY_ACTION_TYPE = "actionType"
+        const val KEY_PHASE_NAME = "phaseName"
     }
 }

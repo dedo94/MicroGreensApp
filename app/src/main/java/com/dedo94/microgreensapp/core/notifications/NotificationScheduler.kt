@@ -65,7 +65,7 @@ class NotificationScheduler @Inject constructor(
             .putLong(ReminderWorker.KEY_TRAY_ID, trayId)
             .putString(ReminderWorker.KEY_TRAY_NAME, trayName)
             .putString(ReminderWorker.KEY_STEP_NAME, step.name)
-            .putString(ReminderWorker.KEY_ACTION_TYPE, step.actionType.name)
+            .putString(ReminderWorker.KEY_PHASE_NAME, step.phaseName)
             .build()
         val request = OneTimeWorkRequestBuilder<ReminderWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
