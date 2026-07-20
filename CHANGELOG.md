@@ -326,3 +326,12 @@ autoconclusiva:
   migrazione): fare un backup di `microgreens.db` prima di installare
   questa versione, e verificare che vassoi/eventi/step esistenti restino
   intatti al primo avvio.
+- **Fix: testo delle notifiche ripetitivo**: il messaggio era
+  `"${tipo azione}: ${nome step}"`, ma quando uno step si chiama come il
+  suo tipo azione (comune, es. step "Prevenzione muffa" di tipo
+  MOLD_PREVENTION) il risultato era un letterale "Prevenzione muffa:
+  Prevenzione muffa". Il tipo azione è stato sostituito con il nome della
+  fase (`phaseName`, ora disponibile su ogni occorrenza) — aggiunge
+  un'informazione reale (a che punto del ciclo sei) invece di ripetere lo
+  stesso testo; se anche fase e step coincidono (es. fase "Ammollo" con
+  l'unico step "Ammollo" al suo interno) si mostra una sola volta.
