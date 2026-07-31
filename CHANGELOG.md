@@ -335,3 +335,10 @@ autoconclusiva:
   un'informazione reale (a che punto del ciclo sei) invece di ripetere lo
   stesso testo; se anche fase e step coincidono (es. fase "Ammollo" con
   l'unico step "Ammollo" al suo interno) si mostra una sola volta.
+- **Fix: Calendario si apriva scrollato in fondo**: rientrando nella tab
+  Calendario dal bottom nav, la lista ripristinava la posizione di
+  scroll lasciata in precedenza (comportamento di default di
+  `LazyColumn`/Navigation-Compose), che poteva nascondere la sezione
+  "Oggi" e la prima attività da segnare. Ora la lista torna sempre in
+  cima quando si entra nella schermata. La vista "Mese" è inoltre
+  visibile di default (prima era chiusa dietro il toggle).
