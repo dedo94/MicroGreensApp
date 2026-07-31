@@ -335,3 +335,18 @@ autoconclusiva:
   un'informazione reale (a che punto del ciclo sei) invece di ripetere lo
   stesso testo; se anche fase e step coincidono (es. fase "Ammollo" con
   l'unico step "Ammollo" al suo interno) si mostra una sola volta.
+- **Fix: Calendario si apriva scrollato in fondo**: rientrando nella tab
+  Calendario dal bottom nav, la lista ripristinava la posizione di
+  scroll lasciata in precedenza (comportamento di default di
+  `LazyColumn`/Navigation-Compose), che poteva nascondere la sezione
+  "Oggi" e la prima attività da segnare. Ora la lista torna sempre in
+  cima quando si entra nella schermata. La vista "Mese" è inoltre
+  visibile di default (prima era chiusa dietro il toggle).
+- **Nuova varietà precaricata: Melone**: template con 4 fasi (Ammollo,
+  Germinazione, Trasferimento nel vassoio, Crescita e raccolto). Dati
+  confermati dall'utente: ammollo 10-12 ore, prevenzione muffa un paio di
+  giorni, ciclo totale 8-9 giorni dalla semina. Trasferimento, durata della
+  crescita e finestra di raccolta non erano specificati: dedotti per
+  coerenza con Girasole/Piselli in modo da raggiungere esattamente 8-9
+  giorni totali — regolabili da "Gestisci varietà" se non corrispondono
+  all'esperienza reale.

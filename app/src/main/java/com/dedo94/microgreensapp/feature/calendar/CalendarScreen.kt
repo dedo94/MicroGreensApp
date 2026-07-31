@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -108,8 +110,17 @@ fun CalendarScreen(
         )
     }
 
-    var showMonthView by remember { mutableStateOf(false) }
+    var showMonthView by remember { mutableStateOf(true) }
     var stepPendingQuantityInput by remember { mutableStateOf<TrayStepEntity?>(null) }
+
+    // La LazyColumn ripristina la posizione di scroll salvata (rememberSaveable
+    // interno) ogni volta che si rientra in questa tab dal bottom nav, che può
+    // lasciarla scrollata in basso invece che sulla prima attività di "Oggi".
+    // Rientrando in questa schermata si vuole sempre vedere la cima.
+    val lazyListState = rememberLazyListState()
+    LaunchedEffect(Unit) {
+        lazyListState.scrollToItem(0)
+    }
 
     fun proceedMarkDone(step: TrayStepEntity) {
         if (step.actionType == ActionType.HARVEST) {
@@ -122,7 +133,10 @@ fun CalendarScreen(
     Column(Modifier.fillMaxSize()) {
         CompactHeader("Calendario")
 
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md)) {
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md),
+        ) {
             item {
                 LazyRow(
                     modifier = Modifier.padding(vertical = Spacing.xs),
