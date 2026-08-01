@@ -28,8 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.SegmentedTabControl
 import com.dedo94.microgreensapp.ui.displayColor
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import kotlinx.coroutines.launch
@@ -55,22 +54,20 @@ fun TraysListScreen(
     val trays by viewModel.trays.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
+    val inProgressCount = remember(trays) { trays.count { it.tray.status == TrayStatus.IN_PROGRESS } }
+    val harvestedCount = remember(trays) { trays.count { it.tray.status == TrayStatus.HARVESTED } }
 
     Column(Modifier.fillMaxSize()) {
         CompactHeader("Vassoi")
 
-        TabRow(selectedTabIndex = pagerState.currentPage) {
-            Tab(
-                selected = pagerState.currentPage == 0,
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
-                text = { Text("In corso") },
-            )
-            Tab(
-                selected = pagerState.currentPage == 1,
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                text = { Text("Raccolti") },
-            )
-        }
+        SegmentedTabControl(
+            tabs = listOf("In corso · $inProgressCount", "Raccolti · $harvestedCount"),
+            selectedIndex = pagerState.currentPage,
+            onTabSelected = { index ->
+                coroutineScope.launch { pagerState.animateScrollToPage(index) }
+            },
+            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm),
+        )
 
         HorizontalPager(
             state = pagerState,
@@ -145,6 +142,7 @@ private fun TrayDashboardCard(
 ) {
     Card(
         onClick = onClick,
+        shape = RoundedCornerShape(22.dp),
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = Spacing.xs)
@@ -176,7 +174,7 @@ private fun TrayDashboardCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(Spacing.xs)),
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainer,
                 )
                 Spacer(Modifier.height(Spacing.xs))
                 Text(
