@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -35,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +55,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.feature.tray.TrayTimelineEntry
 import com.dedo94.microgreensapp.feature.tray.buildTimeline
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayColor
@@ -303,32 +302,27 @@ fun CalendarScreen(
 
     stepPendingQuantityInput?.let { step ->
         var quantityText by remember(step.id) { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text("Registra il raccolto") },
-            text = {
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Quantità raccolta (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
+        BottomSheetForm(
+            title = "Registra il raccolto",
+            onDismiss = { stepPendingQuantityInput = null },
+            onConfirm = {
+                viewModel.markStepDone(
+                    step = step,
+                    quantityValue = quantityText.toDoubleOrNull(),
+                    quantityUnit = "g",
                 )
+                stepPendingQuantityInput = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.markStepDone(
-                        step = step,
-                        quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = "g",
-                    )
-                    stepPendingQuantityInput = null
-                }) { Text("Conferma") }
-            },
-            dismissButton = {
-                TextButton(onClick = { stepPendingQuantityInput = null }) { Text("Annulla") }
-            },
-        )
+            confirmLabel = "Conferma",
+        ) {
+            OutlinedTextField(
+                value = quantityText,
+                onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Quantità raccolta (g)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

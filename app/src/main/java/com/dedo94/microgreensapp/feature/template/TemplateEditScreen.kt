@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
@@ -278,20 +279,18 @@ private fun PhaseNameDialog(
     onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nuova fase") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome fase (es. Germinazione)") },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
-        confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onConfirm(name) }) { Text("Crea") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
-    )
+    BottomSheetForm(
+        title = "Nuova fase",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(name) },
+        confirmLabel = "Crea",
+        confirmEnabled = name.isNotBlank(),
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nome fase (es. Germinazione)") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }

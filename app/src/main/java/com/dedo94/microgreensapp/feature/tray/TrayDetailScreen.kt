@@ -48,7 +48,9 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.feature.event.EventEditSheet
 import com.dedo94.microgreensapp.ui.AdherenceBadge
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayLabel
@@ -61,9 +63,6 @@ import java.util.Locale
 @Composable
 fun TrayDetailScreen(
     onBack: () -> Unit,
-    onAddEvent: (Long) -> Unit,
-    onEditEvent: (Long, Long) -> Unit,
-    onEditTray: (Long) -> Unit,
     viewModel: TrayDetailViewModel = hiltViewModel(),
 ) {
     val tray by viewModel.tray.collectAsStateWithLifecycle()
@@ -81,6 +80,9 @@ fun TrayDetailScreen(
     var eventPendingDeletion by remember { mutableStateOf<EventEntity?>(null) }
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteTrayDialog by remember { mutableStateOf(false) }
+    var showEditTraySheet by remember { mutableStateOf(false) }
+    // null = sheet chiuso, 0L = nuovo evento, >0 = modifica evento esistente.
+    var eventSheetEventId by remember { mutableStateOf<Long?>(null) }
 
     // Per lo step di raccolta, prima di segnarlo fatto chiediamo la quantità
     // (grammi), altrimenti non ci sarebbe mai un punto in cui inserirla.
@@ -111,7 +113,7 @@ fun TrayDetailScreen(
                             text = { Text("Modifica vassoio") },
                             onClick = {
                                 showStatusMenu = false
-                                onEditTray(viewModel.trayId)
+                                showEditTraySheet = true
                             },
                         )
                         DropdownMenuItem(
@@ -223,14 +225,14 @@ fun TrayDetailScreen(
 
                             is TrayTimelineEntry.EventEntry -> EventTimelineCard(
                                 event = entry.event,
-                                onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
+                                onEdit = { eventSheetEventId = entry.event.id },
                                 onDelete = { eventPendingDeletion = entry.event },
                             )
                         }
                     }
                 }
                 item(key = "add-event") {
-                    AddEventCard(onClick = { onAddEvent(viewModel.trayId) })
+                    AddEventCard(onClick = { eventSheetEventId = 0L })
                 }
             }
         }
@@ -287,31 +289,41 @@ fun TrayDetailScreen(
 
     stepPendingQuantityInput?.let { step ->
         var quantityText by remember(step.id) { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text("Registra il raccolto") },
-            text = {
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Quantità raccolta (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
+        BottomSheetForm(
+            title = "Registra il raccolto",
+            onDismiss = { stepPendingQuantityInput = null },
+            onConfirm = {
+                viewModel.markDone(
+                    step = step,
+                    quantityValue = quantityText.toDoubleOrNull(),
+                    quantityUnit = "g",
                 )
+                stepPendingQuantityInput = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.markDone(
-                        step = step,
-                        quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = "g",
-                    )
-                    stepPendingQuantityInput = null
-                }) { Text("Conferma") }
-            },
-            dismissButton = {
-                TextButton(onClick = { stepPendingQuantityInput = null }) { Text("Annulla") }
-            },
+            confirmLabel = "Conferma",
+        ) {
+            OutlinedTextField(
+                value = quantityText,
+                onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Quantità raccolta (g)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+
+    if (showEditTraySheet) {
+        TrayEditSheet(
+            trayId = viewModel.trayId,
+            onDismiss = { showEditTraySheet = false },
+        )
+    }
+
+    eventSheetEventId?.let { eventId ->
+        EventEditSheet(
+            trayId = viewModel.trayId,
+            eventId = eventId,
+            onDismiss = { eventSheetEventId = null },
         )
     }
 
