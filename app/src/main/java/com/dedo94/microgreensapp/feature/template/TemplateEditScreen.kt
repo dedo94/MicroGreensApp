@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
@@ -43,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
 import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.DashedAddCard
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -188,7 +188,11 @@ fun TemplateEditScreen(
 
             if (templateId != null) {
                 item(key = "add-phase") {
-                    AddPhaseCard(onClick = { showNewPhaseDialog = true })
+                    DashedAddCard(
+                        onClick = { showNewPhaseDialog = true },
+                        contentDescription = "Aggiungi fase",
+                        modifier = Modifier.padding(vertical = Spacing.xs),
+                    )
                 }
             }
         }
@@ -245,26 +249,6 @@ fun TemplateEditScreen(
                 TextButton(onClick = { showDeleteTemplateDialog = false }) { Text("Annulla") }
             },
         )
-    }
-}
-
-@Composable
-private fun AddPhaseCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi fase")
-        }
     }
 }
 

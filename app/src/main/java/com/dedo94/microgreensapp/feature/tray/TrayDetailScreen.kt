@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.MoreVert
@@ -53,6 +52,7 @@ import com.dedo94.microgreensapp.feature.event.EventEditSheet
 import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.DashedAddCard
 import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
@@ -233,7 +233,11 @@ fun TrayDetailScreen(
                     }
                 }
                 item(key = "add-event") {
-                    AddEventCard(onClick = { eventSheetEventId = 0L })
+                    DashedAddCard(
+                        onClick = { eventSheetEventId = 0L },
+                        contentDescription = "Aggiungi evento",
+                        modifier = Modifier.padding(vertical = Spacing.xs),
+                    )
                 }
             }
         }
@@ -382,30 +386,6 @@ private fun DateHeader(date: LocalDate) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.xs),
     )
-}
-
-/**
- * Chiusura naturale della timeline: una card identica a quelle degli step
- * con un + centrato, al posto di un FAB che galleggiava sopra il contenuto.
- */
-@Composable
-private fun AddEventCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi evento")
-        }
-    }
 }
 
 @Composable

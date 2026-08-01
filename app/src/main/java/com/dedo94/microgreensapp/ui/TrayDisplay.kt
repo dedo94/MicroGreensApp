@@ -5,6 +5,7 @@ import com.dedo94.microgreensapp.core.database.entity.SubstrateType
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.core.database.entity.VarietyTemplateEntity
 import com.dedo94.microgreensapp.ui.theme.TrayPalette
 
 fun TrayStatus.displayLabel(): String = when (this) {
@@ -26,6 +27,15 @@ fun SubstrateType.displayLabel(): String = when (this) {
 
 fun TrayEntity.displayColor(): Color =
     colorTag?.let(::Color) ?: TrayPalette[varietyColorIndex(varietyTemplateId, varietyName)]
+
+/**
+ * Stessa formula di TrayEntity.displayColor() con la stessa chiave
+ * (l'id del template, quando ancora esiste, è già la chiave usata lì):
+ * il pallino di una varietà in "Gestisci varietà" e quello dei suoi
+ * vassoi coincidono, invece di avere due colori scollegati per lo stesso
+ * concetto.
+ */
+fun VarietyTemplateEntity.displayColor(): Color = TrayPalette[varietyColorIndex(id, name)]
 
 /**
  * Il template può essere stato eliminato (varietyTemplateId → null via
