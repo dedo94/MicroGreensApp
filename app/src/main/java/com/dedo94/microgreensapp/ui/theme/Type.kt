@@ -26,6 +26,7 @@ val ManropeFontFamily = FontFamily(
     manropeWeight(FontWeight.Medium, 500),
     manropeWeight(FontWeight.SemiBold, 600),
     manropeWeight(FontWeight.Bold, 700),
+    manropeWeight(FontWeight.ExtraBold, 800),
 )
 
 private val Display = FontWeight.Bold
@@ -33,6 +34,12 @@ private val Headline = FontWeight.SemiBold
 private val Title = FontWeight.SemiBold
 private val Body = FontWeight.Normal
 private val Label = FontWeight.Medium
+
+// Titoli schermata (28sp) e titoli card (15-17sp, qui titleMedium a 16sp)
+// nel redesign v2 usano un peso più marcato (800/ExtraBold) del resto della
+// scala, per il look "consumer" più deciso del mockup.
+private val ScreenTitle = FontWeight.ExtraBold
+private val CardTitle = FontWeight.ExtraBold
 
 val MicroGreensTypography = Typography(
     displayLarge = TextStyle(
@@ -65,7 +72,7 @@ val MicroGreensTypography = Typography(
     ),
     headlineMedium = TextStyle(
         fontFamily = ManropeFontFamily,
-        fontWeight = Headline,
+        fontWeight = ScreenTitle,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
@@ -86,7 +93,7 @@ val MicroGreensTypography = Typography(
     ),
     titleMedium = TextStyle(
         fontFamily = ManropeFontFamily,
-        fontWeight = Title,
+        fontWeight = CardTitle,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
