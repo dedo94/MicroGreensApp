@@ -27,12 +27,12 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +59,7 @@ import com.dedo94.microgreensapp.core.repository.TrayStats
 import com.dedo94.microgreensapp.core.repository.VarietyStats
 import com.dedo94.microgreensapp.ui.AdherenceBadge
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.KpiTile
 import com.dedo94.microgreensapp.ui.charts.ProductionBarChart
 import com.dedo94.microgreensapp.ui.charts.ProductionChartPoint
 import com.dedo94.microgreensapp.ui.charts.TrendLineChart
@@ -147,6 +148,7 @@ private fun StatsContent(
                     selected = pagerState.currentPage == 0,
                     onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                     label = { Text("Tutte le varietà") },
+                    colors = statsChipColors(),
                 )
             }
             itemsIndexed(overview.varietyStats, key = { _, stats -> stats.varietyName }) { index, stats ->
@@ -154,6 +156,7 @@ private fun StatsContent(
                     selected = pagerState.currentPage == index + 1,
                     onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index + 1) } },
                     label = { Text(stats.varietyName) },
+                    colors = statsChipColors(),
                 )
             }
         }
@@ -366,33 +369,6 @@ private fun KpiHeroRow(summary: StatsSummary) {
             label = "Resa media/seme",
             modifier = Modifier.weight(1f),
         )
-    }
-}
-
-@Composable
-private fun KpiTile(value: String, label: String, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.sm),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
     }
 }
 
@@ -669,6 +645,13 @@ private fun ComparisonRow(label: String, valueA: String, valueB: String) {
         Text(valueB, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
     }
 }
+
+/** Chip attivo pieno primary/onPrimary invece dei toni tenui di default M3. */
+@Composable
+private fun statsChipColors() = FilterChipDefaults.filterChipColors(
+    selectedContainerColor = MaterialTheme.colorScheme.primary,
+    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+)
 
 @Composable
 private fun SectionTitle(title: String) {
