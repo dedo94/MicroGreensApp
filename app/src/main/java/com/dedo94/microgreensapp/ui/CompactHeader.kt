@@ -39,7 +39,7 @@ fun CompactHeader(
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(vertical = Spacing.sm)
