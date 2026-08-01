@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dedo94.microgreensapp.core.network.dto.GeocodingResultDto
 import com.dedo94.microgreensapp.core.notifications.NotificationScheduler
+import com.dedo94.microgreensapp.core.repository.DarkModePreferenceRepository
 import com.dedo94.microgreensapp.core.repository.LocationPreference
 import com.dedo94.microgreensapp.core.repository.NotificationPreferenceRepository
 import com.dedo94.microgreensapp.core.repository.TrayRepository
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val weatherRepository: WeatherRepository,
     private val notificationPreferenceRepository: NotificationPreferenceRepository,
+    private val darkModePreferenceRepository: DarkModePreferenceRepository,
     private val trayRepository: TrayRepository,
     private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
@@ -41,6 +43,13 @@ class SettingsViewModel @Inject constructor(
                 notificationScheduler.cancelAllReminders()
             }
         }
+    }
+
+    val darkModeEnabled: StateFlow<Boolean> = darkModePreferenceRepository.darkModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun onDarkModeEnabledChange(enabled: Boolean) {
+        viewModelScope.launch { darkModePreferenceRepository.setDarkModeEnabled(enabled) }
     }
 
     var query by mutableStateOf("")
