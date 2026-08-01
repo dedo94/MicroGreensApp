@@ -256,6 +256,7 @@ private fun phaseSubtitle(phase: TemplatePhaseEntity): String =
     phase.durationDays?.let { "${it} giorn${if (it == 1) "o" else "i"}" } ?: "Durata aperta"
 
 /** Solo il nome: durata e step si impostano entrando nel dettaglio della fase appena creata. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PhaseNameDialog(
     initialName: String,
