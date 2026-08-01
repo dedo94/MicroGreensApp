@@ -16,13 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Notes
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,8 +48,11 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
+import com.dedo94.microgreensapp.feature.event.EventEditSheet
 import com.dedo94.microgreensapp.ui.AdherenceBadge
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.DashedAddCard
 import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
@@ -61,9 +64,6 @@ import java.util.Locale
 @Composable
 fun TrayDetailScreen(
     onBack: () -> Unit,
-    onAddEvent: (Long) -> Unit,
-    onEditEvent: (Long, Long) -> Unit,
-    onEditTray: (Long) -> Unit,
     viewModel: TrayDetailViewModel = hiltViewModel(),
 ) {
     val tray by viewModel.tray.collectAsStateWithLifecycle()
@@ -81,6 +81,9 @@ fun TrayDetailScreen(
     var eventPendingDeletion by remember { mutableStateOf<EventEntity?>(null) }
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteTrayDialog by remember { mutableStateOf(false) }
+    var showEditTraySheet by remember { mutableStateOf(false) }
+    // null = sheet chiuso, 0L = nuovo evento, >0 = modifica evento esistente.
+    var eventSheetEventId by remember { mutableStateOf<Long?>(null) }
 
     // Per lo step di raccolta, prima di segnarlo fatto chiediamo la quantità
     // (grammi), altrimenti non ci sarebbe mai un punto in cui inserirla.
@@ -111,7 +114,7 @@ fun TrayDetailScreen(
                             text = { Text("Modifica vassoio") },
                             onClick = {
                                 showStatusMenu = false
-                                onEditTray(viewModel.trayId)
+                                showEditTraySheet = true
                             },
                         )
                         DropdownMenuItem(
@@ -223,14 +226,18 @@ fun TrayDetailScreen(
 
                             is TrayTimelineEntry.EventEntry -> EventTimelineCard(
                                 event = entry.event,
-                                onEdit = { onEditEvent(viewModel.trayId, entry.event.id) },
+                                onEdit = { eventSheetEventId = entry.event.id },
                                 onDelete = { eventPendingDeletion = entry.event },
                             )
                         }
                     }
                 }
                 item(key = "add-event") {
-                    AddEventCard(onClick = { onAddEvent(viewModel.trayId) })
+                    DashedAddCard(
+                        onClick = { eventSheetEventId = 0L },
+                        contentDescription = "Aggiungi evento",
+                        modifier = Modifier.padding(vertical = Spacing.xs),
+                    )
                 }
             }
         }
@@ -287,31 +294,41 @@ fun TrayDetailScreen(
 
     stepPendingQuantityInput?.let { step ->
         var quantityText by remember(step.id) { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text("Registra il raccolto") },
-            text = {
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Quantità raccolta (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
+        BottomSheetForm(
+            title = "Registra il raccolto",
+            onDismiss = { stepPendingQuantityInput = null },
+            onConfirm = {
+                viewModel.markDone(
+                    step = step,
+                    quantityValue = quantityText.toDoubleOrNull(),
+                    quantityUnit = "g",
                 )
+                stepPendingQuantityInput = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.markDone(
-                        step = step,
-                        quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = "g",
-                    )
-                    stepPendingQuantityInput = null
-                }) { Text("Conferma") }
-            },
-            dismissButton = {
-                TextButton(onClick = { stepPendingQuantityInput = null }) { Text("Annulla") }
-            },
+            confirmLabel = "Conferma",
+        ) {
+            OutlinedTextField(
+                value = quantityText,
+                onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Quantità raccolta (g)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+
+    if (showEditTraySheet) {
+        TrayEditSheet(
+            trayId = viewModel.trayId,
+            onDismiss = { showEditTraySheet = false },
+        )
+    }
+
+    eventSheetEventId?.let { eventId ->
+        EventEditSheet(
+            trayId = viewModel.trayId,
+            eventId = eventId,
+            onDismiss = { eventSheetEventId = null },
         )
     }
 
@@ -369,30 +386,6 @@ private fun DateHeader(date: LocalDate) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.xs),
     )
-}
-
-/**
- * Chiusura naturale della timeline: una card identica a quelle degli step
- * con un + centrato, al posto di un FAB che galleggiava sopra il contenuto.
- */
-@Composable
-private fun AddEventCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi evento")
-        }
-    }
 }
 
 @Composable
@@ -488,7 +481,10 @@ private fun EventTimelineCard(
     onDelete: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
-    Card(modifier = Modifier.padding(vertical = Spacing.xs)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.padding(vertical = Spacing.xs),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

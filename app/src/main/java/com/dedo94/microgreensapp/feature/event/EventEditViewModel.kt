@@ -3,31 +3,36 @@ package com.dedo94.microgreensapp.feature.event
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.repository.TrayRepository
 import com.dedo94.microgreensapp.core.repository.WeatherRepository
-import com.dedo94.microgreensapp.navigation.EventEditRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 
+/**
+ * Niente più SavedStateHandle/route: il redesign v2 apre questo form come
+ * bottom-sheet locale in TrayDetailScreen invece che come schermata di
+ * navigazione, quindi trayId/eventId arrivano come parametri espliciti via
+ * [load] (chiamato una volta da un LaunchedEffect) invece che da argomenti
+ * di rotta. trayId/isNew restano observable (mutableStateOf) perché il
+ * titolo del sheet ("Nuovo evento"/"Modifica evento") dipende da isNew.
+ */
 @HiltViewModel
 class EventEditViewModel @Inject constructor(
     private val repository: TrayRepository,
     private val weatherRepository: WeatherRepository,
-    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val route: EventEditRoute = savedStateHandle.toRoute()
-    val trayId: Long = route.trayId
-    val isNew: Boolean = route.eventId == 0L
+    var trayId by mutableStateOf(0L)
+        private set
+    var isNew by mutableStateOf(true)
+        private set
 
     private var existingEvent: EventEntity? = null
 
@@ -55,12 +60,14 @@ class EventEditViewModel @Inject constructor(
     val canSave: Boolean
         get() = title.isNotBlank()
 
-    init {
+    fun load(trayId: Long, eventId: Long) {
+        this.trayId = trayId
+        this.isNew = eventId == 0L
         if (isNew) {
             prefillFromWeather()
         } else {
             viewModelScope.launch {
-                repository.getEvent(route.eventId)?.let { event ->
+                repository.getEvent(eventId)?.let { event ->
                     existingEvent = event
                     eventType = event.eventType
                     eventDate = event.eventDate

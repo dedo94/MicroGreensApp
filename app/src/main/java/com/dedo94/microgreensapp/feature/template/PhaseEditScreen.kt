@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
@@ -45,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplateStepEntity
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.DashedAddCard
 import com.dedo94.microgreensapp.ui.displayLabel
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
@@ -180,7 +180,11 @@ fun PhaseEditScreen(
             }
 
             item(key = "add-step") {
-                AddStepCard(onClick = { showNewStepDialog = true })
+                DashedAddCard(
+                    onClick = { showNewStepDialog = true },
+                    contentDescription = "Aggiungi step",
+                    modifier = Modifier.padding(vertical = Spacing.xs),
+                )
             }
         }
         Button(
@@ -246,26 +250,6 @@ fun PhaseEditScreen(
                 TextButton(onClick = { showDeletePhaseDialog = false }) { Text("Annulla") }
             },
         )
-    }
-}
-
-@Composable
-private fun AddStepCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi step")
-        }
     }
 }
 

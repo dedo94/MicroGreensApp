@@ -1,15 +1,11 @@
 package com.dedo94.microgreensapp.feature.tray
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -17,7 +13,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.dedo94.microgreensapp.core.database.entity.ActionType
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.DatePickerField
 import com.dedo94.microgreensapp.ui.TimePickerField
 import com.dedo94.microgreensapp.ui.displayLabel
@@ -47,100 +43,92 @@ fun TrayStepEditDialog(
     var instructions by remember { mutableStateOf(step.instructions) }
     var actionTypeMenuExpanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Modifica step") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Nome step") },
-                    modifier = Modifier.fillMaxWidth(),
+    BottomSheetForm(
+        title = "Modifica step",
+        onDismiss = onDismiss,
+        onConfirm = {
+            onConfirm(
+                step.copy(
+                    name = name,
+                    actionType = actionType,
+                    plannedDate = plannedDate,
+                    plannedTime = plannedTime,
+                    durationHours = durationHoursText.toIntOrNull(),
+                    instructions = instructions,
                 )
-                Spacer(Modifier.height(8.dp))
-                ExposedDropdownMenuBox(
-                    expanded = actionTypeMenuExpanded,
-                    onExpandedChange = { actionTypeMenuExpanded = it },
-                ) {
-                    OutlinedTextField(
-                        value = actionType.displayLabel(),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Tipo azione") },
-                        modifier = Modifier
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = actionTypeMenuExpanded)
+            )
+        },
+        confirmEnabled = name.isNotBlank(),
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nome step") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(8.dp))
+        ExposedDropdownMenuBox(
+            expanded = actionTypeMenuExpanded,
+            onExpandedChange = { actionTypeMenuExpanded = it },
+        ) {
+            OutlinedTextField(
+                value = actionType.displayLabel(),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Tipo azione") },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth(),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = actionTypeMenuExpanded)
+                },
+            )
+            ExposedDropdownMenu(
+                expanded = actionTypeMenuExpanded,
+                onDismissRequest = { actionTypeMenuExpanded = false },
+            ) {
+                ActionType.entries.forEach { type ->
+                    DropdownMenuItem(
+                        text = { Text(type.displayLabel()) },
+                        onClick = {
+                            actionType = type
+                            actionTypeMenuExpanded = false
                         },
                     )
-                    ExposedDropdownMenu(
-                        expanded = actionTypeMenuExpanded,
-                        onDismissRequest = { actionTypeMenuExpanded = false },
-                    ) {
-                        ActionType.entries.forEach { type ->
-                            DropdownMenuItem(
-                                text = { Text(type.displayLabel()) },
-                                onClick = {
-                                    actionType = type
-                                    actionTypeMenuExpanded = false
-                                },
-                            )
-                        }
-                    }
                 }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    DatePickerField(
-                        label = "Data",
-                        date = plannedDate,
-                        onDateChange = { plannedDate = it },
-                        modifier = Modifier.weight(1f),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    TimePickerField(
-                        label = "Orario",
-                        time = plannedTime,
-                        onTimeChange = { plannedTime = it },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = durationHoursText,
-                    onValueChange = { durationHoursText = it.filter(Char::isDigit) },
-                    label = { Text("Durata (ore, opzionale)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = instructions,
-                    onValueChange = { instructions = it },
-                    label = { Text("Istruzioni") },
-                    minLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = name.isNotBlank(),
-                onClick = {
-                    onConfirm(
-                        step.copy(
-                            name = name,
-                            actionType = actionType,
-                            plannedDate = plannedDate,
-                            plannedTime = plannedTime,
-                            durationHours = durationHoursText.toIntOrNull(),
-                            instructions = instructions,
-                        )
-                    )
-                },
-            ) { Text("Salva") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
-    )
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth()) {
+            DatePickerField(
+                label = "Data",
+                date = plannedDate,
+                onDateChange = { plannedDate = it },
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            TimePickerField(
+                label = "Orario",
+                time = plannedTime,
+                onTimeChange = { plannedTime = it },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = durationHoursText,
+            onValueChange = { durationHoursText = it.filter(Char::isDigit) },
+            label = { Text("Durata (ore, opzionale)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = instructions,
+            onValueChange = { instructions = it },
+            label = { Text("Istruzioni") },
+            minLines = 3,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }

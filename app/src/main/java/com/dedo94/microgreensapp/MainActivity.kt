@@ -5,22 +5,32 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.dedo94.microgreensapp.core.repository.DarkModePreferenceRepository
 import com.dedo94.microgreensapp.navigation.MicroGreensNavHost
 import com.dedo94.microgreensapp.ui.theme.MicroGreensAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val deepLinkTrayId = mutableStateOf<Long?>(null)
 
+    @Inject
+    lateinit var darkModePreferenceRepository: DarkModePreferenceRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         deepLinkTrayId.value = extractTrayId(intent)
         setContent {
-            MicroGreensAppTheme {
+            val darkModeEnabled by darkModePreferenceRepository.darkModeEnabled
+                .collectAsState(initial = isSystemInDarkTheme())
+            MicroGreensAppTheme(darkTheme = darkModeEnabled) {
                 MicroGreensNavHost(deepLinkTrayId = deepLinkTrayId)
             }
         }

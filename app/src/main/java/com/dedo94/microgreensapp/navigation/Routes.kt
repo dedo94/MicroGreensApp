@@ -24,13 +24,4 @@ data class TemplateEditRoute(val templateId: Long = 0L)
 data class TemplatePhaseEditRoute(val templateId: Long, val phaseId: Long)
 
 @Serializable
-object TrayCreateRoute
-
-@Serializable
 data class TrayDetailRoute(val trayId: Long)
-
-@Serializable
-data class TrayEditRoute(val trayId: Long)
-
-@Serializable
-data class EventEditRoute(val trayId: Long, val eventId: Long = 0L)

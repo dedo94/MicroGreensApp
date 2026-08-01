@@ -350,3 +350,40 @@ autoconclusiva:
   coerenza con Girasole/Piselli in modo da raggiungere esattamente 8-9
   giorni totali — regolabili da "Gestisci varietà" se non corrispondono
   all'esperienza reale.
+
+## Redesign UI v2
+
+Redesign visivo completo basato su un mockup ad alta fedeltà realizzato
+dall'utente in Claude Design (palette, tipografia e forme più marcate,
+"consumer"), implementato in stage successivi:
+
+- **Fondamenta del tema**: nuova palette colore Material 3 (light + dark,
+  tutti i ruoli) dai valori esatti del mockup — primary `#2E9E58`/`#4FCB80`,
+  superfici a più livelli (sfondo schermata "affondato", card più chiare
+  sopra). Peso tipografico ExtraBold (800) sui titoli schermata e sui
+  titoli delle card, per un look più deciso. Nuova preferenza manuale
+  "Tema scuro" (DataStore, stesso pattern del toggle notifiche), di
+  default allineata al tema di sistema finché non viene toccata.
+- **Form a bottom-sheet**: tutti i form (nuovo/modifica vassoio, evento,
+  step, fase, quantità raccolto) sono ora `ModalBottomSheet` con angoli
+  superiori arrotondati invece di schermate a tutta pagina o `AlertDialog`
+  — nuovo wrapper condiviso `ui/BottomSheetForm.kt`. Le conferme di
+  eliminazione restano `AlertDialog` (modali centrate, come nel mockup).
+  Il FAB "Nuovo vassoio" è stato scollegato dalla navigazione (non è più
+  una rotta) per poter aprirsi da qualunque tab, ed è stato ridisegnato
+  (60dp, bordo che lo "ritaglia" dalla barra sottostante).
+  `TrayEditViewModel`/`EventEditViewModel` non leggono più gli argomenti
+  da `SavedStateHandle`/rotta ma da un `load()` esplicito, dato che ora
+  sono aperti come sheet e non come destinazioni di navigazione.
+- **Componenti condivisi nuovi**: `SegmentedTabControl` (tab a pillola,
+  usato per "In corso/Raccolti"), `KpiTile` (tile hero di Statistiche,
+  deduplicata da una copia locale quasi identica), `DashedAddCard` (card
+  "+" a bordo outline, sostituisce 4 copie quasi identiche sparse in
+  Vassoi/Varietà/Fasi).
+- **Calendario, Vassoi, Statistiche, Opzioni, Varietà**: chip filtro pieni
+  primary/onPrimary quando attivi, bordo sulla cella "oggi" nel calendario
+  (distinto dal riempimento di "selezionato"), card evento su
+  `surfaceContainer` per distinguerle dagli step pianificati, cerchi icona
+  colorati nelle righe di Opzioni, pallino colore nella lista varietà
+  (stessa formula/palette dei pallini vassoio, così una varietà e i suoi
+  vassoi coincidono visivamente).

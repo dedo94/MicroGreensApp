@@ -1,7 +1,10 @@
 package com.dedo94.microgreensapp.navigation
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -10,6 +13,7 @@ import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -20,6 +24,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -30,15 +35,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.dedo94.microgreensapp.feature.calendar.CalendarScreen
-import com.dedo94.microgreensapp.feature.event.EventEditScreen
 import com.dedo94.microgreensapp.feature.settings.SettingsScreen
 import com.dedo94.microgreensapp.feature.stats.StatsScreen
 import com.dedo94.microgreensapp.feature.template.PhaseEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateEditScreen
 import com.dedo94.microgreensapp.feature.template.TemplateListScreen
-import com.dedo94.microgreensapp.feature.tray.TrayCreateScreen
+import com.dedo94.microgreensapp.feature.tray.TrayCreateSheet
 import com.dedo94.microgreensapp.feature.tray.TrayDetailScreen
-import com.dedo94.microgreensapp.feature.tray.TrayEditScreen
 import com.dedo94.microgreensapp.feature.tray.TraysListScreen
 
 @Composable
@@ -48,6 +51,11 @@ fun MicroGreensNavHost(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+
+    // Il FAB "Nuovo vassoio" deve aprirsi da qualunque tab: il sheet vive
+    // qui (fuori dal NavHost, non come rotta) invece che dentro una singola
+    // destinazione, così sopravvive ai cambi di tab sottostanti.
+    var showCreateTraySheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(deepLinkTrayId.value) {
         val trayId = deepLinkTrayId.value
@@ -81,12 +89,18 @@ fun MicroGreensNavHost(
                     label = { Text("Vassoi") },
                 )
                 FilledIconButton(
-                    onClick = { navController.navigate(TrayCreateRoute) },
+                    onClick = { showCreateTraySheet = true },
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
-                        .size(48.dp),
+                        .offset(y = (-14).dp)
+                        .size(60.dp)
+                        .border(4.dp, MaterialTheme.colorScheme.surfaceContainerLow, CircleShape),
                 ) {
-                    Icon(Icons.Outlined.Add, contentDescription = "Nuovo vassoio")
+                    Icon(
+                        Icons.Outlined.Add,
+                        contentDescription = "Nuovo vassoio",
+                        modifier = Modifier.size(26.dp),
+                    )
                 }
                 NavigationBarItem(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<StatsRoute>() } == true,
@@ -123,32 +137,8 @@ fun MicroGreensNavHost(
                 )
             }
 
-            composable<TrayCreateRoute> {
-                TrayCreateScreen(
-                    onBack = { navController.popBackStack() },
-                    onManageVarieties = { navController.navigate(TemplateListRoute) },
-                    onCreated = { id ->
-                        navController.navigate(TrayDetailRoute(id)) {
-                            popUpTo<TrayCreateRoute> { inclusive = true }
-                        }
-                    },
-                )
-            }
             composable<TrayDetailRoute> {
-                TrayDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onAddEvent = { trayId -> navController.navigate(EventEditRoute(trayId = trayId)) },
-                    onEditEvent = { trayId, eventId ->
-                        navController.navigate(EventEditRoute(trayId = trayId, eventId = eventId))
-                    },
-                    onEditTray = { trayId -> navController.navigate(TrayEditRoute(trayId)) },
-                )
-            }
-            composable<TrayEditRoute> {
-                TrayEditScreen(onBack = { navController.popBackStack() })
-            }
-            composable<EventEditRoute> {
-                EventEditScreen(onBack = { navController.popBackStack() })
+                TrayDetailScreen(onBack = { navController.popBackStack() })
             }
 
             composable<TemplateListRoute> {
@@ -170,5 +160,19 @@ fun MicroGreensNavHost(
                 PhaseEditScreen(onBack = { navController.popBackStack() })
             }
         }
+    }
+
+    if (showCreateTraySheet) {
+        TrayCreateSheet(
+            onDismiss = { showCreateTraySheet = false },
+            onManageVarieties = {
+                showCreateTraySheet = false
+                navController.navigate(TemplateListRoute)
+            },
+            onCreated = { id ->
+                showCreateTraySheet = false
+                navController.navigate(TrayDetailRoute(id))
+            },
+        )
     }
 }

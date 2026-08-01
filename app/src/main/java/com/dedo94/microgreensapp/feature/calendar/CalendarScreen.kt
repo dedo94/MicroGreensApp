@@ -1,6 +1,7 @@
 package com.dedo94.microgreensapp.feature.calendar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,16 +27,17 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +59,7 @@ import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.feature.tray.TrayTimelineEntry
 import com.dedo94.microgreensapp.feature.tray.buildTimeline
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
 import com.dedo94.microgreensapp.ui.StepStatusBadge
 import com.dedo94.microgreensapp.ui.displayColor
@@ -147,6 +150,7 @@ fun CalendarScreen(
                             selected = selectedTrayId == null,
                             onClick = { viewModel.selectTrayFilter(null) },
                             label = { Text("Tutti") },
+                            colors = calendarChipColors(),
                         )
                     }
                     items(trays, key = { it.id }) { tray ->
@@ -154,6 +158,7 @@ fun CalendarScreen(
                             selected = selectedTrayId == tray.id,
                             onClick = { viewModel.selectTrayFilter(tray.id) },
                             label = { Text(tray.name) },
+                            colors = calendarChipColors(),
                         )
                     }
                 }
@@ -303,32 +308,27 @@ fun CalendarScreen(
 
     stepPendingQuantityInput?.let { step ->
         var quantityText by remember(step.id) { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { stepPendingQuantityInput = null },
-            title = { Text("Registra il raccolto") },
-            text = {
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Quantità raccolta (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
+        BottomSheetForm(
+            title = "Registra il raccolto",
+            onDismiss = { stepPendingQuantityInput = null },
+            onConfirm = {
+                viewModel.markStepDone(
+                    step = step,
+                    quantityValue = quantityText.toDoubleOrNull(),
+                    quantityUnit = "g",
                 )
+                stepPendingQuantityInput = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.markStepDone(
-                        step = step,
-                        quantityValue = quantityText.toDoubleOrNull(),
-                        quantityUnit = "g",
-                    )
-                    stepPendingQuantityInput = null
-                }) { Text("Conferma") }
-            },
-            dismissButton = {
-                TextButton(onClick = { stepPendingQuantityInput = null }) { Text("Annulla") }
-            },
-        )
+            confirmLabel = "Conferma",
+        ) {
+            OutlinedTextField(
+                value = quantityText,
+                onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Quantità raccolta (g)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -375,7 +375,14 @@ private fun TodayEntryCard(
             }
             if (entry is TrayTimelineEntry.StepEntry) {
                 if (entry.step.status == TrayStepStatus.PENDING) {
-                    IconButton(onClick = onMarkDone) {
+                    FilledIconButton(
+                        onClick = onMarkDone,
+                        modifier = Modifier.size(38.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    ) {
                         Icon(Icons.Outlined.Check, contentDescription = "Segna come fatto")
                     }
                 } else {
@@ -408,6 +415,13 @@ private fun stepLabel(step: TrayStepEntity): String {
     val time = step.plannedTime?.format(timeFormatter)?.let { " · $it" } ?: ""
     return "${step.name} · ${step.actionType.displayLabel()}$time"
 }
+
+/** Chip attivo pieno primary/onPrimary invece dei toni tenui di default M3. */
+@Composable
+private fun calendarChipColors() = FilterChipDefaults.filterChipColors(
+    selectedContainerColor = MaterialTheme.colorScheme.primary,
+    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+)
 
 private fun monthLabel(month: YearMonth): String {
     val name = month.month.getDisplayName(TextStyle.FULL, Locale.ITALIAN)
@@ -444,6 +458,7 @@ private fun MonthGrid(
                     val date = gridStart.plusDays((week * 7 + dayOfWeekIndex).toLong())
                     val inCurrentMonth = date.month == month.month
                     val isSelected = date == selectedDate
+                    val isToday = date == LocalDate.now()
                     val trayIdsForDay = dotsByDate[date].orEmpty()
                     Box(
                         modifier = Modifier
@@ -453,6 +468,13 @@ private fun MonthGrid(
                             .clip(CircleShape)
                             .background(
                                 if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            )
+                            .then(
+                                if (isToday) {
+                                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                } else {
+                                    Modifier
+                                }
                             )
                             .clickable { onDayClick(date) },
                         contentAlignment = Alignment.Center,

@@ -3,26 +3,28 @@ package com.dedo94.microgreensapp.feature.tray
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.dedo94.microgreensapp.core.database.entity.SubstrateType
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.repository.TrayRepository
-import com.dedo94.microgreensapp.navigation.TrayEditRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Niente più SavedStateHandle/route: il redesign v2 apre questo form come
+ * bottom-sheet locale in TrayDetailScreen invece che come schermata di
+ * navigazione, quindi trayId arriva come parametro esplicito via [load]
+ * (chiamato una volta da un LaunchedEffect) invece che da un argomento di
+ * rotta.
+ */
 @HiltViewModel
 class TrayEditViewModel @Inject constructor(
     private val repository: TrayRepository,
-    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val route: TrayEditRoute = savedStateHandle.toRoute()
     private var existingTray: TrayEntity? = null
 
     var trayName by mutableStateOf("")
@@ -39,9 +41,9 @@ class TrayEditViewModel @Inject constructor(
     val canSave: Boolean
         get() = trayName.isNotBlank()
 
-    init {
+    fun load(trayId: Long) {
         viewModelScope.launch {
-            repository.observeTray(route.trayId).firstOrNull()?.let { tray ->
+            repository.observeTray(trayId).firstOrNull()?.let { tray ->
                 existingTray = tray
                 trayName = tray.name
                 seedQuantityText = tray.initialSeedQuantityGrams?.toString() ?: ""

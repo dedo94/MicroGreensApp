@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
@@ -41,7 +40,9 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dedo94.microgreensapp.core.database.entity.TemplatePhaseEntity
+import com.dedo94.microgreensapp.ui.BottomSheetForm
 import com.dedo94.microgreensapp.ui.CompactHeader
+import com.dedo94.microgreensapp.ui.DashedAddCard
 import com.dedo94.microgreensapp.ui.theme.Spacing
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -187,7 +188,11 @@ fun TemplateEditScreen(
 
             if (templateId != null) {
                 item(key = "add-phase") {
-                    AddPhaseCard(onClick = { showNewPhaseDialog = true })
+                    DashedAddCard(
+                        onClick = { showNewPhaseDialog = true },
+                        contentDescription = "Aggiungi fase",
+                        modifier = Modifier.padding(vertical = Spacing.xs),
+                    )
                 }
             }
         }
@@ -247,30 +252,11 @@ fun TemplateEditScreen(
     }
 }
 
-@Composable
-private fun AddPhaseCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.md),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Aggiungi fase")
-        }
-    }
-}
-
 private fun phaseSubtitle(phase: TemplatePhaseEntity): String =
     phase.durationDays?.let { "${it} giorn${if (it == 1) "o" else "i"}" } ?: "Durata aperta"
 
 /** Solo il nome: durata e step si impostano entrando nel dettaglio della fase appena creata. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PhaseNameDialog(
     initialName: String,
@@ -278,20 +264,18 @@ private fun PhaseNameDialog(
     onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nuova fase") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome fase (es. Germinazione)") },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
-        confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onConfirm(name) }) { Text("Crea") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annulla") } },
-    )
+    BottomSheetForm(
+        title = "Nuova fase",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(name) },
+        confirmLabel = "Crea",
+        confirmEnabled = name.isNotBlank(),
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nome fase (es. Germinazione)") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
