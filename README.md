@@ -16,8 +16,8 @@ istruzioni) — un orario di promemoria corrisponde a un'occorrenza
 segnabile "fatta" a sé, così uno step con più interventi al giorno (es.
 sciacquo mattina e sera) si può completare uno alla volta invece che
 tutti insieme. Fasi e step sono entrambi riordinabili via drag-and-drop.
-Tre varietà sono precaricate al primo avvio (Girasole, Piselli, Melone) con
-piani realistici, completamente modificabili.
+Cinque varietà sono precaricate al primo avvio (Girasole, Piselli, Melone,
+Rucola, Radicchio) con piani realistici, completamente modificabili.
 
 Modificare un template **non tocca** i vassoi già creati da quel
 template: alla creazione il piano viene copiato (snapshot) sul vassoio, che

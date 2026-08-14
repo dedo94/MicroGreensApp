@@ -6,6 +6,8 @@ import com.dedo94.microgreensapp.core.database.dao.TemplateStepDao
 import com.dedo94.microgreensapp.core.database.dao.VarietyTemplateDao
 import com.dedo94.microgreensapp.core.database.seed.MelonTemplateSeed
 import com.dedo94.microgreensapp.core.database.seed.PeaTemplateSeed
+import com.dedo94.microgreensapp.core.database.seed.RadicchioTemplateSeed
+import com.dedo94.microgreensapp.core.database.seed.RucolaTemplateSeed
 import com.dedo94.microgreensapp.core.database.seed.SunflowerTemplateSeed
 import com.dedo94.microgreensapp.core.di.ApplicationScope
 import com.dedo94.microgreensapp.core.notifications.NotificationHelper
@@ -41,6 +43,8 @@ class MicroGreensApplication : Application() {
             SunflowerTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
             PeaTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
             MelonTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
+            RucolaTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
+            RadicchioTemplateSeed.seedIfNeeded(varietyTemplateDao, templatePhaseDao, templateStepDao)
         }
     }
 }
