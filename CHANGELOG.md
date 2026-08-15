@@ -387,3 +387,15 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   colorati nelle righe di Opzioni, pallino colore nella lista varietà
   (stessa formula/palette dei pallini vassoio, così una varietà e i suoi
   vassoi coincidono visivamente).
+
+## Dopo il redesign v2
+
+- **Nuove varietà precaricate: Rucola e Radicchio**: piani basati su una
+  ricerca nelle guide di coltivazione microgreens. Entrambe si seminano a
+  secco, senza ammollo — la rucola perché il seme è mucillaginoso (forma
+  un gel a contatto con l'acqua), il radicchio perché il seme è piccolo —
+  quindi la struttura delle fasi è diversa dalle varietà idroponiche
+  esistenti: Semina (1g) → Germinazione con nebulizzazione 2x/giorno (3g,
+  al buio per la rucola, non necessario per il radicchio) → Crescita e
+  raccolto. Raccolta a 7-10 giorni dalla semina per la rucola, 10-14 per
+  il radicchio (famiglia della cicoria, sapore leggermente amaro).
