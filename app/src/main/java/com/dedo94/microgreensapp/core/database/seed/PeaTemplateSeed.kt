@@ -90,8 +90,11 @@ object PeaTemplateSeed {
             )
         )
 
+        // Raccolta a giorno fisso (il 10, punto medio della finestra reale
+        // 9-11 giorni) invece di un'occorrenza per giorno: la crescita è
+        // estesa fino al giorno prima per non lasciare buchi nel piano.
         val crescitaPhaseId = phaseDao.insert(
-            TemplatePhaseEntity(templateId = templateId, orderIndex = 2, name = "Crescita", durationDays = 5)
+            TemplatePhaseEntity(templateId = templateId, orderIndex = 2, name = "Crescita", durationDays = 6)
         )
         stepDao.insert(
             TemplateStepEntity(
@@ -100,7 +103,7 @@ object PeaTemplateSeed {
                 name = "Crescita",
                 actionType = ActionType.LIGHT_GROWTH,
                 offsetStartDays = 0,
-                offsetEndDays = 4,
+                offsetEndDays = 5,
                 reminderTimes = listOf(LocalTime.of(8, 0)),
                 instructions = "Se iniziano a crescere le radici sotto, esporre le piante alla " +
                     "luce indiretta per almeno 6 ore. Annaffiare da sotto.",
@@ -118,10 +121,11 @@ object PeaTemplateSeed {
                     name = "Raccolta",
                     actionType = ActionType.HARVEST,
                     offsetStartDays = 0,
-                    offsetEndDays = 2,
+                    offsetEndDays = 0,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
-                    instructions = "La crescita dura 9-11 giorni: raccogliere quando i germogli " +
-                        "raggiungono circa 20cm di altezza. Tagliare il più vicino alla radice possibile.",
+                    instructions = "Raccogliere quando i germogli raggiungono circa 20cm di " +
+                        "altezza. Tagliare il più vicino alla radice possibile. La finestra reale " +
+                        "è 9-11 giorni dalla semina: si può anticipare o posticipare di un giorno.",
                 ),
                 TemplateStepEntity(
                     phaseId = raccoltoPhaseId,

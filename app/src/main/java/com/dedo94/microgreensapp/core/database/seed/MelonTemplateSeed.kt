@@ -87,6 +87,9 @@ object MelonTemplateSeed {
             )
         )
 
+        // Raccolta a giorno fisso (il 9, estremo superiore del ciclo 8-9
+        // indicato dall'utente) invece di un'occorrenza per giorno: la
+        // crescita è estesa fino al giorno prima per non lasciare buchi.
         val crescitaPhaseId = phaseDao.insert(
             TemplatePhaseEntity(templateId = templateId, orderIndex = 3, name = "Crescita e raccolto", durationDays = null)
         )
@@ -98,7 +101,7 @@ object MelonTemplateSeed {
                     name = "Crescita",
                     actionType = ActionType.LIGHT_GROWTH,
                     offsetStartDays = 0,
-                    offsetEndDays = 3,
+                    offsetEndDays = 4,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
                     instructions = "Esporre le piante alla luce indiretta per almeno 6 ore. Annaffiare da sotto.",
                 ),
@@ -107,18 +110,19 @@ object MelonTemplateSeed {
                     orderIndex = 1,
                     name = "Raccolta",
                     actionType = ActionType.HARVEST,
-                    offsetStartDays = 4,
+                    offsetStartDays = 5,
                     offsetEndDays = 5,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
-                    instructions = "Ciclo totale 8-9 giorni dalla semina: raccogliere quando appaiono " +
-                        "le prime vere foglie. Tagliare il più vicino alla radice possibile.",
+                    instructions = "Raccogliere quando appaiono le prime vere foglie. Tagliare il " +
+                        "più vicino alla radice possibile. Il ciclo reale è 8-9 giorni dalla " +
+                        "semina: si può anticipare di un giorno.",
                 ),
                 TemplateStepEntity(
                     phaseId = crescitaPhaseId,
                     orderIndex = 2,
                     name = "Conservazione",
                     actionType = ActionType.STORAGE,
-                    offsetStartDays = 4,
+                    offsetStartDays = 5,
                     offsetEndDays = null,
                     reminderTimes = emptyList(),
                     instructions = "Mantenuti in frigo in una busta sigillata durano una decina di giorni.",

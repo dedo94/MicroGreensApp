@@ -14,8 +14,10 @@ import java.time.LocalTime
  * rucola NON prevede ammollo (seme piccolo, si semina a secco) e — dalle
  * guide sulla cicoria da microgreens — non richiede nemmeno un vero periodo
  * di buio. Germinazione ~3 giorni tenendo umido, raccolta a 10-14 giorni
- * dalla semina, sapore leggermente amaro. Regolabile da "Gestisci varietà"
- * se l'esperienza reale differisce.
+ * dalla semina, sapore leggermente amaro. La raccolta è fissata a un giorno
+ * unico (il 12, punto medio della finestra) su richiesta dell'utente,
+ * invece di un'occorrenza per ogni giorno della finestra. Regolabile da
+ * "Gestisci varietà" se l'esperienza reale differisce.
  */
 object RadicchioTemplateSeed {
 
@@ -81,7 +83,7 @@ object RadicchioTemplateSeed {
                     name = "Crescita",
                     actionType = ActionType.LIGHT_GROWTH,
                     offsetStartDays = 0,
-                    offsetEndDays = 5,
+                    offsetEndDays = 7,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
                     instructions = "Esporre alla luce indiretta per almeno 6 ore. Annaffiare da " +
                         "sotto per non bagnare le foglioline.",
@@ -91,18 +93,19 @@ object RadicchioTemplateSeed {
                     orderIndex = 1,
                     name = "Raccolta",
                     actionType = ActionType.HARVEST,
-                    offsetStartDays = 6,
-                    offsetEndDays = 10,
+                    offsetStartDays = 8,
+                    offsetEndDays = 8,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
-                    instructions = "Raccolta a 10-14 giorni dalla semina. Tagliare con le forbici " +
-                        "appena sopra il substrato. Sapore leggermente amaro, si attenua maturando.",
+                    instructions = "Tagliare con le forbici appena sopra il substrato. Sapore " +
+                        "leggermente amaro, si attenua maturando. La finestra reale è 10-14 giorni " +
+                        "dalla semina: si può anticipare o posticipare di un giorno o due.",
                 ),
                 TemplateStepEntity(
                     phaseId = crescitaPhaseId,
                     orderIndex = 2,
                     name = "Conservazione",
                     actionType = ActionType.STORAGE,
-                    offsetStartDays = 6,
+                    offsetStartDays = 8,
                     offsetEndDays = null,
                     reminderTimes = emptyList(),
                     instructions = "Mantenuti in frigo in una busta sigillata durano una decina di giorni.",

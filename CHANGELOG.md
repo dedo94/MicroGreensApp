@@ -399,3 +399,26 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   al buio per la rucola, non necessario per il radicchio) → Crescita e
   raccolto. Raccolta a 7-10 giorni dalla semina per la rucola, 10-14 per
   il radicchio (famiglia della cicoria, sapore leggermente amaro).
+- **Fix: a vassoio raccolto le occorrenze residue restavano "da fare"**:
+  la finestra di raccolta multi-giorno (es. radicchio 10-14) genera una
+  riga per giorno; raccogliendo al primo giorno utile il vassoio passa a
+  "Raccolto" e i promemoria si cancellano, ma i giorni rimanenti di
+  raccolta (ed eventuali giorni di crescita non spuntati) restavano
+  PENDING e continuavano a comparire nel Calendario e nella timeline con
+  il bottone ✓. Ora le occorrenze pendenti dei vassoi raccolti vengono
+  nascoste (non saltate: inquinerebbe l'aderenza al piano; non
+  cancellate: se il vassoio torna "In corso" ricompaiono). Il problema
+  esisteva anche con le finestre di 2-3 giorni di Piselli/Melone, era
+  solo meno visibile.
+- **Raccolta a giorno fisso in tutti i template**: su richiesta
+  dell'utente la raccolta non è più una finestra multi-giorno
+  (un'occorrenza per giorno) ma un giorno unico, il punto medio della
+  finestra di riferimento: giorno 9 per la rucola (finestra reale 7-10),
+  12 per il radicchio (10-14), 10 per i piselli (9-11), 9 per il melone
+  (ciclo 8-9). Il girasole aveva già la raccolta a giorno fisso (il 10).
+  La crescita è estesa fino al giorno prima della raccolta per non
+  lasciare buchi nel piano; le istruzioni della raccolta riportano la
+  finestra reale, per anticipare o posticipare a occhio. Nota: i template
+  già presenti sul dispositivo non vengono toccati dal seed (che salta le
+  varietà già esistenti) — vanno allineati a mano da "Gestisci varietà",
+  o si applicano da soli su una installazione pulita.
