@@ -410,14 +410,15 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   cancellate: se il vassoio torna "In corso" ricompaiono). Il problema
   esisteva anche con le finestre di 2-3 giorni di Piselli/Melone, era
   solo meno visibile.
-- **Rucola/Radicchio: raccolta a giorno fisso**: su richiesta dell'utente
-  la raccolta nei due template non è più una finestra multi-giorno
-  (un'occorrenza per giorno) ma un giorno unico — il punto medio della
-  finestra indicata dalle guide: giorno 9 per la rucola (finestra reale
-  7-10), giorno 12 per il radicchio (finestra reale 10-14). La crescita è
-  estesa fino al giorno prima della raccolta per non lasciare buchi. Le
-  istruzioni della raccolta riportano la finestra reale, per anticipare o
-  posticipare a occhio. Nota: i template già presenti sul dispositivo non
-  vengono toccati dal seed (che salta le varietà già esistenti) — vanno
-  allineati a mano da "Gestisci varietà", o si applicano da soli su una
-  installazione pulita.
+- **Raccolta a giorno fisso in tutti i template**: su richiesta
+  dell'utente la raccolta non è più una finestra multi-giorno
+  (un'occorrenza per giorno) ma un giorno unico, il punto medio della
+  finestra di riferimento: giorno 9 per la rucola (finestra reale 7-10),
+  12 per il radicchio (10-14), 10 per i piselli (9-11), 9 per il melone
+  (ciclo 8-9). Il girasole aveva già la raccolta a giorno fisso (il 10).
+  La crescita è estesa fino al giorno prima della raccolta per non
+  lasciare buchi nel piano; le istruzioni della raccolta riportano la
+  finestra reale, per anticipare o posticipare a occhio. Nota: i template
+  già presenti sul dispositivo non vengono toccati dal seed (che salta le
+  varietà già esistenti) — vanno allineati a mano da "Gestisci varietà",
+  o si applicano da soli su una installazione pulita.
