@@ -399,3 +399,14 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   al buio per la rucola, non necessario per il radicchio) → Crescita e
   raccolto. Raccolta a 7-10 giorni dalla semina per la rucola, 10-14 per
   il radicchio (famiglia della cicoria, sapore leggermente amaro).
+- **Fix: a vassoio raccolto le occorrenze residue restavano "da fare"**:
+  la finestra di raccolta multi-giorno (es. radicchio 10-14) genera una
+  riga per giorno; raccogliendo al primo giorno utile il vassoio passa a
+  "Raccolto" e i promemoria si cancellano, ma i giorni rimanenti di
+  raccolta (ed eventuali giorni di crescita non spuntati) restavano
+  PENDING e continuavano a comparire nel Calendario e nella timeline con
+  il bottone ✓. Ora le occorrenze pendenti dei vassoi raccolti vengono
+  nascoste (non saltate: inquinerebbe l'aderenza al piano; non
+  cancellate: se il vassoio torna "In corso" ricompaiono). Il problema
+  esisteva anche con le finestre di 2-3 giorni di Piselli/Melone, era
+  solo meno visibile.

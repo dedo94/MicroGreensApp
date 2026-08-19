@@ -8,6 +8,7 @@ import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.core.repository.StatsRepository
 import com.dedo94.microgreensapp.core.repository.TrayRepository
 import com.dedo94.microgreensapp.core.repository.TrayStats
@@ -59,8 +60,22 @@ class TrayDetailViewModel @Inject constructor(
             currentTray?.let { t -> overview.trayStats.find { it.tray.id == t.id } }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    val steps: StateFlow<List<TrayStepEntity>> = repository.stepsForTray(trayId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /**
+     * A vassoio raccolto le occorrenze ancora PENDING (es. i giorni residui
+     * della finestra di raccolta multi-giorno, o giorni di crescita mai
+     * spuntati) spariscono dalla timeline: il ciclo è chiuso, non sono più
+     * azionabili. Non vengono toccate nel DB — né saltate (inquinerebbe
+     * l'aderenza al piano) né cancellate — quindi rimettendo il vassoio
+     * "In corso" ricompaiono.
+     */
+    val steps: StateFlow<List<TrayStepEntity>> =
+        combine(repository.stepsForTray(trayId), tray) { steps, currentTray ->
+            if (currentTray?.status == TrayStatus.HARVESTED) {
+                steps.filter { it.status != TrayStepStatus.PENDING }
+            } else {
+                steps
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val events: StateFlow<List<EventEntity>> = repository.eventsForTray(trayId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

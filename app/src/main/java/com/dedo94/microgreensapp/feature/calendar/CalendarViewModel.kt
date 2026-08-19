@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dedo94.microgreensapp.core.database.entity.EventEntity
 import com.dedo94.microgreensapp.core.database.entity.TrayEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStatus
 import com.dedo94.microgreensapp.core.database.entity.TrayStepEntity
+import com.dedo94.microgreensapp.core.database.entity.TrayStepStatus
 import com.dedo94.microgreensapp.core.repository.TrayRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -37,8 +40,26 @@ class CalendarViewModel @Inject constructor(
     val trays: StateFlow<List<TrayEntity>> = repository.observeTrays()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /**
+     * Le occorrenze ancora PENDING di un vassoio già raccolto non sono più
+     * azionabili: la finestra di raccolta multi-giorno (es. "raccogli tra il
+     * giorno 10 e il 14") genera una riga per giorno, e raccogliere al primo
+     * giorno utile lascerebbe le rimanenti a galleggiare nel calendario come
+     * cose "da fare". Non vengono segnate saltate (inquinerebbe l'aderenza
+     * al piano: raccogliere presto non è saltare) né cancellate: solo
+     * nascoste — se il vassoio torna "In corso" ricompaiono.
+     */
+    private fun List<TrayStepEntity>.withoutPendingOfHarvested(
+        trays: List<TrayEntity>,
+    ): List<TrayStepEntity> {
+        val harvestedIds = trays.filter { it.status == TrayStatus.HARVESTED }.map { it.id }.toSet()
+        if (harvestedIds.isEmpty()) return this
+        return filter { it.status != TrayStepStatus.PENDING || it.trayId !in harvestedIds }
+    }
+
     val steps: StateFlow<List<TrayStepEntity>> = _currentMonth
         .flatMapLatest { month -> repository.stepsOverlappingRange(month.atDay(1), month.atEndOfMonth()) }
+        .combine(trays) { steps, trays -> steps.withoutPendingOfHarvested(trays) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val events: StateFlow<List<EventEntity>> = _currentMonth
@@ -52,6 +73,7 @@ class CalendarViewModel @Inject constructor(
      */
     val todaySteps: StateFlow<List<TrayStepEntity>> = repository
         .stepsOverlappingRange(LocalDate.now(), LocalDate.now())
+        .combine(trays) { steps, trays -> steps.withoutPendingOfHarvested(trays) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val todayEvents: StateFlow<List<EventEntity>> = repository
