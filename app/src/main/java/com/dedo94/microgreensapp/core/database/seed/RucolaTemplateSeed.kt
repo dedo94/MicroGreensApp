@@ -14,8 +14,10 @@ import java.time.LocalTime
  * NON prevede ammollo: il seme di rucola è mucillaginoso (forma un gel a
  * contatto con l'acqua) e va seminato a secco direttamente sul substrato
  * umido. Dati dalle guide di coltivazione microgreens: germinazione 2-3
- * giorni, buio ~3 giorni, raccolta a 7-10 giorni dalla semina. Regolabile
- * da "Gestisci varietà" se l'esperienza reale differisce.
+ * giorni, buio ~3 giorni, raccolta a 7-10 giorni dalla semina — qui fissata
+ * a un giorno unico (il 9, punto medio della finestra) su richiesta
+ * dell'utente, invece di un'occorrenza per ogni giorno della finestra.
+ * Regolabile da "Gestisci varietà" se l'esperienza reale differisce.
  */
 object RucolaTemplateSeed {
 
@@ -82,7 +84,7 @@ object RucolaTemplateSeed {
                     name = "Crescita",
                     actionType = ActionType.LIGHT_GROWTH,
                     offsetStartDays = 0,
-                    offsetEndDays = 3,
+                    offsetEndDays = 4,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
                     instructions = "Scoprire ed esporre alla luce indiretta per almeno 6 ore. " +
                         "Annaffiare da sotto per non bagnare le foglioline.",
@@ -92,18 +94,19 @@ object RucolaTemplateSeed {
                     orderIndex = 1,
                     name = "Raccolta",
                     actionType = ActionType.HARVEST,
-                    offsetStartDays = 4,
-                    offsetEndDays = 6,
+                    offsetStartDays = 5,
+                    offsetEndDays = 5,
                     reminderTimes = listOf(LocalTime.of(8, 0)),
-                    instructions = "Raccolta a 7-10 giorni dalla semina, con piantine di ~5cm. " +
-                        "Tagliare con le forbici appena sopra il substrato. Sapore piccante-nocciolato.",
+                    instructions = "Con piantine di ~5cm, tagliare con le forbici appena sopra il " +
+                        "substrato. Sapore piccante-nocciolato. La finestra reale è 7-10 giorni " +
+                        "dalla semina: si può anticipare o posticipare di un giorno o due.",
                 ),
                 TemplateStepEntity(
                     phaseId = crescitaPhaseId,
                     orderIndex = 2,
                     name = "Conservazione",
                     actionType = ActionType.STORAGE,
-                    offsetStartDays = 4,
+                    offsetStartDays = 5,
                     offsetEndDays = null,
                     reminderTimes = emptyList(),
                     instructions = "Mantenuti in frigo in una busta sigillata durano una decina di giorni.",
