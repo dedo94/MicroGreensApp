@@ -431,3 +431,10 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   tagliato dalle maschere dei launcher. Stesso simbolo ridisegnato a 24dp
   per l'icona di notifica, con proporzioni proprie perché a quella scala
   una riduzione lineare lascerebbe troppo margine.
+- **Icone a tema (Android 13+)**: le adaptive icon dichiarano ora un
+  layer `monochrome`, così sui launcher con "icone a tema" attive il
+  germoglio si ricolora con la palette del wallpaper invece di restare
+  l'unico riquadro verde tra icone tinte. Riusa il foreground, che è già
+  una silhouette su trasparente dentro la safe zone. Il tag richiede
+  compileSdk 33+ (qui 35) e viene ignorato sotto Android 13, quindi
+  minSdk 26 resta invariato.

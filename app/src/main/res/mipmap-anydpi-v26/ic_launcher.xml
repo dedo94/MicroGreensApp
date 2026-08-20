@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Il layer monochrome serve alle "icone a tema" di Android 13+: il
+    sistema ne usa solo la silhouette e la ricolora con la palette del
+    wallpaper, ignorando background e colori dichiarati qui. Riusa il
+    foreground perché è già una silhouette bianca su trasparente, dentro
+    la safe zone. Su API < 33 il tag viene ignorato.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
 </adaptive-icon>
