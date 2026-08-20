@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Germoglio: stelo centrale e due cotiledoni simmetrici, uno per lato.
+    Le foglie sono bezier cubiche costruite sull'asse base->punta, così il
+    punto più largo cade a metà e le estremità restano appuntite.
+    Tutto resta entro il cerchio di raggio 36 centrato in (54,54): è la
+    safe zone dell'adaptive icon, fuori dalla quale le maschere dei
+    launcher (tonda, squircle, ...) possono tagliare.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,28 C54,28 40,36 40,52 C40,63 46,70 54,70 C62,70 68,63 68,52 C68,36 54,28 54,28 Z" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:pathData="M54,85 L54,53" />
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M50,70 L58,70 L58,86 L50,86 Z" />
+        android:pathData="M54,57 C51.7,41.2 58.5,31 74,27 C76.3,42.8 69.5,53 54,57 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,57 C56.3,41.2 49.5,31 34,27 C31.7,42.8 38.5,53 54,57 Z" />
 </vector>
