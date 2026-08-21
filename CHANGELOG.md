@@ -422,3 +422,19 @@ dall'utente in Claude Design (palette, tipografia e forme più marcate,
   già presenti sul dispositivo non vengono toccati dal seed (che salta le
   varietà già esistenti) — vanno allineati a mano da "Gestisci varietà",
   o si applicano da soli su una installazione pulita.
+- **Nuova icona dell'app**: al posto della singola foglia con stelo, un
+  germoglio con stelo centrale e due cotiledoni simmetrici, uno per lato
+  (richiesta dell'utente). Le foglie sono bezier cubiche costruite
+  sull'asse base→punta, così il punto più largo cade a metà e le
+  estremità restano appuntite. Il disegno resta entro la safe zone
+  dell'adaptive icon (cerchio di raggio 36 su canvas 108) per non essere
+  tagliato dalle maschere dei launcher. Stesso simbolo ridisegnato a 24dp
+  per l'icona di notifica, con proporzioni proprie perché a quella scala
+  una riduzione lineare lascerebbe troppo margine.
+- **Icone a tema (Android 13+)**: le adaptive icon dichiarano ora un
+  layer `monochrome`, così sui launcher con "icone a tema" attive il
+  germoglio si ricolora con la palette del wallpaper invece di restare
+  l'unico riquadro verde tra icone tinte. Riusa il foreground, che è già
+  una silhouette su trasparente dentro la safe zone. Il tag richiede
+  compileSdk 33+ (qui 35) e viene ignorato sotto Android 13, quindi
+  minSdk 26 resta invariato.

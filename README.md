@@ -34,7 +34,11 @@ da quel momento è indipendente.
   registrati liberamente, raggruppata per data (Oggi/Ieri/Domani/data) e
   con badge di stato (Fatto/Saltato) e di aderenza al piano.
 - Registrare un raccolto (da uno step o da un evento libero) porta il
-  vassoio automaticamente allo stato "Raccolto".
+  vassoio automaticamente allo stato "Raccolto". Da quel momento le
+  occorrenze ancora da fare (es. i giorni di crescita mai spuntati)
+  spariscono da calendario e timeline, perché il ciclo è chiuso: non
+  vengono segnate saltate né cancellate, quindi rimettendo il vassoio
+  "In corso" ricompaiono.
 - Se esiste già almeno un ciclo raccolto della stessa varietà, il
   dettaglio del vassoio in corso mostra una previsione del raccolto basata
   sui semi usati × la resa media storica per grammo di seme.
@@ -45,9 +49,11 @@ Prima cosa che si vede aprendo l'app: una sezione "Oggi" con tutte le
 azioni pianificate per la giornata su tutti i vassoi, filtrabile per
 vassoio, con spunta diretta per segnare fatto uno step (quantità richiesta
 solo per la raccolta) senza dover entrare nel dettaglio del vassoio.
-Sotto, dietro un toggle "Mese", la vista mensile classica con un pallino
-colorato per varietà su ogni giorno con eventi; tap su un giorno diverso
-da oggi per vederne gli eventi.
+Sotto, la vista mensile classica — visibile di default, richiudibile con
+il toggle "Mese" — con un pallino colorato per varietà su ogni giorno con
+eventi e un bordo sul giorno di oggi; tap su un giorno diverso da oggi per
+vederne gli eventi. Rientrando nella tab la lista si riporta sempre in
+cima, sulla sezione "Oggi".
 
 ### Notifiche
 
@@ -76,6 +82,17 @@ dettaglio a comparsa, confronto affiancato tra due vassoi. Tutta la
 pagina è filtrabile per varietà scorrendo con swipe (o toccando i chip
 del filtro): KPI, record e grafico di produzione si ricalcolano sulla
 varietà selezionata.
+
+### Aspetto
+
+Tema chiaro e scuro con un interruttore dedicato in Opzioni: finché non lo
+si tocca l'app segue il tema di sistema, dopo resta sulla scelta fatta.
+Tutti i form (nuovo/modifica vassoio, evento, step, fase, quantità
+raccolta) si aprono come pannelli dal basso sopra la schermata corrente,
+invece che come schermate a sé; restano modali centrate le richieste di
+conferma (eliminazioni e spunta di uno step con data futura). Su
+Android 13+ l'icona dell'app supporta le "icone a tema" e si ricolora con
+la palette del wallpaper.
 
 ## Stack tecnico
 
@@ -135,18 +152,23 @@ core/repository    Repository che orchestrano DAO/rete/DataStore per le ViewMode
 feature/template   CRUD template di varietà: fasi (con durata) e step al
                    loro interno, entrambi riordinabili
 feature/tray       Vassoi: tab In corso (giorni dalla semina, progresso,
-                   stima raccolto)/Raccolti, creazione, modifica,
-                   dettaglio/timeline/previsione raccolto
-feature/event      Form aggiungi/modifica evento (meteo pre-compilato)
-feature/calendar   Vista mensile con filtro per vassoio
+                   stima raccolto)/Raccolti, creazione e modifica come
+                   bottom sheet, dettaglio/timeline/previsione raccolto
+feature/event      Bottom sheet aggiungi/modifica evento (meteo pre-compilato)
+feature/calendar   Sezione "Oggi" azionabile + vista mensile, filtro per vassoio
 feature/stats      Dashboard: KPI in alto, confronto varietà, grafici
                    andamento/produzione mensile, elenco vassoi collassabile
                    con aderenza al piano, confronto vassoi, record
-feature/settings   Opzioni: gestione varietà, permesso notifiche, posizione meteo
+feature/settings   Opzioni: gestione varietà, permesso notifiche, tema
+                   chiaro/scuro, posizione meteo
 navigation         Grafo di navigazione Compose (rotte type-safe) + bottom nav
-ui, ui/theme       Componenti condivisi (date/time picker, header compatto, colori/
-                   etichette), grafici Canvas (ui/charts) e tema Material 3
-                   (colori, tipografia con font Manrope, forme, spaziatura)
+                   con il FAB "Nuovo vassoio", che apre un bottom sheet da
+                   qualunque tab invece di essere una destinazione
+ui, ui/theme       Componenti condivisi (date/time picker, header compatto,
+                   wrapper dei form a bottom sheet, tab a pillola, tile KPI,
+                   card "+", badge, colori/etichette), grafici Canvas
+                   (ui/charts) e tema Material 3 (colori, tipografia con font
+                   Manrope, forme, spaziatura)
 ```
 
 ## Licenza
